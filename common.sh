@@ -1,15 +1,15 @@
 #!/bin/sh
 
 pr_info() {
-    echo "_INF: $1" | tee -a $LOG_FILE
+    echo "[INF] $1" | tee -a $LOG_FILE
 }
 
 pr_error() {
-    echo "_ERR: $1" | tee -a $LOG_FILE
+    echo "[ERR] $1" | tee -a $LOG_FILE
 }
 
 pr_end() {
-    echo "_END: " | tee -a $LOG_FILE
+    echo "[END] " | tee -a $LOG_FILE
 }
 
 

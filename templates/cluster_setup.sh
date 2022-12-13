@@ -4,20 +4,20 @@ LOG_PATH="/tmp"
 LOG_FILE="$LOG_PATH/_RANDOM_SUFFIX_.log"
 IIP="_IIP_"
 DNSMASQ_CONF="/var/srv/dnsmasq.conf"
-CLUSTER_HEALTH_SLEEP=2
+CLUSTER_HEALTH_SLEEP=6
 CLUSTER_HEALTH_RETRIES=500
 
 
 pr_info() {
-    echo "_INF: $1" | tee -a $LOG_FILE
+    echo "[INF] $1" | tee -a $LOG_FILE
 }
 
 pr_error() {
-    echo "_ERR: $1" | tee -a $LOG_FILE
+    echo "[ERR] $1" | tee -a $LOG_FILE
 }
 
 pr_end() {
-    echo "_END: " | tee -a $LOG_FILE
+    echo "[END] " | tee -a $LOG_FILE
 }
 
 
@@ -70,15 +70,21 @@ enable_and_start_kubelet() {
     stop_if_failed $? "Failed to start Kubelet service"
 }
 
-check_cluster_unhealthy() {
-    RES=1
-    while [[ $RES != 0 ]]
-    do
-        sleep 2
-        pr_info "$RES waiting Openshift API to become ready, hang on...."
+check_openshift_api_unhealthy() {
+        #inverse logic to make the while loop clearer :-\
         oc get co > /dev/null 2>&1
-        RES=$?
+        [[ $? == 0 ]] && return 1
+        return 0
+}
+
+check_cluster_unhealthy() {
+    
+    while check_openshift_api_unhealthy 
+    do
+        pr_info "waiting Openshift API to become healthy, hang on...."
+        sleep 2
     done
+
     for i in $(oc get co | grep -P "authentication|console|etcd|kube-apiserver"| awk '{ print $3 }')
     do
         if [[ $i == "False" ]] 
@@ -98,18 +104,17 @@ wait_cluster_become_healthy () {
         then
             return 1
         fi
-	((counter++))
+        pr_info "checking for the $counter time if the Openshift Cluster has become healthy, hang on...."
+	    ((counter++))
     done
-    return 1
-
+    pr_info "cluster has become ready in $(expr $counter \* $CLUSTER_HEALTH_SLEEP) seconds"
+    return 0
 }
-
-
 
 
 
 setup_dsnmasq
 enable_and_start_kubelet
-pr_info "waiting cluster to become healthy"
 wait_cluster_become_healthy
 stop_if_failed $? "Failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
+echo "done"

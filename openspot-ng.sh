@@ -78,7 +78,7 @@ swap_ssh_key() {
 inject_and_run_cluster_setup() {
     $SCP -o StrictHostKeychecking=no -P $SSH_PORT -i $PRIVATE_KEY $WORKDIR/cluster_setup.sh core@$EIP:/var/home/core/
     $SSH -o StrictHostKeychecking=no -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "chmod +x /var/home/core/cluster_setup.sh"
-    $SSH -o StrictHostKeychecking=no -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "sudo /var/home/core/cluster_setup.sh&"
+    $SSH -o StrictHostKeychecking=no -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "sudo /var/home/core/cluster_setup.sh"
 }
 
 tail_cluster_setup() {
@@ -103,6 +103,6 @@ EIP="127.0.0.1"
 prepare_cluster_setup
 inject_and_run_cluster_setup
 #TODO: PUT UNDER CONDITION
-tail_cluster_setup
+#tail_cluster_setup
 
 
