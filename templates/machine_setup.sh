@@ -1,5 +1,5 @@
 #!/bin/bash
-
+IIP="_IIP_"
 
 stop_if_failed(){
 	EXIT_CODE=$1

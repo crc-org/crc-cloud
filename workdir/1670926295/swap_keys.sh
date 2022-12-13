@@ -1,5 +1,0 @@
-#!/bin/bash
-
-PUB_KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC0v0P6EChXeuLVcixDPxjKqKyYZpUtcw+/+O244CzwjrJUnMx7cXYsTeLAKicO6mPnn8+QlYOmUJAMwTUJSRveMmAmCcSM6DHnRmfNcEtcbx9wEuk5rJXGT6bnvoDCjH7hsOMwusJ8iwMDXOpbPP06ZEH2p+Eni/mRem/etyTg7b/je3vV863IY64XLCofrCbmtS2bIJ/vb/m1+yPUoIh++Y91LS18lJ8RxjoxmIkeyqWU20dTAYo+9NGavq4nqU96Q8hXR6eHIRTPNOmFlNkjLClN074l/vL0xREIgsoZWcAxaxz4ru2ITN+NyLbewx6DGQX7kexiAkkxYsMTx9kYXJsAiFvp0DPEGNaxibopmd8ugqDcTKctcr95veFF6NHDemwJvdqdevXn2Vxzk6704pYM4RJ794/KE+pHf4YdO7btjhfsIbRVzTd4/Hkkn3Qt1ibbi4O6LFVqvWK3KLDFqyKxhJmTVv1p6nk9vQCbAPZ86bzQ6J2P1EvNUFU/iQ0= tsebasti@tsebasti.remote.csb"
-
-echo "$PUB_KEY" > ~/.ssh/authorized_keys
