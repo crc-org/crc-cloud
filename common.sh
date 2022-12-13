@@ -1,5 +1,18 @@
 #!/bin/sh
 
+pr_info() {
+    echo "_INF: $1" | tee -a $LOG_FILE
+}
+
+pr_error() {
+    echo "_ERR: $1" | tee -a $LOG_FILE
+}
+
+pr_end() {
+    echo "_END: " | tee -a $LOG_FILE
+}
+
+
 check_ssh(){
     $NC -z $1 22 > /dev/null 2>&1
     return $?
@@ -32,3 +45,4 @@ get_instance_public_ip(){
 get_instance_private_ip(){
     $JQ -r '.Instances[0].PrivateIpAddress' $1
 }
+

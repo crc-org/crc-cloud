@@ -1,5 +1,6 @@
 #!/bin/bash
 source ./common.sh
+#TODO: REMOVE
 export AWS_PROFILE="redhat"
 
 #COMMANDS
@@ -13,9 +14,11 @@ SED=`which sed`
 NC=`which nc`
 SSH=`which ssh`
 SCP=`which scp`
+PRIVATE_KEY="id_ecdsa_crc"
 
 
 #VARIABLES
+SSH_PORT="22"
 AMI_ID="ami-0569ce8a44f2351be"
 INSTANCE_TYPE="c6i.2xlarge"
 PUBKEY="id_rsa"
@@ -30,7 +33,7 @@ RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
 prepare_workdir() {
     mkdir $WORKDIR
     echo $RANDOM_SUFFIX > $RANDOM_SUFFIX_FILE
-    rm $BASE_WORKDIR/latest | true /dev/null 2>&1
+    rm $BASE_WORKDIR/latest | true > /dev/null 2>&1
     ln -s $(pwd)/$WORKDIR $(pwd)/$BASE_WORKDIR/latest
 }
 
@@ -40,6 +43,16 @@ prepare_swap_keys() {
     cp templates/swap_keys.sh $WORKDIR
     $SED "s#_PUBKEY_#$(cat $WORKDIR/$PUBKEY.pub)#" templates/swap_keys.sh > $WORKDIR/swap_keys.sh
     chmod +x $WORKDIR/swap_keys.sh
+}
+
+prepare_cluster_setup() {
+    if [[ $IIP != '' && $RANDOM_SUFFIX != '' ]]
+    then
+        $SED "s#_IIP_#$IIP#" templates/cluster_setup.sh > $WORKDIR/cluster_setup.sh
+        $SED -i "s#_RANDOM_SUFFIX_#$RANDOM_SUFFIX#g" $WORKDIR/cluster_setup.sh
+    else
+        pr_error "internal IP or random suffix or ... not set, are you calling ${FUNCNAME[0]} correctly?"
+    fi
 }
 
 create_instances(){
@@ -56,22 +69,40 @@ create_instances(){
 }
 
 swap_ssh_key() {
-    $SCP -o StrictHostKeychecking=no -i id_ecdsa_crc $WORKDIR/id_rsa.pub core@$EIP:.
-    $SSH -o StrictHostKeychecking=no -i id_ecdsa_crc core@$EIP "cat /home/core/id_rsa.pub > /home/core/.ssh/authorized_keys"
+    $SCP -o StrictHostKeychecking=no -P $SSH_PORT -i $PRIVATE_KEY $WORKDIR/id_rsa.pub core@$EIP:.
+    $SSH -o StrictHostKeychecking=no -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "cat /home/core/id_rsa.pub > /home/core/.ssh/authorized_keys"
+    #after swapping private key is replaced by the new one
+    PRIVATE_KEY=$WORKDIR/id_rsa
+}
+
+inject_and_run_cluster_setup() {
+    $SCP -o StrictHostKeychecking=no -P $SSH_PORT -i $PRIVATE_KEY $WORKDIR/cluster_setup.sh core@$EIP:/var/home/core/
+    $SSH -o StrictHostKeychecking=no -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "chmod +x /var/home/core/cluster_setup.sh"
+    $SSH -o StrictHostKeychecking=no -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "sudo /var/home/core/cluster_setup.sh&"
+}
+
+tail_cluster_setup() {
+    $SSH -o StrictHostKeychecking=no -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "sudo tail -f /tmp/$RANDOM_SUFFIX.log"
 }
 
 
-#prepare_workdir
-#prepare_swap_keys
+prepare_workdir
 #create_instances
 
 #INSTANCE_ID=`get_instance_id $WORKDIR/$INSTANCE_DESCRIPTION`
-IIP=`get_instance_private_ip $WORKDIR/$INSTANCE_DESCRIPTION`
+#IIP=`get_instance_private_ip $WORKDIR/$INSTANCE_DESCRIPTION`
 #EIP=`get_instance_public_ip $INSTANCE_ID`
 
-#wait_instance_readiness $EIP
+SSH_PORT=2222
+IIP="10.0.2.15"
+EIP="127.0.0.1"
 
-#swap_ssh_key
-echo $IIP
+#wait_instance_readiness $EIP
+#swap_ssh_keyS
+
+prepare_cluster_setup
+inject_and_run_cluster_setup
+#TODO: PUT UNDER CONDITION
+tail_cluster_setup
 
 
