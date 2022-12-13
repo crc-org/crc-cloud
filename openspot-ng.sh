@@ -1,87 +1,40 @@
 #!/bin/bash
-
-
-stop_if_failed(){
-	EXIT_CODE=$1
-	MESSAGE=$2
-	if [[ $EXIT_CODE != 0 ]]
-	then
-		echo "$MESSAGE"
-		exit $EXIT_CODE
-	fi
-}
-
-setup_dsnmasq(){
-    echo "Writing Dnsmasq conf on $DNSMASQ_CONF"
-        sudo cat << EOF > $DNSMASQ_CONF
-user=root
-port= 53
-bind-interfaces
-expand-hosts
-log-queries
-local=/crc.testing/
-domain=crc.testing
-address=/apps-crc.testing/$IIP
-address=/api.crc.testing/$IIP
-address=/api-int.crc.testing/$IIP
-address=/crc-wz8dw-master-0.crc.testing/192.168.126.11
-EOF
-
-    stop_if_failed  $? "Failed to write Dnsmasq configuration in $DNSMASQ_CONF"
-    echo  "Adding Dnsmasq as primary DNS"
-    sleep 2
-    sudo nmcli connection modify Wired\ connection\ 1 ipv4.dns "10.88.0.8,169.254.169.254"
-    stop_if_failed  $? "Failed to modify NetworkManager settings"
-    echo  "Restarting NetworkManager"
-    sleep 2
-    sudo systemctl restart NetworkManager 
-    stop_if_failed $? "Failed to restart NetworkManager"
-    echo  "Enabling & starting Dnsmasq service"
-    sudo systemctl enable crc-dnsmasq.service
-    sudo systemctl start crc-dnsmasq.service
-    sleep 2
-    stop_if_failed $? "Failed to start Dnsmasq service"
-}
-
-enable_and_start_kubelet() {
-    echo  "Enabling & starting Kubelet service"
-    sudo systemctl enable kubelet
-    sudo systemctl start kubelet
-    stop_if_failed $? "Failed to start Kubelet service"
-}
-
-check_cluster_unhealthy() {
-    for i in $(oc get co | grep -P "authentication|console|etcd|kube-apiserver"| awk '{ print $3 }')
-    do
-        if [[ $i == "False" ]] 
-        then
-            return 0
-        fi
-    done
-    return 1
-}
-
-wait_cluster_become_healthy () {
-    counter=0
-    while check_cluster_unhealthy
-    do
-        sleep $CLUSTER_HEALTH_SLEEP
-        if [[ $counter == $CLUSTER_HEALTH_RETRIES ]]
-        then
-            return 1
-        fi
-	((counter++))
-    done
-    return 1
-
+AMI_ID="ami-0569ce8a44f2351be"
+PUBKEY="id_rsa"
+RUN_TIMESTAMP=`date +%s`
+BASE_WORKDIR="workdir"
+WORKDIR="$BASE_WORKDIR/$RUN_TIMESTAMP"
+RANDOM_SUFFIX=`echo $RANDOM | md5sum | head -c 8`
+RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
+prepare_workdir() {
+    mkdir $WORKDIR
+    echo $RANDOM_SUFFIX > $RANDOM_SUFFIX_FILE
+    rm $BASE_WORKDIR/latest | true /dev/null 2>&1
+    ln -s $(pwd)/$WORKDIR $(pwd)/$BASE_WORKDIR/latest
 }
 
 
+prepare_swap_keys() {
+    ssh-keygen -m PEM -f $WORKDIR/$PUBKEY -q -N ""
+    cp templates/swap_keys.sh $WORKDIR
+    sed "s#_PUBKEY_#$(cat $WORKDIR/$PUBKEY.pub)#" templates/swap_keys.sh > $WORKDIR/swap_keys.sh
+    chmod +x $WORKDIR/swap_keys.sh
+}
+
+create_instances(){
+    aws ec2 create-key-pair --key-name openspot-ng-$RANDOM_SUFFIX
+    aws ec2 import-key-pair --key-name openspot-ng-$RANDOM_SUFFIX --public-key-material file:///path/to/my/key.pem
+    aws ec2 create-security-group --group-name openspot-ng-$RANDOM_SUFFIX --description "openspot-ng security group run timestamp: $RUN_TIMESTAMP"
+    aws ec2 authorize-security-group-ingress --group-name openspot-ng-$RANDOM_SUFFIX --protocol tcp --port 22 --cidr 0.0.0.0/0
+    aws ec2 authorize-security-group-ingress --group-name openspot-ng-$RANDOM_SUFFIX --protocol tcp --port 6443 --cidr 0.0.0.0/0
+    aws ec2 authorize-security-group-ingress --group-name openspot-ng-$RANDOM_SUFFIX --protocol tcp --port 443 --cidr 0.0.0.0/0
+    aws ec2 run-instances --image-id ami-xxxxxxxx --instance-type c6i.2xlarge --user-data file://path/to/user-data-script.txt --security-group-ids sg-xxxxxxxx --key-name my-key-pair
+}
+
+prepare_workdir
+prepare_swap_keys
+
+#
+#
 
 
-
-#setup_dsnmasq
-#enable_and_start_kubelet
-echo "waiting cluster to become healthy"
-wait_cluster_become_healthy
-stop_if_failed $? "Failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
