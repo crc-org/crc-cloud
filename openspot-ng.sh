@@ -38,13 +38,6 @@ prepare_workdir() {
 }
 
 
-prepare_swap_keys() {
-    $SSHKEYGEN -m PEM -f $WORKDIR/$PUBKEY -q -N ""
-    cp templates/swap_keys.sh $WORKDIR
-    $SED "s#_PUBKEY_#$(cat $WORKDIR/$PUBKEY.pub)#" templates/swap_keys.sh > $WORKDIR/swap_keys.sh
-    chmod +x $WORKDIR/swap_keys.sh
-}
-
 prepare_cluster_setup() {
     if [[ $IIP != '' && $RANDOM_SUFFIX != '' ]]
     then
