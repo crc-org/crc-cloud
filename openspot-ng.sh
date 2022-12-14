@@ -16,25 +16,17 @@ SCP=`which scp`
 PRIVATE_KEY="id_ecdsa_crc"
 
 
-#VARIABLES
+#CONST
 SSH_PORT="22"
-AMI_ID="ami-0569ce8a44f2351be"
-INSTANCE_TYPE="c6i.2xlarge"
-PUBKEY="id_rsa"
 RUN_TIMESTAMP=`date +%s`
 BASE_WORKDIR="workdir"
 WORKDIR="$BASE_WORKDIR/$RUN_TIMESTAMP"
 INSTANCE_DESCRIPTION="instance_description.json"
 RANDOM_SUFFIX=`echo $RANDOM | $MD5SUM | $HEAD -c 8`
 RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
-LOG_FILE="$WORKDIR/installation.log"
+LOG_FILE="$WORKDIR/local.log"
 
-#PARAMS
-PULL_SECRET_PATH="/home/tsebasti/pull_secret"
-#PARAMS DEFAULTS
-PASS_DEVELOPER="developer"
-PASS_KUBEADMIN="kubeadmin"
-PASS_REDHAT="redhat"
+
 
 cleanup() {
         local pids=$(jobs -pr)
@@ -120,7 +112,7 @@ tail_cluster_setup() {
         if [[ $LINE =~ "[ERR]" ]]
         then
             CLEANLINE=${LINE//"[ERR]"}
-            stop_if_failed 1 "$EIP -> $(echo $CLEANLINE|xargs)"
+            stop_if_failed 1 "$EIP -> $(echo $CLEANLINE | xargs)"
         elif [[ $LINE =~ "[END]" ]]
         then
             CLEANLINE=${LINE//"[END]"}
@@ -143,19 +135,83 @@ get_remote_log() {
     stop_if_failed $? "impossible to get the logs from $EIP"
 }
 
-SECONDS=0
-prepare_workdir
-create_ec2_resources
+usage() {
+    echo ""
+    echo "*********** OpenSpot NG ***********"
+    echo ""
+    usage="$(basename "$0") [-p pull secret path] [-d developer password] [-k kubeadmin password] [-r redhat password] [-a AMI ID] [-t Instance type]
+Make a user provide SSH key and jupyter notebooks (in roles/bootstrap/files/notebooks) to each user listed in var/common.yml
+where:
+    -h  show this help text
+    -p  CRC pull secret file path (download from https://console.redhat.com/openshift/create/local) 
+    -d  CRC developer user password (optional, default: $PASS_DEVELOPER)
+    -k  CRC kubeadmin user password (optional, default: $PASS_KUBEADMIN)
+    -r  CRC redhat    user password (optional, default: $PASS_REDHAT)
+    -a  AMI ID (Amazon Machine Image) from which the VM will be Instantiated (optional, default: $AMI_ID)
+    -i  EC2 Instance Type (optional, default; $INSTANCE_TYPE)"
+    echo "$usage"
+    exit 1
+}
 
-INSTANCE_ID=`get_instance_id $WORKDIR/$INSTANCE_DESCRIPTION`
-IIP=`get_instance_private_ip $WORKDIR/$INSTANCE_DESCRIPTION`
-EIP=`get_instance_public_ip $INSTANCE_ID`
-wait_instance_readiness $EIP
-swap_ssh_key
+run () {
+    SECONDS=0
+    prepare_workdir
+    create_ec2_resources
 
-prepare_cluster_setup
-inject_and_run_cluster_setup > /dev/null 2>&1 &
-tail_cluster_setup
-get_remote_log
-duration=$SECONDS
-pr_end "CRC cluster baked in (($duration / 60)) minutes and $(($duration % 60)) seconds"
+    INSTANCE_ID=`get_instance_id $WORKDIR/$INSTANCE_DESCRIPTION`
+    IIP=`get_instance_private_ip $WORKDIR/$INSTANCE_DESCRIPTION`
+    EIP=`get_instance_public_ip $INSTANCE_ID`
+    wait_instance_readiness $EIP
+    swap_ssh_key
+
+    prepare_cluster_setup
+    inject_and_run_cluster_setup > /dev/null 2>&1 &
+    tail_cluster_setup
+    get_remote_log
+    duration=$SECONDS
+    pr_end "CRC cluster baked in $(($duration / 60)) minutes and $(($duration % 60)) seconds"
+}
+
+
+#DEFAULT VALUES
+PASS_DEVELOPER="developer"
+PASS_KUBEADMIN="kubeadmin"
+PASS_REDHAT="redhat"
+AMI_ID="ami-0569ce8a44f2351be"
+INSTANCE_TYPE="c6i.2xlarge"
+
+options=':h:p:d:k:r:a:t:'
+while getopts $options option; do
+  case "$option" in
+    h) echo "$usage"; exit;;
+    p) PULL_SECRET_PATH=$OPTARG;;
+    d) PASS_DEVELOPER=$OPTARG;;
+    k) PASS_KUBEADMIN=$OPTARG;;
+    r) PASS_REDHAT=$OPTARG;;
+    a) AMI_ID=$OPTARG;;
+    t) INSTANCE_TYPE=$OPTARG;;
+    :) printf "missing argument for -%s\n" "$OPTARG" >&2; usage;;
+   \?) printf "illegal option: -%s\n" "$OPTARG" >&2; usage;;
+  esac
+done
+
+# mandatory arguments
+if [ ! "$PULL_SECRET_PATH" ] 
+then
+  echo "arguments -p <pull_secret_path> must be provided"
+  usage
+fi
+
+[[ ! -f $PULL_SECRET_PATH ]] && echo "$PULL_SECRET_PATH: pull secret file not found" && usage
+
+#TODO check binaries and operating system
+
+echo $PULL_SECRET_PATH
+echo $PASS_DEVELOPER
+echo $PASS_KUBEADMIN
+echo $PASS_REDHAT
+echo $AMI_ID
+echo $INSTANCE_TYPE
+
+#if everything is ok, run the script.
+run
