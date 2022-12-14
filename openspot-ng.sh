@@ -44,6 +44,7 @@ prepare_cluster_setup() {
         $SED "s#_IIP_#$IIP#" templates/cluster_setup.sh > $WORKDIR/cluster_setup.sh
         $SED -i "s#_RANDOM_SUFFIX_#$RANDOM_SUFFIX#g" $WORKDIR/cluster_setup.sh
     else
+    #TODO: exit on error
         pr_error "internal IP or random suffix or ... not set, are you calling ${FUNCNAME[0]} correctly?"
     fi
 }
