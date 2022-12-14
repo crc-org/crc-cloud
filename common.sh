@@ -12,6 +12,15 @@ pr_end() {
     echo "[END] " | tee -a $LOG_FILE
 }
 
+stop_if_failed(){
+	EXIT_CODE=$1
+	MESSAGE=$2
+	if [[ $EXIT_CODE != 0 ]]
+	then
+		pr_error "$MESSAGE" 
+		exit $EXIT_CODE
+	fi
+}
 
 check_ssh(){
     $NC -z $1 22 > /dev/null 2>&1
@@ -25,6 +34,7 @@ wait_instance_readiness(){
         check_ssh $1
         RES=$?
         sleep 1
+        pr_info "waiting sshd to become ready on $1, hang on...."
     done
 }
 
