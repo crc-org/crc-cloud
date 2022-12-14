@@ -206,12 +206,5 @@ fi
 
 #TODO check binaries and operating system
 
-echo $PULL_SECRET_PATH
-echo $PASS_DEVELOPER
-echo $PASS_KUBEADMIN
-echo $PASS_REDHAT
-echo $AMI_ID
-echo $INSTANCE_TYPE
-
 #if everything is ok, run the script.
 run
