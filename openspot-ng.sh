@@ -139,7 +139,7 @@ usage() {
     echo ""
     echo "*********** OpenSpot NG ***********"
     echo ""
-    usage="$(basename "$0") [-p pull secret path] [-d developer password] [-k kubeadmin password] [-r redhat password] [-a AMI ID] [-t Instance type]
+    usage="$(basename "$0") [-p pull secret path] [-d developer user password] [-k kubeadmin user password] [-r redhat user password] [-a AMI ID] [-t Instance type]
 Make a user provide SSH key and jupyter notebooks (in roles/bootstrap/files/notebooks) to each user listed in var/common.yml
 where:
     -h  show this help text
