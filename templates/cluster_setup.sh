@@ -30,7 +30,6 @@ pr_end() {
     echo "[END] $1" | tee -a $LOG_FILE
 }
 
-
 stop_if_failed(){
 	EXIT_CODE=$1
 	MESSAGE=$2
@@ -39,6 +38,13 @@ stop_if_failed(){
 		pr_error "$MESSAGE" 
 		exit $EXIT_CODE
 	fi
+}
+
+#Replaces the default pubkey with the new one just generated to avoid the mysterious service to replace it later on :-\
+replace_default_pubkey() {
+    pr_info "replacing the default public key from /etc/machine-config-daemon/currentconfig"
+    cat <<< $(jq --arg pubkey "$(cat /home/core/id_rsa.pub)" '.spec.config.passwd.users[0].sshAuthorizedKeys=$pubkey' /etc/machine-config-daemon/currentconfig) > /etc/machine-config-daemon/currentconfig
+    stop_if_failed $? "failed to replace public key"
 }
 
 setup_dsnmasq(){
@@ -193,12 +199,7 @@ set_credentials() {
     stop_if_failed $? "failed to replace Cluster secret"
 }
 
-show_console_route () {
-    ROUTE=`oc get route console-custom -n openshift-console -o json | jq -r '.spec.host'`
-    echo $ROUTE
-}
-
-
+replace_default_pubkey
 setup_dsnmasq
 
 enable_and_start_kubelet
@@ -217,10 +218,7 @@ stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIE
 patch_ingress_config
 patch_api_server
 patch_default_route
-wait_cluster_become_healthy
-stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
-
 set_credentials
-pr_end show_console_route
-
-echo "done"
+wait_cluster_become_healthy
+CONSOLE_ROUTE=`oc get route console-custom -n openshift-console -o json | jq -r '.spec.host'`
+pr_end $CONSOLE_ROUTE

@@ -9,7 +9,7 @@ pr_error() {
 }
 
 pr_end() {
-    echo "[END] " | tee -a $LOG_FILE
+    echo "[END] $1" | tee -a $LOG_FILE
 }
 
 stop_if_failed(){
@@ -23,7 +23,7 @@ stop_if_failed(){
 }
 
 check_ssh(){
-    $NC -z $1 22 > /dev/null 2>&1
+    $NC -z $1 $SSH_PORT > /dev/null 2>&1
     return $?
 }
 
