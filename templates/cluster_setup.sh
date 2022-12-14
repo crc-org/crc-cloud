@@ -1,11 +1,15 @@
 #!/bin/bash
+#CONST
 export KUBECONFIG="/opt/kubeconfig"
 LOG_PATH="/tmp"
 LOG_FILE="$LOG_PATH/_RANDOM_SUFFIX_.log"
-IIP="_IIP_"
 DNSMASQ_CONF="/var/srv/dnsmasq.conf"
 CLUSTER_HEALTH_SLEEP=6
 CLUSTER_HEALTH_RETRIES=500
+#REPLACED VARS
+IIP="_IIP_"
+EIP="_EIP_"
+PULL_SECRET="_PULL_SECRET_"
 
 
 pr_info() {
@@ -112,9 +116,28 @@ wait_cluster_become_healthy () {
 }
 
 
+patch_pull_secret(){
+    oc patch secret pull-secret -p "{\"data\":{\".dockerconfigjson\":\"$PULL_SECRET\"}}" -n openshift-config --type merge
+}
+
+create_certificate_and_patch_secret(){
+    openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout nip.key -out nip.crt -subj "/CN=$EIP.nip.io" -addext "subjectAltName=DNS:apps.$EIP.nip.io,DNS:*.apps.$EIP.nip.io,DNS:api.$EIP.nip.io"
+    oc create secret tls nip-secret --cert=nip.crt --key=nip.key -n openshift-config
+}
+
+
 
 setup_dsnmasq
+
 enable_and_start_kubelet
+wait_cluster_become_healthy
+stop_if_failed $? "Failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
+
+patch_pull_secret
+wait_cluster_become_healthy
+stop_if_failed $? "Failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
+
+create_certificate_and_patch_secret
 wait_cluster_become_healthy
 stop_if_failed $? "Failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
 echo "done"

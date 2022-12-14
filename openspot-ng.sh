@@ -29,6 +29,9 @@ INSTANCE_DESCRIPTION="instance_description.json"
 RANDOM_SUFFIX=`echo $RANDOM | $MD5SUM | $HEAD -c 8`
 RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
 
+#PARAMS
+PULL_SECRET_PATH="/home/tsebasti/pull_secret"
+
 
 prepare_workdir() {
     mkdir $WORKDIR
@@ -39,13 +42,16 @@ prepare_workdir() {
 
 
 prepare_cluster_setup() {
-    if [[ $IIP != '' && $RANDOM_SUFFIX != '' ]]
+    if [[ $IIP != '' && $EIP != '' && $RANDOM_SUFFIX != '' && PULL_SECRET_PATH != '' ]]
     then
+        PULL_SECRET="$(base64 -w 0 $PULL_SECRET_PATH)"
         $SED "s#_IIP_#$IIP#" templates/cluster_setup.sh > $WORKDIR/cluster_setup.sh
+        $SED -i "s#_EIP_#$EIP#g" $WORKDIR/cluster_setup.sh
         $SED -i "s#_RANDOM_SUFFIX_#$RANDOM_SUFFIX#g" $WORKDIR/cluster_setup.sh
+        $SED -i "s#_PULL_SECRET_#$PULL_SECRET#g" $WORKDIR/cluster_setup.sh
     else
     #TODO: exit on error
-        pr_error "internal IP or random suffix or ... not set, are you calling ${FUNCNAME[0]} correctly?"
+        pr_error "internal IP or random suffix or pull secret path not set, are you calling ${FUNCNAME[0]} correctly?"
     fi
 }
 
@@ -65,7 +71,7 @@ create_instances(){
 swap_ssh_key() {
     $SCP -o StrictHostKeychecking=no -P $SSH_PORT -i $PRIVATE_KEY $WORKDIR/id_rsa.pub core@$EIP:.
     $SSH -o StrictHostKeychecking=no -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "cat /home/core/id_rsa.pub > /home/core/.ssh/authorized_keys"
-    #after swapping private key is replaced by the new one
+    #after swapping on VM private key is replaced by the new one
     PRIVATE_KEY=$WORKDIR/id_rsa
 }
 
@@ -95,7 +101,8 @@ EIP="127.0.0.1"
 #swap_ssh_keyS
 
 prepare_cluster_setup
-inject_and_run_cluster_setup
+#put in background later on
+#inject_and_run_cluster_setup
 #TODO: PUT UNDER CONDITION
 #tail_cluster_setup
 
