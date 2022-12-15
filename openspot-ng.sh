@@ -206,5 +206,5 @@ fi
 
 #TODO check binaries and operating system
 
-#if everything is ok, run the script.
+#ENTRYPOINT: if everything is ok, run the script.
 run
