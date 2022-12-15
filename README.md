@@ -15,6 +15,12 @@ I stumbled upon OpenSpot (https://github.com/ksingh7/openspot) made by my collea
 Moreover the solution was based on CRC that creates a qemu VM to run the (single-node) cluster, so bare metal instances were needed and the startup time was too long for the purpose.
 We had a meeting and they gave me all the instructions on how to run the qemu image directly in AWS and configure properly the OpenShift single-node cluster, only the code was missing....
 
+## Cloud Providers
+For the moment only AWS is supported. Other will be added soon.
+<br/>
+<br/>
+**Note:** AWS AMIs are regional resources so for the moment the only supported region is **us-west-2**, in the next few day the AMI will be copied to other regions, please be patient, it will take a while.
+
 ## Usage
 ### Prerequisites
 To run **OpenSpot-NG** from your command line you must be on Linux, very soon will be ready a containerized version that will allow you to run it from every OS that supports Podman/Docker.
