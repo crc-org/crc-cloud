@@ -218,7 +218,7 @@ done
 [[ (-z $WORKING_MODE ) ]] && echo -e "\nERROR: Working mode must be set\n" && usage
 [[ ( $WORKING_MODE != "C" ) && ( $WORKING_MODE != "T" )  ]] && echo -e "\nERROR: Working mode Must be either -C (creation) or -T (teardown), not $WORKING_MODE\n" && usage
 # CHECK MANDATORY ARGS FOR CREATION
-[[ ($WORKING_MODE == "C" ) && ( ! "$PULL_SECRET_PATH" ) ]] && echo -e "\nERROR: argument -p <pull_secret_path> must be provided\n" && usage 
+[[ ($WORKING_MODE == "C" ) && ( ! "$PULL_SECRET_PATH" ) ]] && echo -e "\nERROR: in creation mode argument -p <pull_secret_path> must be provided\n" && usage 
 #CHECK PULL SECRET PATH
 [[ ! -f $PULL_SECRET_PATH ]] && echo -e "\nERROR: $PULL_SECRET_PATH pull secret file not found" && usage
 
