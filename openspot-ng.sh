@@ -68,11 +68,6 @@ destroy_ec2_resources() {
   stop_if_failed $? "Failed to parse SecurityGroupName from $ID"
   AZ=`$JQ -r '.Instances[0].Placement.AvailabilityZone' $ID`
   stop_if_failed $? "Failed to parse AvailabilityZone from $ID"
-  echo $?
-  echo $INSTANCE_ID
-  echo $KEY_NAME
-  echo $SG_ID
-  echo ${AZ::-1}
 
   #check if instance is found 
   $AWS ec2 describe-instance-status --instance-id $INSTANCE_ID  > /dev/null 2>&1
@@ -221,18 +216,29 @@ $(basename "$0") -T [-v run id]
 }
 
 
-##COMMANDS
-CURL=`which curl`
-JQ=`which jq`
-MD5SUM=`which md5sum`
-AWS=`which aws`
-HEAD=`which head`
-SSHKEYGEN=`which ssh-keygen`
-SED=`which sed`
-NC=`which nc`
-SSH=`which ssh`
-SCP=`which scp`
-PRIVATE_KEY="id_ecdsa_crc"
+##COMMANDS CHECK + OS CHECK
+[[ `uname` != "Linux" ]] && stop_if_failed 1 "sorry, but $(basename "$0") can be run only on Linux (for the moment), please run the containerized version"
+CURL=`which curl 2>/dev/null`
+[[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: curl, please install it and try again"
+JQ=`which jq 2>/dev/null`
+[[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: jq, please install it and try again"
+MD5SUM=`which md5sum 2>/dev/null`
+[[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: md5sum, please install it and try again"
+AWS=`which aws 2>/dev/null`
+[[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: aws cli, please install it and try again"
+HEAD=`which head 2>/dev/null`
+[[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: head, please install it and try again"
+SSHKEYGEN=`which ssh-keygen 2>/dev/null`
+[[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: ssh-keygen, please install it and try again"
+SED=`which sed 2>/dev/null`
+[[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: GNU sed, please install it and try again"
+NC=`which nc 2>/dev/null`
+[[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: nc (netcat), please install it and try again"
+SSH=`which ssh 2>/dev/null`
+[[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: ssh, please install it and try again"
+SCP=`which scp 2>/dev/null`
+[[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: scp, please install it and try again"
+
 
 
 
@@ -256,7 +262,7 @@ WORKDIR="$WORKDIR_PATH/$RUN_TIMESTAMP"
 LOG_FILE="$WORKDIR/local.log"
 TEARDOWN_LOGFILE="$WORKDIR_PATH/teardown_$RUN_TIMESTAMP.log"
 RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
-
+PRIVATE_KEY="id_ecdsa_crc"
 
 ##ARGS
 options=':h:CTp:d:k:r:a:t:v:'
@@ -277,7 +283,7 @@ while getopts $options option; do
   esac
 done
 
-##CHECKS
+##VARIABLE SANITY CHECKS
 #WORKING MODE CHECK
 [[ (-z $WORKING_MODE ) ]] && echo -e "\nERROR: Working mode must be set\n" && usage
 [[ ( $WORKING_MODE != "C" ) && ( $WORKING_MODE != "T" )  ]] && echo -e "\nERROR: Working mode Must be either -C (creation) or -T (teardown), not $WORKING_MODE\n" && usage
