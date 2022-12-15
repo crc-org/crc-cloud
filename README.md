@@ -1,4 +1,4 @@
-# OpenSpot NG
+# OpenSpot-NG
 ### Disposable OpenShift instances on AWS in minutes
 
 | ![space-1.jpg](assets/openspot_ng_logo.png) |
@@ -12,12 +12,12 @@ Before running the script **be sure** to have an adequate experience to safely c
 ## Why? (TL;DR)
 I needed to test a chaos engineering tool (https://github.com/redhat-chaos/krkn) against a disposable (single-node) OpenShift cluster that could have been setup and destroyed from inside a CI/CD pipeline as quick as possible, unattended and with a reasonable cost per run.
 I stumbled upon OpenSpot (https://github.com/ksingh7/openspot) made by my colleagues  [@ksingh7](https://github.com/ksingh7) and [@praveenkumar](https://github.com/praveenkumar). I found the idea amazing, unfortunately was relying on EC2 Spot Instances, that, if from a cost perspective are more affordable, do not guarantee that the machine is instantiated.
-Moreover the solution is based on CRC  that creates a qemu VM to run the (single-node) cluster, so bare metal instances were needed and the startup time was too long for the purpose.
-We had a meeting and they gave me all the instructions to run the qemu image directly in AWS, only the code was missing....
+Moreover the solution was based on CRC that creates a qemu VM to run the (single-node) cluster, so bare metal instances were needed and the startup time was too long for the purpose.
+We had a meeting and they gave me all the instructions on how to run the qemu image directly in AWS and configure properly the OpenShift single-node cluster, only the code was missing....
 
 ## Usage
 ### Prerequisites
-To run OpenSpot NG from your command line you must be on Linux, very soon will be ready a containerized version that will allow you to run it from every OS that supports Podman/Docker.
+To run **OpenSpot-NG** from your command line you must be on Linux, very soon will be ready a containerized version that will allow you to run it from every OS that supports Podman/Docker.
 
 Be sure to have installed and configured the following programs in your box
 
