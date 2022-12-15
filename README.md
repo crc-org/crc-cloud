@@ -19,7 +19,7 @@ We had a meeting and they gave me all the instructions on how to run the qemu im
 For the moment only AWS is supported. Other will be added soon.
 <br/>
 <br/>
-**Note:** AWS AMIs (Amazon Machine Images) are regional resources so,for the moment, the only supported region is **us-west-2**.In the next few days the AMI will be copied to other regions, please be patient, it will take a while.
+**Note:** AWS AMIs (Amazon Machine Images) are regional resources so,for the moment, the only supported region is **us-west-2**. In the next few days the AMI will be copied to other regions, please be patient, it will take a while.
 
 ## Usage
 ### Prerequisites
@@ -44,7 +44,7 @@ Be sure to have installed and configured the following programs in your box
 
 The basic requirements to run a single-node OpenShift cluster with **OpenSpot-NG** are:
 - register a Red Hat account and get a pull secret from https://console.redhat.com/openshift/create/local 
-- configure the AWS CLI with your AWS credentials
+- configure the AWS CLI with your AWS credentials (region **us-west-2**)
 <br/>
 <br/>
 
