@@ -1,3 +1,4 @@
 # openspot-ng
+## Disposable OpenShift instances on AWS in minutes
 
-![OpenSpot](assets/openspot_ng_logo.png | width=100)
+![OpenSpot](assets/openspot_ng_logo.png)
