@@ -4,7 +4,7 @@ export KUBECONFIG="/opt/kubeconfig"
 LOG_PATH="/tmp"
 LOG_FILE="$LOG_PATH/_RANDOM_SUFFIX_.log"
 DNSMASQ_CONF="/var/srv/dnsmasq.conf"
-CLUSTER_HEALTH_SLEEP=6
+CLUSTER_HEALTH_SLEEP=8
 CLUSTER_HEALTH_RETRIES=500
 STEPS_SLEEP_TIME=10
 #REPLACED VARS
@@ -94,14 +94,16 @@ check_openshift_api_unhealthy() {
 }
 
 check_cluster_unhealthy() {
-    
+    WAIT="authentication|console|etcd|ingress|openshift-apiserver"
+    [ ! -z $1 ] && WAIT=$1
+
     while check_openshift_api_unhealthy 
     do
         pr_info "waiting Openshift API to become healthy, hang on...."
         sleep 2
     done
 
-    for i in $(oc get co | grep -P "authentication|console|etcd|kube-apiserver"| awk '{ print $3 }')
+    for i in $(oc get co | grep -P "$WAIT" | awk '{ print $3 }')
     do
         if [[ $i == "False" ]] 
         then
@@ -112,18 +114,20 @@ check_cluster_unhealthy() {
 }
 
 wait_cluster_become_healthy () {
-    counter=0
-    while check_cluster_unhealthy
+    COUNTER=0
+    W="[ALL]"
+    [ ! -z $1 ] && W="[$1]" 
+    while $(check_cluster_unhealthy $1)
     do
         sleep $CLUSTER_HEALTH_SLEEP
-        if [[ $counter == $CLUSTER_HEALTH_RETRIES ]]
+        if [[ $COUNTER == $CLUSTER_HEALTH_RETRIES ]]
         then
             return 1
         fi
-        pr_info "checking for the $counter time if the OpenShift Cluster has become healthy, hang on...."
-	    ((counter++))
+        pr_info "checking for the $COUNTER time if the OpenShift Cluster has become healthy, hang on....$W"
+	    ((COUNTER++))
     done
-    pr_info "cluster has become ready in $(expr $counter \* $CLUSTER_HEALTH_SLEEP) seconds"
+    pr_info "cluster has become ready in $(expr $COUNTER \* $CLUSTER_HEALTH_SLEEP) seconds"
     return 0
 }
 
@@ -162,21 +166,21 @@ spec:
 EOF
     oc patch ingresses.config.openshift.io cluster --type=merge --patch-file=ingress-patch.yaml
     stop_if_failed $? "failed patch Cluster Ingress config"
-    sleep $STEPS_SLEEP_TIME
+    #sleep $STEPS_SLEEP_TIME
 }
 
 patch_api_server() {
     pr_info  "patching API server"
     oc patch apiserver cluster --type=merge -p '{"spec":{"servingCerts": {"namedCertificates":[{"names":["api.'$EIP'.nip.io"],"servingCertificate": {"name": "nip-secret"}}]}}}'
     stop_if_failed $? "failed patch API server"
-    sleep $STEPS_SLEEP_TIME
+    #sleep $STEPS_SLEEP_TIME
 }
 
 patch_default_route() {
     pr_info  "patching default route"
     oc patch -p '{"spec": {"host": "default-route-openshift-image-registry.'$EIP'.nip.io"}}' route default-route -n openshift-image-registry --type=merge
     stop_if_failed $? "failed patch default route"
-    sleep $STEPS_SLEEP_TIME
+    #sleep $STEPS_SLEEP_TIME
 }
 
 set_credentials() {
@@ -203,22 +207,25 @@ replace_default_pubkey
 setup_dsnmasq
 
 enable_and_start_kubelet
-wait_cluster_become_healthy
+wait_cluster_become_healthy "etcd|openshift-apiserver"
 stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
 
 patch_pull_secret
-wait_cluster_become_healthy
+wait_cluster_become_healthy "etcd|openshift-apiserver"
 stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
 
 create_certificate_and_patch_secret
-wait_cluster_become_healthy
+wait_cluster_become_healthy "etcd|openshift-apiserver"
 stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
 
-#PATCHES
+#PATCHES authentication|console|etcd|kube-apiserver
 patch_ingress_config
+#wait_cluster_become_healthy "etcd|openshift-apiserver"
 patch_api_server
+#wait_cluster_become_healthy "etcd|openshift-apiserver|ingress|network|dns"
 patch_default_route
+#wait_cluster_become_healthy "etcd|openshift-apiserver|authentication"
 set_credentials
-wait_cluster_become_healthy
+wait_cluster_become_healthy "authentication|console|etcd|ingress|openshift-apiserver"
 CONSOLE_ROUTE=`oc get route console-custom -n openshift-console -o json | jq -r '.spec.host'`
 pr_end $CONSOLE_ROUTE
