@@ -2,29 +2,7 @@
 source ./common.sh
 trap "cleanup" INT QUIT TERM EXIT 
 
-#COMMANDS
-CURL=`which curl`
-JQ=`which jq`
-MD5SUM=`which md5sum`
-AWS=`which aws`
-HEAD=`which head`
-SSHKEYGEN=`which ssh-keygen`
-SED=`which sed`
-NC=`which nc`
-SSH=`which ssh`
-SCP=`which scp`
-PRIVATE_KEY="id_ecdsa_crc"
-
-
-#CONST
-SSH_PORT="22"
-RUN_TIMESTAMP=`date +%s`
-INSTANCE_DESCRIPTION="instance_description.json"
-RANDOM_SUFFIX=`echo $RANDOM | $MD5SUM | $HEAD -c 8`
-RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
-LOG_FILE="$WORKDIR/local.log"
-
-
+## FUNCTIONS
 
 cleanup() {
         local pids=$(jobs -pr)
@@ -184,8 +162,29 @@ $(basename "$0") -T [-v run id]
 }
 
 
+##COMMANDS
+CURL=`which curl`
+JQ=`which jq`
+MD5SUM=`which md5sum`
+AWS=`which aws`
+HEAD=`which head`
+SSHKEYGEN=`which ssh-keygen`
+SED=`which sed`
+NC=`which nc`
+SSH=`which ssh`
+SCP=`which scp`
+PRIVATE_KEY="id_ecdsa_crc"
 
-#DEFAULT VALUES THAT CAN BE OVERRIDDEN BY ENV (podman/docker)
+
+##CONST
+SSH_PORT="22"
+RUN_TIMESTAMP=`date +%s`
+INSTANCE_DESCRIPTION="instance_description.json"
+RANDOM_SUFFIX=`echo $RANDOM | $MD5SUM | $HEAD -c 8`
+RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
+LOG_FILE="$WORKDIR/local.log"
+
+##DEFAULT VALUES THAT CAN BE OVERRIDDEN BY ENV (podman/docker)
 [ -z $PASS_DEVELOPER ] && PASS_DEVELOPER="developer"
 [ -z $KUBEADMIN ] && PASS_KUBEADMIN="kubeadmin"
 [ -z $PASS_REDHAT ] && PASS_REDHAT="redhat"
@@ -196,6 +195,7 @@ $(basename "$0") -T [-v run id]
 
 WORKDIR="$WORKDIR_PATH/$RUN_TIMESTAMP"
 
+##ARGS
 options=':h:CTp:d:k:r:a:t:'
 while getopts $options option; do
 echo "$option"
@@ -214,17 +214,17 @@ echo "$option"
   esac
 done
 
+##CHECKS
 #WORKING MODE CHECK
 [[ (-z $WORKING_MODE ) ]] && echo -e "\nERROR: Working mode must be set\n" && usage
 [[ ( $WORKING_MODE != "C" ) && ( $WORKING_MODE != "T" )  ]] && echo -e "\nERROR: Working mode Must be either -C (creation) or -T (teardown), not $WORKING_MODE\n" && usage
-# CHECK MANDATORY ARGS FOR CREATION
+#CHECK MANDATORY ARGS FOR CREATION
 [[ ($WORKING_MODE == "C" ) && ( ! "$PULL_SECRET_PATH" ) ]] && echo -e "\nERROR: in creation mode argument -p <pull_secret_path> must be provided\n" && usage 
 #CHECK PULL SECRET PATH
 [[ ! -f $PULL_SECRET_PATH ]] && echo -e "\nERROR: $PULL_SECRET_PATH pull secret file not found" && usage
 
 
-#ENTRYPOINT: if everything is ok, run the script.
-
+##ENTRYPOINT: if everything is ok, run the script.
 if [[ $WORKING_MODE == "C" ]]
 then
     create
