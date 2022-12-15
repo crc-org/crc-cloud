@@ -199,7 +199,7 @@ PRIVATE_KEY="id_ecdsa_crc"
 [ -z $KUBEADMIN ] && PASS_KUBEADMIN="kubeadmin"
 [ -z $PASS_REDHAT ] && PASS_REDHAT="redhat"
 [ -z $AMI_ID ] && AMI_ID="ami-0569ce8a44f2351be"
-[ -z $INSTANCE_TYPE ] && INSTANCE_TYPE="m5dn.xlarge"
+[ -z $INSTANCE_TYPE ] && INSTANCE_TYPE="c6in.2xlarge"
 [ -z $WORKDIR_PATH ] && WORKDIR_PATH="workdir"
 [ -z $WORKING_MODE ] && WORKING_MODE=""
 

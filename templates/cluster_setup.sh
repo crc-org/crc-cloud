@@ -86,18 +86,11 @@ enable_and_start_kubelet() {
     stop_if_failed $? "failed to start Kubelet service"
 }
 
-check_openshift_api_unhealthy() {
-        #inverse logic to make the while loop clearer :-\
-        oc get co > /dev/null 2>&1
-        [[ $? == 0 ]] && return 1
-        return 0
-}
-
 check_cluster_unhealthy() {
     WAIT="authentication|console|etcd|ingress|openshift-apiserver"
     [ ! -z $1 ] && WAIT=$1
 
-    while check_openshift_api_unhealthy 
+    until `oc get co > /dev/null 2>&1` 
     do
         pr_info "waiting Openshift API to become healthy, hang on...."
         sleep 2
@@ -227,5 +220,12 @@ patch_default_route
 #wait_cluster_become_healthy "etcd|openshift-apiserver|authentication"
 set_credentials
 wait_cluster_become_healthy "authentication|console|etcd|ingress|openshift-apiserver"
+
+until `oc get route console-custom -n openshift-console > /dev/null 2>&1` 
+do
+    pr_info "waiting for console route to become ready, hang on...."
+    sleep 2
+done 
+
 CONSOLE_ROUTE=`oc get route console-custom -n openshift-console -o json | jq -r '.spec.host'`
 pr_end $CONSOLE_ROUTE
