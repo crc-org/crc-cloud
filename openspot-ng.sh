@@ -96,7 +96,7 @@ tail_cluster_setup() {
             break
         else
             CLEANLINE=${LINE//"[INF]"}
-            if [[ $CLEANLINE != $PREVIOUS_LINE ]]
+            if [[ "$CLEANLINE" != "$PREVIOUS_LINE" ]]
             then
                 pr_info "$EIP -> $(echo $CLEANLINE | xargs)"
                 PREVIOUS_LINE=$CLEANLINE
@@ -119,7 +119,7 @@ create () {
     INSTANCE_ID=`get_instance_id $WORKDIR/$INSTANCE_DESCRIPTION`
     IIP=`get_instance_private_ip $WORKDIR/$INSTANCE_DESCRIPTION`
     EIP=`get_instance_public_ip $INSTANCE_ID`
-    
+
     wait_instance_readiness $EIP
     swap_ssh_key
     prepare_cluster_setup
@@ -128,6 +128,22 @@ create () {
     get_remote_log
     duration=$SECONDS
     pr_end "CRC cluster baked in $(($duration / 60)) minutes and $(($duration % 60)) seconds"
+}
+
+create_debug() {
+    #DEBUG VARS 
+    SSH_PORT=2222
+    IIP="10.0.2.15"
+    EIP="127.0.0.1"
+        SECONDS=0
+    prepare_workdir
+    wait_instance_readiness $EIP
+    swap_ssh_key
+    prepare_cluster_setup
+    inject_and_run_cluster_setup > /dev/null 2>&1 &
+    tail_cluster_setup
+    get_remote_log
+    duration=$SECONDS
 }
 
 
@@ -183,7 +199,7 @@ PRIVATE_KEY="id_ecdsa_crc"
 [ -z $KUBEADMIN ] && PASS_KUBEADMIN="kubeadmin"
 [ -z $PASS_REDHAT ] && PASS_REDHAT="redhat"
 [ -z $AMI_ID ] && AMI_ID="ami-0569ce8a44f2351be"
-[ -z $INSTANCE_TYPE ] && INSTANCE_TYPE="c6i.4xlarge"
+[ -z $INSTANCE_TYPE ] && INSTANCE_TYPE="m5dn.xlarge"
 [ -z $WORKDIR_PATH ] && WORKDIR_PATH="workdir"
 [ -z $WORKING_MODE ] && WORKING_MODE=""
 
@@ -192,9 +208,9 @@ SSH_PORT="22"
 RUN_TIMESTAMP=`date +%s`
 INSTANCE_DESCRIPTION="instance_description.json"
 RANDOM_SUFFIX=`echo $RANDOM | $MD5SUM | $HEAD -c 8`
-RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
-LOG_FILE="$WORKDIR/local.log"
 WORKDIR="$WORKDIR_PATH/$RUN_TIMESTAMP"
+LOG_FILE="$WORKDIR/local.log"
+RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
 
 
 
