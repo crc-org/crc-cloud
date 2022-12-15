@@ -69,10 +69,10 @@ Below you'll find all the options available
 ./openspot-ng.sh -C -p pull secret path [-d developer user password] [-k kubeadmin user password] [-r redhat user password] [-a AMI ID] [-t Instance type]
 where:
     -C  Cluster Creation mode
-    -p  CRC pull secret file path (download from https://console.redhat.com/openshift/create/local) 
-    -d  CRC developer user password (optional, default: developer)
-    -k  CRC kubeadmin user password (optional, default: kubeadmin)
-    -r  CRC redhat    user password (optional, default: redhat)
+    -p  pull secret file path (download from https://console.redhat.com/openshift/create/local) 
+    -d  developer user password (optional, default: developer)
+    -k  kubeadmin user password (optional, default: kubeadmin)
+    -r  redhat    user password (optional, default: redhat)
     -a  AMI ID (Amazon Machine Image) from which the VM will be Instantiated (optional, default: ami-0569ce8a44f2351be)
     -i  EC2 Instance Type (optional, default; c6in.2xlarge)
     -h  show this help text
@@ -80,7 +80,7 @@ where:
 #### Single node cluster teardown
 To teardown the single node cluster the basic command is 
 ```./openspot-ng.sh -T```
-this will refer to the *latest* run found in ```<openspot_path>/workspace```, if you have several run folders in your workspace, you can specify the one you want to teardown with the parameter ```-v <run_id>``` where ```<run_id>``` corresponds at the numeric folder name containing the metadata of the cluster that will be deleted
+this will refer to the *latest* run found in ```<openspot_path>/workspace```, if you have several run folders in your workspace, you can specify the one you want to teardown with the parameter ```-v <run_id>``` where ```<run_id>``` corresponds to the numeric folder name containing the metadata of the cluster that will be deleted
 
 ```
 ./openspot-ng.sh -T [-v run id]
