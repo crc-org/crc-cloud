@@ -1,15 +1,30 @@
 #!/bin/sh
 
 pr_info() {
-    echo "[INF] $1" | tee -a $LOG_FILE
+    if [[ $WORKING_MODE == "C" ]]
+    then
+        echo "[INF] $1" | tee -a $LOG_FILE
+    else
+        echo "[INF] $1" | tee -a $TEARDOWN_LOGFILE
+    fi
 }
 
 pr_error() {
-    echo "[ERR] $1" | tee -a $LOG_FILE
+    if [[ $WORKING_MODE == "C" ]]
+    then
+        echo "[ERR] $1" | tee -a $LOG_FILE
+    else
+        echo "[ERR] $1" | tee -a $TEARDOWN_LOGFILE
+    fi
 }
 
 pr_end() {
-    echo "[END] $1" | tee -a $LOG_FILE
+    if [[ $WORKING_MODE == "C" ]]
+    then
+        echo "[END] $1" | tee -a $LOG_FILE
+    else
+        echo "[END] $1" | tee -a $TEARDOWN_LOGFILE
+    fi
 }
 
 stop_if_failed(){

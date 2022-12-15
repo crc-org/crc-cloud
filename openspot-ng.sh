@@ -1,12 +1,14 @@
 #!/bin/bash
 source ./common.sh
-trap "cleanup" INT QUIT TERM EXIT 
+trap "cleanup" INT QUIT TERM SIGHUP SIGINT SIGTERM
 
 ## FUNCTIONS
 
 cleanup() {
+        pr_error "Interrupt received"
         local pids=$(jobs -pr)
         [ -n "$pids" ] && kill $pids
+        exit 1
 }
 
 prepare_workdir() {
@@ -53,6 +55,55 @@ create_ec2_resources(){
     #CREATE INSTANCE
     $AWS ec2 run-instances --no-paginate --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$RESOURCES_NAME}]" --image-id $AMI_ID --instance-type $INSTANCE_TYPE --security-group-ids $GROUPID --key-name $RESOURCES_NAME > $WORKDIR/$INSTANCE_DESCRIPTION 
     stop_if_failed $? "failed to launch EC2 instance"
+}
+
+destroy_ec2_resources() {
+  ID=$WORKDIR/$INSTANCE_DESCRIPTION
+  [ ! -f  $ID ] && stop_if_failed 1 "Missing EC2 resource descriptor $INSTANCE_DESCRIPTION in $WORKDIR"
+  INSTANCE_ID=`$JQ -r '.Instances[0].InstanceId' $ID`
+  stop_if_failed $? "Failed to parse InstanceId from $ID"
+  KEY_NAME=`$JQ -r '.Instances[0].KeyName' $ID`
+  stop_if_failed $? "Failed to parse KeyName from $ID"
+  SG_ID=`$JQ -r '.Instances[0].SecurityGroups[0].GroupId' $ID`
+  stop_if_failed $? "Failed to parse SecurityGroupName from $ID"
+  AZ=`$JQ -r '.Instances[0].Placement.AvailabilityZone' $ID`
+  stop_if_failed $? "Failed to parse AvailabilityZone from $ID"
+  echo $?
+  echo $INSTANCE_ID
+  echo $KEY_NAME
+  echo $SG_ID
+  echo ${AZ::-1}
+
+  #check if instance is found 
+  $AWS ec2 describe-instance-status --instance-id $INSTANCE_ID  > /dev/null 2>&1
+  stop_if_failed $? "instance $INSTANCE_ID not found"
+  #KILL INSTANCE
+  pr_info "terminating instance $INSTANCE_ID"
+  $AWS ec2 terminate-instances --instance-ids $INSTANCE_ID
+  stop_if_failed $? "failed to terminate instance $INSTANCE_ID"
+  #WAIT FOR INSTANCE TO TERMINATE
+  while [[ `$AWS ec2 describe-instance-status --instance-id $INSTANCE_ID | $JQ -r ".InstanceStatuses[0].SystemStatus.Status"` != null ]]
+  do 
+    pr_info "waiting instance $INSTANCE_ID to shutdown, hang on...."
+    sleep 1
+  done
+
+  pr_info "removing security group $SG_ID"
+  TRY=0
+  until `$AWS ec2 delete-security-group --group-id $SG_ID`
+  do
+    pr_info "waiting the security group to be removable try $TRY"
+    ((TRY++))
+    [[ $TRY == 10 ]] && stop_if_failed 1 "failed to remove $SG_ID, are you sure that this sg exists?!"
+    sleep 6
+  done
+  pr_info "removed security group $SG_ID"
+  pr_info "removing keypair $KEY_NAME"
+  $AWS --region ${AZ::-1} ec2 delete-key-pair --key-name $KEY_NAME
+  stop_if_failed $? "failed to remove keypair $KEY_NAME"
+  pr_end "everything has been cleanup"
+  exit 0
+
 }
 
 swap_ssh_key() {
@@ -130,21 +181,13 @@ create () {
     pr_end "CRC cluster baked in $(($duration / 60)) minutes and $(($duration % 60)) seconds"
 }
 
-create_debug() {
-    #DEBUG VARS 
-    SSH_PORT=2222
-    IIP="10.0.2.15"
-    EIP="127.0.0.1"
-        SECONDS=0
-    prepare_workdir
-    wait_instance_readiness $EIP
-    swap_ssh_key
-    prepare_cluster_setup
-    inject_and_run_cluster_setup > /dev/null 2>&1 &
-    tail_cluster_setup
-    get_remote_log
-    duration=$SECONDS
+teardown() {
+    WORKDIR="$WORKDIR_PATH/$TEARDOWN_RUN"
+    [ ! -d $WORKDIR ] && stop_if_failed 1 "$WORKDIR not found, please provide a correct path"
+    destroy_ec2_resources
 }
+
+
 
 
 
@@ -202,6 +245,7 @@ PRIVATE_KEY="id_ecdsa_crc"
 [ -z $INSTANCE_TYPE ] && INSTANCE_TYPE="c6in.2xlarge"
 [ -z $WORKDIR_PATH ] && WORKDIR_PATH="workdir"
 [ -z $WORKING_MODE ] && WORKING_MODE=""
+[ -z $TEARDOWN_RUN ] && TEARDOWN_RUN="latest"
 
 ##CONST
 SSH_PORT="22"
@@ -210,12 +254,12 @@ INSTANCE_DESCRIPTION="instance_description.json"
 RANDOM_SUFFIX=`echo $RANDOM | $MD5SUM | $HEAD -c 8`
 WORKDIR="$WORKDIR_PATH/$RUN_TIMESTAMP"
 LOG_FILE="$WORKDIR/local.log"
+TEARDOWN_LOGFILE="$WORKDIR_PATH/teardown_$RUN_TIMESTAMP.log"
 RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
 
 
-
 ##ARGS
-options=':h:CTp:d:k:r:a:t:'
+options=':h:CTp:d:k:r:a:t:v:'
 while getopts $options option; do
   case "$option" in
     h) usage;;
@@ -227,6 +271,7 @@ while getopts $options option; do
     r) PASS_REDHAT=$OPTARG;;
     a) AMI_ID=$OPTARG;;
     t) INSTANCE_TYPE=$OPTARG;;
+    v) TEARDOWN_RUN=$OPTARG;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2; usage;;
    \?) printf "illegal option: -%s\n" "$OPTARG" >&2; usage;;
   esac
@@ -239,7 +284,7 @@ done
 #CHECK MANDATORY ARGS FOR CREATION
 [[ ($WORKING_MODE == "C" ) && ( ! "$PULL_SECRET_PATH" ) ]] && echo -e "\nERROR: in creation mode argument -p <pull_secret_path> must be provided\n" && usage 
 #CHECK PULL SECRET PATH
-[[ ! -f $PULL_SECRET_PATH ]] && echo -e "\nERROR: $PULL_SECRET_PATH pull secret file not found" && usage
+[[ ($WORKING_MODE == "C" ) && ( ! -f $PULL_SECRET_PATH ) ]] && echo -e "\nERROR: $PULL_SECRET_PATH pull secret file not found" && usage
 
 
 ##ENTRYPOINT: if everything is ok, run the script.
