@@ -19,8 +19,6 @@ PRIVATE_KEY="id_ecdsa_crc"
 #CONST
 SSH_PORT="22"
 RUN_TIMESTAMP=`date +%s`
-BASE_WORKDIR="workdir"
-WORKDIR="$BASE_WORKDIR/$RUN_TIMESTAMP"
 INSTANCE_DESCRIPTION="instance_description.json"
 RANDOM_SUFFIX=`echo $RANDOM | $MD5SUM | $HEAD -c 8`
 RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
@@ -36,8 +34,8 @@ cleanup() {
 prepare_workdir() {
     mkdir $WORKDIR
     echo $RANDOM_SUFFIX > $RANDOM_SUFFIX_FILE
-    rm -rf $BASE_WORKDIR/latest
-    ln -s $(pwd)/$WORKDIR $(pwd)/$BASE_WORKDIR/latest
+    rm -rf $WORKDIR_PATH/latest
+    ln -s $(pwd)/$WORKDIR $(pwd)/$WORKDIR_PATH/latest
     pr_info "preparing working directory"
 }
 
@@ -135,25 +133,7 @@ get_remote_log() {
     stop_if_failed $? "impossible to get the logs from $EIP"
 }
 
-usage() {
-    echo ""
-    echo "*********** OpenSpot NG ***********"
-    echo ""
-    usage="$(basename "$0") [-p pull secret path] [-d developer user password] [-k kubeadmin user password] [-r redhat user password] [-a AMI ID] [-t Instance type]
-Make a user provide SSH key and jupyter notebooks (in roles/bootstrap/files/notebooks) to each user listed in var/common.yml
-where:
-    -h  show this help text
-    -p  CRC pull secret file path (download from https://console.redhat.com/openshift/create/local) 
-    -d  CRC developer user password (optional, default: $PASS_DEVELOPER)
-    -k  CRC kubeadmin user password (optional, default: $PASS_KUBEADMIN)
-    -r  CRC redhat    user password (optional, default: $PASS_REDHAT)
-    -a  AMI ID (Amazon Machine Image) from which the VM will be Instantiated (optional, default: $AMI_ID)
-    -i  EC2 Instance Type (optional, default; $INSTANCE_TYPE)"
-    echo "$usage"
-    exit 1
-}
-
-run () {
+create () {
     SECONDS=0
     prepare_workdir
     create_ec2_resources
@@ -173,17 +153,56 @@ run () {
 }
 
 
-#DEFAULT VALUES
-PASS_DEVELOPER="developer"
-PASS_KUBEADMIN="kubeadmin"
-PASS_REDHAT="redhat"
-AMI_ID="ami-0569ce8a44f2351be"
-INSTANCE_TYPE="c6i.2xlarge"
 
-options=':h:p:d:k:r:a:t:'
+usage() {
+    echo ""
+    echo "*********** OpenSpot NG ***********"
+    
+    usage="
+Cluster Creation :
+
+$(basename "$0") -C -p pull secret path [-d developer user password] [-k kubeadmin user password] [-r redhat user password] [-a AMI ID] [-t Instance type]
+where:
+    -C  Cluster Creation mode
+    -p  CRC pull secret file path (download from https://console.redhat.com/openshift/create/local) 
+    -d  CRC developer user password (optional, default: $PASS_DEVELOPER)
+    -k  CRC kubeadmin user password (optional, default: $PASS_KUBEADMIN)
+    -r  CRC redhat    user password (optional, default: $PASS_REDHAT)
+    -a  AMI ID (Amazon Machine Image) from which the VM will be Instantiated (optional, default: $AMI_ID)
+    -i  EC2 Instance Type (optional, default; $INSTANCE_TYPE)
+    -h  show this help text
+
+Cluster Teardown:
+
+$(basename "$0") -T [-v run id]
+    -T  Cluster Teardown mode
+    -v  The Id of the run that is gonna be destroyed, corresponds with the numeric name of the folders created in workdir (optional, default: latest)
+    -h  show this help text 
+    "
+    echo "$usage"
+    exit 1
+}
+
+
+
+#DEFAULT VALUES THAT CAN BE OVERRIDDEN BY ENV (podman/docker)
+[ -z $PASS_DEVELOPER ] && PASS_DEVELOPER="developer"
+[ -z $KUBEADMIN ] && PASS_KUBEADMIN="kubeadmin"
+[ -z $PASS_REDHAT ] && PASS_REDHAT="redhat"
+[ -z $AMI_ID ] && AMI_ID="ami-0569ce8a44f2351be"
+[ -z $INSTANCE_TYPE ] && INSTANCE_TYPE="c6i.4xlarge"
+[ -z $WORKDIR_PATH ] && WORKDIR_PATH="workdir"
+[ -z $WORKING_MODE ] && WORKING_MODE=""
+
+WORKDIR="$WORKDIR_PATH/$RUN_TIMESTAMP"
+
+options=':h:CTp:d:k:r:a:t:'
 while getopts $options option; do
+echo "$option"
   case "$option" in
-    h) echo "$usage"; exit;;
+    h) usage;;
+    C) WORKING_MODE="C";;
+    T) WORKING_MODE="T";;
     p) PULL_SECRET_PATH=$OPTARG;;
     d) PASS_DEVELOPER=$OPTARG;;
     k) PASS_KUBEADMIN=$OPTARG;;
@@ -195,16 +214,23 @@ while getopts $options option; do
   esac
 done
 
-# mandatory arguments
-if [ ! "$PULL_SECRET_PATH" ] 
-then
-  echo "arguments -p <pull_secret_path> must be provided"
-  usage
-fi
+#WORKING MODE CHECK
+[[ (-z $WORKING_MODE ) ]] && echo -e "\nERROR: Working mode must be set\n" && usage
+[[ ( $WORKING_MODE != "C" ) && ( $WORKING_MODE != "T" )  ]] && echo -e "\nERROR: Working mode Must be either -C (creation) or -T (teardown), not $WORKING_MODE\n" && usage
+# CHECK MANDATORY ARGS FOR CREATION
+[[ ($WORKING_MODE == "C" ) && ( ! "$PULL_SECRET_PATH" ) ]] && echo -e "\nERROR: argument -p <pull_secret_path> must be provided\n" && usage 
+#CHECK PULL SECRET PATH
+[[ ! -f $PULL_SECRET_PATH ]] && echo -e "\nERROR: $PULL_SECRET_PATH pull secret file not found" && usage
 
-[[ ! -f $PULL_SECRET_PATH ]] && echo "$PULL_SECRET_PATH: pull secret file not found" && usage
-
-#TODO check binaries and operating system
 
 #ENTRYPOINT: if everything is ok, run the script.
-run
+
+if [[ $WORKING_MODE == "C" ]]
+then
+    create
+elif [[ $WORKING_MODE == "T" ]]
+then
+    teardown
+else
+    usage
+fi
