@@ -119,9 +119,9 @@ create () {
     INSTANCE_ID=`get_instance_id $WORKDIR/$INSTANCE_DESCRIPTION`
     IIP=`get_instance_private_ip $WORKDIR/$INSTANCE_DESCRIPTION`
     EIP=`get_instance_public_ip $INSTANCE_ID`
+    
     wait_instance_readiness $EIP
     swap_ssh_key
-
     prepare_cluster_setup
     inject_and_run_cluster_setup > /dev/null 2>&1 &
     tail_cluster_setup
@@ -176,13 +176,7 @@ SCP=`which scp`
 PRIVATE_KEY="id_ecdsa_crc"
 
 
-##CONST
-SSH_PORT="22"
-RUN_TIMESTAMP=`date +%s`
-INSTANCE_DESCRIPTION="instance_description.json"
-RANDOM_SUFFIX=`echo $RANDOM | $MD5SUM | $HEAD -c 8`
-RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
-LOG_FILE="$WORKDIR/local.log"
+
 
 ##DEFAULT VALUES THAT CAN BE OVERRIDDEN BY ENV (podman/docker)
 [ -z $PASS_DEVELOPER ] && PASS_DEVELOPER="developer"
@@ -193,12 +187,20 @@ LOG_FILE="$WORKDIR/local.log"
 [ -z $WORKDIR_PATH ] && WORKDIR_PATH="workdir"
 [ -z $WORKING_MODE ] && WORKING_MODE=""
 
+##CONST
+SSH_PORT="22"
+RUN_TIMESTAMP=`date +%s`
+INSTANCE_DESCRIPTION="instance_description.json"
+RANDOM_SUFFIX=`echo $RANDOM | $MD5SUM | $HEAD -c 8`
+RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
+LOG_FILE="$WORKDIR/local.log"
 WORKDIR="$WORKDIR_PATH/$RUN_TIMESTAMP"
+
+
 
 ##ARGS
 options=':h:CTp:d:k:r:a:t:'
 while getopts $options option; do
-echo "$option"
   case "$option" in
     h) usage;;
     C) WORKING_MODE="C";;
@@ -234,3 +236,4 @@ then
 else
     usage
 fi
+
