@@ -19,7 +19,7 @@ We had a meeting and they gave me all the instructions on how to run the qemu im
 For the moment only AWS is supported. Other will be added soon.
 <br/>
 <br/>
-**Note:** AWS AMIs are regional resources so for the moment the only supported region is **us-west-2**, in the next few day the AMI will be copied to other regions, please be patient, it will take a while.
+**Note:** AWS AMIs (Amazon Machine Images) are regional resources so,for the moment, the only supported region is **us-west-2**.In the next few days the AMI will be copied to other regions, please be patient, it will take a while.
 
 ## Usage
 ### Prerequisites
