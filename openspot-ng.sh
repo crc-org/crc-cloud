@@ -196,10 +196,10 @@ Cluster Creation :
 $(basename "$0") -C -p pull secret path [-d developer user password] [-k kubeadmin user password] [-r redhat user password] [-a AMI ID] [-t Instance type]
 where:
     -C  Cluster Creation mode
-    -p  CRC pull secret file path (download from https://console.redhat.com/openshift/create/local) 
-    -d  CRC developer user password (optional, default: $PASS_DEVELOPER)
-    -k  CRC kubeadmin user password (optional, default: $PASS_KUBEADMIN)
-    -r  CRC redhat    user password (optional, default: $PASS_REDHAT)
+    -p  pull secret file path (download from https://console.redhat.com/openshift/create/local) 
+    -d  developer user password (optional, default: $PASS_DEVELOPER)
+    -k  kubeadmin user password (optional, default: $PASS_KUBEADMIN)
+    -r  redhat    user password (optional, default: $PASS_REDHAT)
     -a  AMI ID (Amazon Machine Image) from which the VM will be Instantiated (optional, default: $AMI_ID)
     -i  EC2 Instance Type (optional, default; $INSTANCE_TYPE)
     -h  show this help text
