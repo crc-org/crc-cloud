@@ -1,0 +1,10 @@
+{
+    "api":{
+        "address":"",
+        "port":""
+    },
+    "console":{
+        "address":"",
+        "port":""
+    }
+}

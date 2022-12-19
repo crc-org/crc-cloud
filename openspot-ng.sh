@@ -25,7 +25,7 @@ prepare_cluster_setup() {
     if [[ $IIP != '' && $EIP != '' && $RANDOM_SUFFIX != '' && $PULL_SECRET_PATH != '' ]]
     then
         PULL_SECRET="$(base64 -w 0 $PULL_SECRET_PATH)"
-        $SED "s#_IIP_#$IIP#" templates/cluster_setup.sh > $WORKDIR/cluster_setup.sh
+        $SED "s#_IIP_#$IIP#" $TEMPLATES/cluster_setup.sh > $WORKDIR/cluster_setup.sh
         $SED -i "s#_EIP_#$EIP#g" $WORKDIR/cluster_setup.sh
         $SED -i "s#_RANDOM_SUFFIX_#$RANDOM_SUFFIX#g" $WORKDIR/cluster_setup.sh
         $SED -i "s#_PULL_SECRET_#$PULL_SECRET#g" $WORKDIR/cluster_setup.sh
@@ -160,6 +160,14 @@ get_remote_log() {
     stop_if_failed $? "impossible to get the logs from $EIP"
 }
 
+set_cluster_infos() {
+    pr_info "writing cluster informations in $CLUSTER_INFOS"
+    jq '.api.address="https://api.'$1'.nip.io"' $CLUSTER_INFOS_TEMPLATE > $CLUSTER_INFOS
+    cat <<< $($JQ '.api.port="6443"' $CLUSTER_INFOS) > $CLUSTER_INFOS
+    cat <<< $($JQ '.console.address="https://console-openshift-console.apps.'$1'.nip.io"' $CLUSTER_INFOS) > $CLUSTER_INFOS
+    cat <<< $($JQ '.console.port="443"' $CLUSTER_INFOS) > $CLUSTER_INFOS
+}
+
 create () {
     SECONDS=0
     prepare_workdir
@@ -175,9 +183,11 @@ create () {
     inject_and_run_cluster_setup > /dev/null 2>&1 &
     tail_cluster_setup
     get_remote_log
+    set_cluster_infos $EIP
     duration=$SECONDS
     pr_end "CRC cluster baked in $(($duration / 60)) minutes and $(($duration % 60)) seconds"
 }
+
 
 teardown() {
     WORKDIR="$WORKDIR_PATH/$TEARDOWN_RUN"
@@ -262,11 +272,15 @@ RUN_TIMESTAMP=`date +%s`
 INSTANCE_DESCRIPTION="instance_description.json"
 RANDOM_SUFFIX=`echo $RANDOM | $MD5SUM | $HEAD -c 8`
 WORKDIR="$WORKDIR_PATH/$RUN_TIMESTAMP"
+TEMPLATES="templates"
 LOG_FILE="$WORKDIR/local.log"
 TEARDOWN_LOGFILE="$WORKDIR_PATH/teardown_$RUN_TIMESTAMP.log"
 TEARDOWN_MAX_RETRIES=500
 RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
 PRIVATE_KEY="id_ecdsa_crc"
+CLUSTER_INFOS_FILE="cluster_infos.json"
+CLUSTER_INFOS_TEMPLATE="$TEMPLATES/$CLUSTER_INFOS_FILE"
+CLUSTER_INFOS="$WORKDIR/$CLUSTER_INFOS_FILE"
 
 ##ARGS
 options=':h:CTp:d:k:r:a:t:v:'
