@@ -102,7 +102,7 @@ destroy_ec2_resources() {
 }
 
 swap_ssh_key() {
-    pr_info "changing default private key permissions to 0600"
+    pr_info "changing default private key permissions to 400"
     chmod 400 $PRIVATE_KEY
     stop_if_failed $? "unable to change defualt key permissions"
     pr_info "swapping default key with the one just created"
@@ -185,7 +185,7 @@ create () {
     get_remote_log
     set_cluster_infos $EIP
     duration=$SECONDS
-    pr_end "CRC cluster baked in $(($duration / 60)) minutes and $(($duration % 60)) seconds"
+    pr_end "OpenShift cluster baked in $(($duration / 60)) minutes and $(($duration % 60)) seconds"
 }
 
 
