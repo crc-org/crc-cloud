@@ -6,14 +6,14 @@
 | <sub><sup>kindly created by OpenAI DALL-E (https://openai.com/dall-e-2) </sup></sub>|
 
 ## Disclaimer
-This project has been developed for **experimental** purpose only and it's not **absolutely** meant to run production clusters. The author is not responsible in any manner of any cost on which the user may incur for inexperience or software malfunctioning.
-Before running the script **be sure** to have an adequate experience to safely create and destroy resources on AWS or any other cloud provider that will be supported, **without** the help of this software in order to recover **manually** to possible issues.
+This project has been developed for **experimental** purpose only and it's not **absolutely** meant to run production clusters. The author is not responsible in any manner of any cost on which the user may incur for inexperience or software failure.
+Before running the script **be sure** to have an adequate experience to safely create and destroy resources on AWS or any other cloud provider that will be supported **without** the help of this software in order to recover **manually** from possible issues.
 
 ## Why? (TL;DR)
 I needed to test a chaos engineering tool (https://github.com/redhat-chaos/krkn) against a disposable (single-node) OpenShift cluster that could have been setup and destroyed from inside a CI/CD pipeline as quick as possible, unattended and with a reasonable cost per run.
 I stumbled upon OpenSpot (https://github.com/ksingh7/openspot) made by my colleagues  [@ksingh7](https://github.com/ksingh7) and [@praveenkumar](https://github.com/praveenkumar). I found the idea amazing, unfortunately was relying on EC2 Spot Instances, that, if from a cost perspective are more affordable, do not guarantee that the machine is instantiated.
 Moreover the solution was based on CRC that creates a qemu VM to run the (single-node) cluster, so bare metal instances were needed and the startup time was too long for the purpose.
-We had a meeting and they gave me all the instructions on how to run the qemu image directly in AWS and configure properly the OpenShift single-node cluster, only the code was missing....
+We had a meeting and they gave me all the detailed instructions on how to run the qemu image directly on AWS standard EC2 instances and configure properly the OpenShift single-node cluster, only the code was missing....
 
 ## Cloud Providers
 For the moment only AWS is supported. Other will be added soon.

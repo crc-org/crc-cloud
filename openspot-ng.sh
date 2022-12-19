@@ -71,7 +71,7 @@ destroy_ec2_resources() {
 
   #check if instance is found 
   $AWS ec2 describe-instance-status --instance-id $INSTANCE_ID  > /dev/null 2>&1
-  stop_if_failed $? "instance $INSTANCE_ID not found"
+  stop_if_failed $? "instance $INSTANCE_ID not found, is your AWS_PROFILE exported and working?"
   #KILL INSTANCE
   pr_info "terminating instance $INSTANCE_ID"
   $AWS ec2 terminate-instances --instance-ids $INSTANCE_ID
@@ -89,19 +89,22 @@ destroy_ec2_resources() {
   do
     pr_info "waiting the security group to be removable try $TRY"
     ((TRY++))
-    [[ $TRY == 10 ]] && stop_if_failed 1 "failed to remove $SG_ID, are you sure that this sg exists?!"
+    [[ $TRY == $TEARDOWN_MAX_RETRIES ]] && stop_if_failed 1 "failed to remove $SG_ID, are you sure that this sg exists?!"
     sleep 6
   done
   pr_info "removed security group $SG_ID"
   pr_info "removing keypair $KEY_NAME"
   $AWS --region ${AZ::-1} ec2 delete-key-pair --key-name $KEY_NAME
   stop_if_failed $? "failed to remove keypair $KEY_NAME"
-  pr_end "everything has been cleanup"
+  pr_end "everything has been cleaned up!"
   exit 0
 
 }
 
 swap_ssh_key() {
+    pr_info "changing default private key permissions to 0600"
+    chmod 400 $PRIVATE_KEY
+    stop_if_failed $? "unable to change defualt key permissions"
     pr_info "swapping default key with the one just created"
     $SSHKEYGEN -f $WORKDIR/id_rsa -q -N ''
     stop_if_failed $? "failed to generate the key pair"
@@ -261,6 +264,7 @@ RANDOM_SUFFIX=`echo $RANDOM | $MD5SUM | $HEAD -c 8`
 WORKDIR="$WORKDIR_PATH/$RUN_TIMESTAMP"
 LOG_FILE="$WORKDIR/local.log"
 TEARDOWN_LOGFILE="$WORKDIR_PATH/teardown_$RUN_TIMESTAMP.log"
+TEARDOWN_MAX_RETRIES=500
 RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
 PRIVATE_KEY="id_ecdsa_crc"
 

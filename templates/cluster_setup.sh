@@ -14,6 +14,7 @@ PULL_SECRET="_PULL_SECRET_"
 PASS_DEVELOPER="_PASS_DEVELOPER_"
 PASS_KUBEADMIN="_PASS_KUBEADMIN_"
 PASS_REDHAT="_PASS_REDHAT_"
+MAXIMUM_LOGIN_RETRY=500
 
 
 
@@ -38,6 +39,44 @@ stop_if_failed(){
 		pr_error "$MESSAGE" 
 		exit $EXIT_CODE
 	fi
+}
+
+replace_default_ca() {
+    USER="system:admin"
+    GROUP="system:masters"
+    USER_SUBJ="/O=${GROUP}/CN=${USER}"
+    NAME="custom"
+    CA_SUBJ="/OU=openshift/CN=admin-kubeconfig-signer-custom"
+    VALIDITY=3650
+    pr_info "replacing the default cluster CA and invalidating default kubeconfig"
+    openssl genrsa -out $NAME-ca.key 4096
+    stop_if_failed $? "failed to generate CA private key"
+    openssl req -x509 -new -nodes -key $NAME-ca.key -sha256 -days $VALIDITY -out $NAME-ca.crt -subj "$CA_SUBJ"
+    stop_if_failed $? "failed to generate CA certificate"
+    openssl req -nodes -newkey rsa:2048 -keyout $USER.key -subj "$USER_SUBJ" -out $USER.csr
+    stop_if_failed $? "failed to issue the CSR"
+    openssl x509 -extfile <(printf "extendedKeyUsage = clientAuth") -req -in $USER.csr \
+       -CA $NAME-ca.crt -CAkey $NAME-ca.key -CAcreateserial -out $USER.crt -days $VALIDITY -sha256
+    stop_if_failed $? "failed to generate new admin certificate"
+    oc create configmap client-ca-custom -n openshift-config --from-file=ca-bundle.crt=$NAME-ca.crt
+    stop_if_failed $? "failed to create user certficate ConfigMap"
+    oc patch apiserver cluster --type=merge -p '{"spec": {"clientCA": {"name": "client-ca-custom"}}}'
+    stop_if_failed $? "failed to patch API server with newly created certificate"
+    oc create configmap admin-kubeconfig-client-ca -n openshift-config --from-file=ca-bundle.crt=$NAME-ca.crt \
+    --dry-run -o yaml | oc replace -f -
+    stop_if_failed $? "failed to replace OpenShift CA"
+}
+
+login () {
+    pr_info "logging in again to update $KUBECONFIG"
+    COUNTER=0
+    until `oc login --insecure-skip-tls-verify=true -u kubeadmin -p "$PASS_KUBEADMIN" https://api.crc.testing:6443 > /dev/null 2>&1`
+    do 
+        [[$COUNTER == $MAXIMUM_LOGIN_RETRY]] && stop_if_failed 1 "impossible to login on OpenShift, installation failed."
+        pr_info "logging into OpenShift with updated credentials try $COUNTER, hang on...."
+        sleep 5
+        ((COUNTER++))
+    done
 }
 
 #Replaces the default pubkey with the new one just generated to avoid the mysterious service to replace it later on :-\
@@ -203,6 +242,14 @@ enable_and_start_kubelet
 wait_cluster_become_healthy "etcd|openshift-apiserver"
 stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
 
+set_credentials
+replace_default_ca
+login
+stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
+
+
+
+
 patch_pull_secret
 wait_cluster_become_healthy "etcd|openshift-apiserver"
 stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
@@ -218,7 +265,7 @@ patch_api_server
 #wait_cluster_become_healthy "etcd|openshift-apiserver|ingress|network|dns"
 patch_default_route
 #wait_cluster_become_healthy "etcd|openshift-apiserver|authentication"
-set_credentials
+
 wait_cluster_become_healthy "authentication|console|etcd|ingress|openshift-apiserver"
 
 until `oc get route console-custom -n openshift-console > /dev/null 2>&1` 
