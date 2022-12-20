@@ -37,7 +37,7 @@ prepare_cluster_setup() {
     fi
 }
 
-create_ec2_resources(){
+create_ec2_resources() {
     pr_info "creating EC2 resources"
     RESOURCES_NAME="openspot-ng-$RANDOM_SUFFIX"
     GROUPID=`aws ec2 create-security-group --group-name $RESOURCES_NAME --description "openspot-ng security group run timestamp: $RUN_TIMESTAMP" --no-paginate | $JQ -r '.GroupId'`
@@ -196,12 +196,9 @@ teardown() {
 }
 
 
-
-
-
 usage() {
     echo ""
-    echo "*********** OpenSpot NG ***********"
+    echo "*********** OpenSpot-NG ***********"
     
     usage="
 Cluster Creation :

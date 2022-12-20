@@ -164,14 +164,14 @@ wait_cluster_become_healthy () {
 }
 
 
-patch_pull_secret(){
+patch_pull_secret() {
     pr_info  "patching OpenShift pull secret"
     oc patch secret pull-secret -p "{\"data\":{\".dockerconfigjson\":\"$PULL_SECRET\"}}" -n openshift-config --type merge
     stop_if_failed $? "failed patch OpenShift pull secret"
     sleep $STEPS_SLEEP_TIME
 }
 
-create_certificate_and_patch_secret(){
+create_certificate_and_patch_secret() {
     pr_info  "creating OpenShift secrets"
     openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout nip.key -out nip.crt -subj "/CN=$EIP.nip.io" -addext "subjectAltName=DNS:apps.$EIP.nip.io,DNS:*.apps.$EIP.nip.io,DNS:api.$EIP.nip.io"
     oc create secret tls nip-secret --cert=nip.crt --key=nip.key -n openshift-config
