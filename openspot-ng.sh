@@ -218,7 +218,7 @@ set_workdir_dependent_variables() {
 
 usage() {
     echo ""
-    echo "*********** OpenSpot-NG ***********"
+    echo "*********** OpenSpot-NG $VERSION ***********"
     
     usage="
 Cluster Creation :
@@ -294,6 +294,8 @@ TEMPLATES="templates"
 TEARDOWN_MAX_RETRIES=500
 CLUSTER_INFOS_TEMPLATE="$TEMPLATES/$CLUSTER_INFOS_FILE"
 AMI_ID="ami-0569ce8a44f2351be"
+VERSION_FILE="VERSION"
+VERSION="`cat $VERSION_FILE`"
 
 ##ARGS
 #collects args from commandline only if not in container otherwise variables are fed by -e VAR=VALUE 
@@ -355,7 +357,7 @@ fi
 
 
 ##ENTRYPOINT: if everything is ok, run the script.
-[[ $CONTAINER ]] && figlet -f smslant -c "OpenSpot-NG" && echo -e "\n\n"
+[[ $CONTAINER ]] && figlet -f smslant -c "OpenSpot-NG $VERSION" && echo -e "\n\n"
 if [[ $WORKING_MODE == "C" ]]
 then
     create
