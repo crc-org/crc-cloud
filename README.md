@@ -91,4 +91,7 @@ this will refer to the *latest* run found in ```<openspot_path>/workspace```, if
 ```
 
 ## Containers
-### coming soon.
+chcon -Rt svirt_sandbox_file_t <PATH>
+
+
+

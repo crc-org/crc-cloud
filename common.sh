@@ -3,27 +3,27 @@
 pr_info() {
     if [[ $WORKING_MODE == "C" ]]
     then
-        echo "[INF] $1" | tee -a $LOG_FILE
+        echo "[INF] $1" | (tee -a $LOG_FILE 2>/dev/null) 
     else
-        echo "[INF] $1" | tee -a $TEARDOWN_LOGFILE
+        echo "[INF] $1" | (tee -a $TEARDOWN_LOGFILE  2>/dev/null)
     fi
 }
 
 pr_error() {
     if [[ $WORKING_MODE == "C" ]]
     then
-        echo "[ERR] $1" | tee -a $LOG_FILE
+        echo "[ERR] $1" | (tee -a $LOG_FILE 2>/dev/null)
     else
-        echo "[ERR] $1" | tee -a $TEARDOWN_LOGFILE
+        echo "[ERR] $1" | (tee -a $TEARDOWN_LOGFILE 2>/dev/null)
     fi
 }
 
 pr_end() {
     if [[ $WORKING_MODE == "C" ]]
     then
-        echo "[END] $1" | tee -a $LOG_FILE
+        echo "[END] $1" | (tee -a $LOG_FILE 2>/dev/null) 
     else
-        echo "[END] $1" | tee -a $TEARDOWN_LOGFILE
+        echo "[END] $1" | (tee -a $TEARDOWN_LOGFILE 2>/dev/null) 
     fi
 }
 

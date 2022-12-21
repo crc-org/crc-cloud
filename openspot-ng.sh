@@ -15,25 +15,36 @@ prepare_workdir() {
     mkdir $WORKDIR
     echo $RANDOM_SUFFIX > $RANDOM_SUFFIX_FILE
     rm -rf $WORKDIR_PATH/latest
-    ln -s $(pwd)/$WORKDIR $(pwd)/$WORKDIR_PATH/latest
+    #link only if not running in docker (teardown will need mandatory run id)
+    [[ ! $DOCKER ]] && ln -s $(readlink -f $WORKDIR) $(readlink -f $WORKDIR_PATH)/latest
     pr_info "preparing working directory"
 }
 
 
 prepare_cluster_setup() {
     pr_info "compiling the remote setup script"
-    if [[ $IIP != '' && $EIP != '' && $RANDOM_SUFFIX != '' && $PULL_SECRET_PATH != '' ]]
+    if [[ $DOCKER ]]
     then
-        PULL_SECRET="$(base64 -w 0 $PULL_SECRET_PATH)"
+        [[ -z $PULL_SECRET ]] && stop_if_failed 1 "PULL_SECRET environment variable not set"
+    else
+        [[ -z $PULL_SECRET_PATH ]] && stop_if_failed 1 "PULL_SECRET_PATH not set"
+        [[ ! -f $PULL_SECRET_PATH ]] && stop_if_failed 1 "$PULL_SECRET_PATH file not found"
+        PULL_SECRET="$($BASE64 -w 0 $PULL_SECRET_PATH)"
+    fi
+
+    
+    if [[ $IIP != '' && $EIP != '' && $RANDOM_SUFFIX != '' ]]
+    then
         $SED "s#_IIP_#$IIP#" $TEMPLATES/cluster_setup.sh > $WORKDIR/cluster_setup.sh
         $SED -i "s#_EIP_#$EIP#g" $WORKDIR/cluster_setup.sh
         $SED -i "s#_RANDOM_SUFFIX_#$RANDOM_SUFFIX#g" $WORKDIR/cluster_setup.sh
-        $SED -i "s#_PULL_SECRET_#$PULL_SECRET#g" $WORKDIR/cluster_setup.sh
+        #remove linebreaks (eg. running from podman -e PULL_SECRET="$(base64)" if used with quotes line breaks are introduced)
+        $SED -i "s#_PULL_SECRET_#${PULL_SECRET//$'\n'/}#g" $WORKDIR/cluster_setup.sh
         $SED -i "s#_PASS_DEVELOPER_#$PASS_DEVELOPER#g" $WORKDIR/cluster_setup.sh
         $SED -i "s#_PASS_KUBEADMIN_#$PASS_KUBEADMIN#g" $WORKDIR/cluster_setup.sh
         $SED -i "s#_PASS_REDHAT_#$PASS_REDHAT#g" $WORKDIR/cluster_setup.sh
     else
-        stop_if_failed 1 "internal IP, external IP, random suffix, pull secret path not set, are you calling ${FUNCNAME[0]} correctly?"
+        stop_if_failed 1 "internal IP, external IP, random suffix  are you calling ${FUNCNAME[0]} correctly?"
     fi
 }
 
@@ -53,7 +64,9 @@ create_ec2_resources() {
     $AWS ec2 authorize-security-group-ingress --group-name $RESOURCES_NAME --protocol tcp --port 443 --cidr 0.0.0.0/0 --no-paginate
     stop_if_failed $? "failed to create HTTPS rule for security group"
     #CREATE INSTANCE
-    $AWS ec2 run-instances --no-paginate --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$RESOURCES_NAME}]" --image-id $AMI_ID --instance-type $INSTANCE_TYPE --security-group-ids $GROUPID --key-name $RESOURCES_NAME > $WORKDIR/$INSTANCE_DESCRIPTION 
+    $AWS ec2 run-instances --no-paginate --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$RESOURCES_NAME}]" \
+    --image-id $AMI_ID --instance-type $INSTANCE_TYPE --security-group-ids $GROUPID --key-name $RESOURCES_NAME > $WORKDIR/$INSTANCE_DESCRIPTION
+
     stop_if_failed $? "failed to launch EC2 instance"
 }
 
@@ -195,6 +208,13 @@ teardown() {
     destroy_ec2_resources
 }
 
+set_workdir_dependent_variables() {
+    WORKDIR="$WORKDIR_PATH/$RUN_TIMESTAMP"
+    LOG_FILE="$WORKDIR/local.log"
+    TEARDOWN_LOGFILE="$WORKDIR_PATH/teardown_$RUN_TIMESTAMP.log"
+    RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
+    CLUSTER_INFOS="$WORKDIR/$CLUSTER_INFOS_FILE"
+}
 
 usage() {
     echo ""
@@ -248,9 +268,8 @@ SSH=`which ssh 2>/dev/null`
 [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: ssh, please install it and try again"
 SCP=`which scp 2>/dev/null`
 [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: scp, please install it and try again"
-
-
-
+BASE64=`which base64 2>/dev/null`
+[[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: base64, please install it and try again"
 
 
 ##DEFAULT VALUES THAT CAN BE OVERRIDDEN BY ENV (podman/docker)
@@ -268,44 +287,68 @@ SSH_PORT="22"
 RUN_TIMESTAMP=`date +%s`
 INSTANCE_DESCRIPTION="instance_description.json"
 RANDOM_SUFFIX=`echo $RANDOM | $MD5SUM | $HEAD -c 8`
-WORKDIR="$WORKDIR_PATH/$RUN_TIMESTAMP"
-TEMPLATES="templates"
-LOG_FILE="$WORKDIR/local.log"
-TEARDOWN_LOGFILE="$WORKDIR_PATH/teardown_$RUN_TIMESTAMP.log"
-TEARDOWN_MAX_RETRIES=500
-RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
 PRIVATE_KEY="id_ecdsa_crc"
 CLUSTER_INFOS_FILE="cluster_infos.json"
+TEMPLATES="templates"
+TEARDOWN_MAX_RETRIES=500
 CLUSTER_INFOS_TEMPLATE="$TEMPLATES/$CLUSTER_INFOS_FILE"
-CLUSTER_INFOS="$WORKDIR/$CLUSTER_INFOS_FILE"
 
 ##ARGS
-options=':h:CTp:d:k:r:a:t:v:'
-while getopts $options option; do
-  case "$option" in
-    h) usage;;
-    C) WORKING_MODE="C";;
-    T) WORKING_MODE="T";;
-    p) PULL_SECRET_PATH=$OPTARG;;
-    d) PASS_DEVELOPER=$OPTARG;;
-    k) PASS_KUBEADMIN=$OPTARG;;
-    r) PASS_REDHAT=$OPTARG;;
-    a) AMI_ID=$OPTARG;;
-    t) INSTANCE_TYPE=$OPTARG;;
-    v) TEARDOWN_RUN=$OPTARG;;
-    :) printf "missing argument for -%s\n" "$OPTARG" >&2; usage;;
-   \?) printf "illegal option: -%s\n" "$OPTARG" >&2; usage;;
-  esac
-done
+#collects args from commandline only if not in docker otherwise variables are fed by -e VAR=VALUE 
+if [ $DOCKER ] 
+then
+    WORKDIR_PATH="/workdir"
+    set_workdir_dependent_variables
+    #check working mode
+    [[ (-z $WORKING_MODE ) ]] && stop_if_failed 1 "WORKING_MODE environment variable must be set"
+    [[ ( $WORKING_MODE != "C" ) && ( $WORKING_MODE != "T" )  ]] && \
+    stop_if_failed 1 "WORKING_MODE value must be either C (create) or T(teardown) $WORKING_MODE is not a valid value"
+    #check pull secret
+    [[ -z $PULL_SECRET ]] && stop_if_failed 1 "PULL_SECRET environment variable must be set and must contain a valid base64 encoded pull_secret, please refer to the README.md"
+    #check workdir mount write permissions 
+    [[ ! -d $WORKDIR_PATH ]] && stop_if_failed 1 "please mount the workdir filesystem, refer to README.md for further instructions"
+    [[ ! -w $WORKDIR_PATH ]] && \
+    stop_if_failed 1 "please grant write permissions to the host folder mounted as volume, please refer to README.md for further instructions"
+    #check AWS credentials
+    [[ -z $AWS_ACCESS_KEY_ID ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
+    [[ -z $AWS_SECRET_ACCESS_KEY ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
+    [[ -z $AWS_DEFAULT_REGION ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
+else
+    set_workdir_dependent_variables
+    options=':h:CTp:d:k:r:a:t:v:'
+    while getopts $options option; do
+    case "$option" in
+        h) usage;;
+        C) WORKING_MODE="C";;
+        T) WORKING_MODE="T";;
+        p) PULL_SECRET_PATH=$OPTARG;;
+        d) PASS_DEVELOPER=$OPTARG;;
+        k) PASS_KUBEADMIN=$OPTARG;;
+        r) PASS_REDHAT=$OPTARG;;
+        a) AMI_ID=$OPTARG;;
+        t) INSTANCE_TYPE=$OPTARG;;
+        v) TEARDOWN_RUN=$OPTARG;;
+        :) printf "missing argument for -%s\n" "$OPTARG" >&2; usage;;
+    \?) printf "illegal option: -%s\n" "$OPTARG" >&2; usage;;
+    esac
+    done
 
-##VARIABLE SANITY CHECKS
-#WORKING MODE CHECK
-[[ (-z $WORKING_MODE ) ]] && echo -e "\nERROR: Working mode must be set\n" && usage
-[[ ( $WORKING_MODE != "C" ) && ( $WORKING_MODE != "T" )  ]] && echo -e "\nERROR: Working mode Must be either -C (creation) or -T (teardown), not $WORKING_MODE\n" && usage
-#CHECK MANDATORY ARGS FOR CREATION
-[[ ($WORKING_MODE == "C" ) && ( ! "$PULL_SECRET_PATH" ) ]] && echo -e "\nERROR: in creation mode argument -p <pull_secret_path> must be provided\n" && usage 
-#CHECK PULL SECRET PATH
-[[ ($WORKING_MODE == "C" ) && ( ! -f $PULL_SECRET_PATH ) ]] && echo -e "\nERROR: $PULL_SECRET_PATH pull secret file not found" && usage
+    ##VARIABLE SANITY CHECKS
+
+    #WORKING MODE CHECK
+    [[ (-z $WORKING_MODE ) ]] && echo -e "\nERROR: Working mode must be set\n" && usage
+    [[ ( $WORKING_MODE != "C" ) && ( $WORKING_MODE != "T" )  ]] && echo \
+    -e "\nERROR: Working mode Must be either -C (creation) or -T (teardown), not $WORKING_MODE\n" && usage
+    #CHECK MANDATORY ARGS FOR CREATION
+    [[ ($WORKING_MODE == "C" ) && ( ! "$PULL_SECRET_PATH" ) ]] && \
+    echo -e "\nERROR: in creation mode argument -p <pull_secret_path> must be provided\n" && usage 
+    #CHECK PULL SECRET PATH
+    [[ ($WORKING_MODE == "C" ) && ( ! -f $PULL_SECRET_PATH ) ]] && \
+    echo -e "\nERROR: $PULL_SECRET_PATH pull secret file not found" && usage
+fi
+
+
+
 
 
 ##ENTRYPOINT: if everything is ok, run the script.
