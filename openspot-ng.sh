@@ -278,7 +278,6 @@ FIGLET=`which figlet 2>/dev/null`
 [ -z $PASS_DEVELOPER ] && PASS_DEVELOPER="developer"
 [ -z $KUBEADMIN ] && PASS_KUBEADMIN="kubeadmin"
 [ -z $PASS_REDHAT ] && PASS_REDHAT="redhat"
-[ -z $AMI_ID ] && AMI_ID="ami-0569ce8a44f2351be"
 [ -z $INSTANCE_TYPE ] && INSTANCE_TYPE="c6in.2xlarge"
 [ -z $WORKDIR_PATH ] && WORKDIR_PATH="workdir"
 [ -z $WORKING_MODE ] && WORKING_MODE=""
@@ -294,6 +293,7 @@ CLUSTER_INFOS_FILE="cluster_infos.json"
 TEMPLATES="templates"
 TEARDOWN_MAX_RETRIES=500
 CLUSTER_INFOS_TEMPLATE="$TEMPLATES/$CLUSTER_INFOS_FILE"
+AMI_ID="ami-0569ce8a44f2351be"
 
 ##ARGS
 #collects args from commandline only if not in container otherwise variables are fed by -e VAR=VALUE 
