@@ -31,7 +31,7 @@ The basic requirements to run a single-node OpenShift cluster with **OpenSpot-NG
 <br/>
 <br/>
 
-The AWS instance type selected is *c6in.2xlarge* with 8vcpu and 16 GB of RAM.
+The AWS instance type of choice is *c6in.2xlarge* with 8vcpu and 16 GB of RAM.
 This instance will cost ~0.45$ per hour (price may vary depending from the region) and will take ~11 minutes to have a working cluster.
 Increasing or decreasing the resources will affect the deployment time together with the price per hour. The minimum requirements to run CRC are 4vcpus and 8GB of RAM, please refer to the [documentation](https://developers.redhat.com/blog/2019/09/05/red-hat-openshift-4-on-your-laptop-introducing-red-hat-codeready-containers) for further informations.
 
