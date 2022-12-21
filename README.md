@@ -171,8 +171,3 @@ this will refer to the *latest* run found in ```<openspot_path>/workspace```, if
     -h  show this help text 
 
 ```
-
-
-
-
-
