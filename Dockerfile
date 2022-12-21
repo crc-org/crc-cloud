@@ -10,8 +10,7 @@ RUN apk add --no-cache aws-cli && \
     apk add --no-cache figlet && \
     apk add --no-cache openssh-client-default 
 WORKDIR /app
-COPY ["openspot-ng.sh","id_ecdsa_crc", "common.sh","./"]
-COPY templates templates
+COPY . .
 RUN chmod +x openspot-ng.sh
 
 ENTRYPOINT [ "/app/openspot-ng.sh" ]

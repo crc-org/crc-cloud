@@ -1,0 +1,9 @@
+assets/
+workdir/
+.git/
+.dockerignore
+.gitignore
+.gitleaks.toml
+debug.sh
+Dockerfile
+README.md
