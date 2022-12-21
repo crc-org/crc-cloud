@@ -15,15 +15,15 @@ prepare_workdir() {
     mkdir $WORKDIR
     echo $RANDOM_SUFFIX > $RANDOM_SUFFIX_FILE
     rm -rf $WORKDIR_PATH/latest
-    #link only if not running in docker (teardown will need mandatory run id)
-    [[ ! $DOCKER ]] && ln -s $(readlink -f $WORKDIR) $(readlink -f $WORKDIR_PATH)/latest
+    #link only if not running in container (teardown will need mandatory run id)
+    [[ ! $CONTAINER ]] && ln -s $(readlink -f $WORKDIR) $(readlink -f $WORKDIR_PATH)/latest
     pr_info "preparing working directory"
 }
 
 
 prepare_cluster_setup() {
     pr_info "compiling the remote setup script"
-    if [[ $DOCKER ]]
+    if [[ $CONTAINER ]]
     then
         [[ -z $PULL_SECRET ]] && stop_if_failed 1 "PULL_SECRET environment variable not set"
     else
@@ -203,7 +203,7 @@ create () {
 
 
 teardown() {
-    WORKDIR="$WORKDIR_PATH/$TEARDOWN_RUN"
+    WORKDIR="$WORKDIR_PATH/$TEARDOWN_RUN_ID"
     [ ! -d $WORKDIR ] && stop_if_failed 1 "$WORKDIR not found, please provide a correct path"
     destroy_ec2_resources
 }
@@ -270,6 +270,8 @@ SCP=`which scp 2>/dev/null`
 [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: scp, please install it and try again"
 BASE64=`which base64 2>/dev/null`
 [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: base64, please install it and try again"
+FIGLET=`which figlet 2>/dev/null`
+[[ $CONTAINER && ( $? != 0 ) ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: figlet (container mode only), please install it and try again"
 
 
 ##DEFAULT VALUES THAT CAN BE OVERRIDDEN BY ENV (podman/docker)
@@ -280,7 +282,7 @@ BASE64=`which base64 2>/dev/null`
 [ -z $INSTANCE_TYPE ] && INSTANCE_TYPE="c6in.2xlarge"
 [ -z $WORKDIR_PATH ] && WORKDIR_PATH="workdir"
 [ -z $WORKING_MODE ] && WORKING_MODE=""
-[ -z $TEARDOWN_RUN ] && TEARDOWN_RUN="latest"
+[ -z $TEARDOWN_RUN_ID ] && TEARDOWN_RUN_ID="latest"
 
 ##CONST
 SSH_PORT="22"
@@ -294,8 +296,8 @@ TEARDOWN_MAX_RETRIES=500
 CLUSTER_INFOS_TEMPLATE="$TEMPLATES/$CLUSTER_INFOS_FILE"
 
 ##ARGS
-#collects args from commandline only if not in docker otherwise variables are fed by -e VAR=VALUE 
-if [ $DOCKER ] 
+#collects args from commandline only if not in container otherwise variables are fed by -e VAR=VALUE 
+if [ $CONTAINER ] 
 then
     WORKDIR_PATH="/workdir"
     set_workdir_dependent_variables
@@ -304,7 +306,7 @@ then
     [[ ( $WORKING_MODE != "C" ) && ( $WORKING_MODE != "T" )  ]] && \
     stop_if_failed 1 "WORKING_MODE value must be either C (create) or T(teardown) $WORKING_MODE is not a valid value"
     #check pull secret
-    [[ -z $PULL_SECRET ]] && stop_if_failed 1 "PULL_SECRET environment variable must be set and must contain a valid base64 encoded pull_secret, please refer to the README.md"
+    [[ ($WORKING_MODE == "C") && ( -z $PULL_SECRET ) ]] && stop_if_failed 1 "PULL_SECRET environment variable must be set and must contain a valid base64 encoded pull_secret, please refer to the README.md"
     #check workdir mount write permissions 
     [[ ! -d $WORKDIR_PATH ]] && stop_if_failed 1 "please mount the workdir filesystem, refer to README.md for further instructions"
     [[ ! -w $WORKDIR_PATH ]] && \
@@ -313,6 +315,7 @@ then
     [[ -z $AWS_ACCESS_KEY_ID ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
     [[ -z $AWS_SECRET_ACCESS_KEY ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
     [[ -z $AWS_DEFAULT_REGION ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
+    [[ ( $WORKING_MODE == "T" ) && ($TEARDOWN_RUN_ID == "latest") ]] && stop_if_failed 1 "TEARDOWN_RUN_ID must be set in container mode. Please set this value with the run id that you want to teardown, refer to README.md for further instructions"
 else
     set_workdir_dependent_variables
     options=':h:CTp:d:k:r:a:t:v:'
@@ -327,7 +330,7 @@ else
         r) PASS_REDHAT=$OPTARG;;
         a) AMI_ID=$OPTARG;;
         t) INSTANCE_TYPE=$OPTARG;;
-        v) TEARDOWN_RUN=$OPTARG;;
+        v) TEARDOWN_RUN_ID=$OPTARG;;
         :) printf "missing argument for -%s\n" "$OPTARG" >&2; usage;;
     \?) printf "illegal option: -%s\n" "$OPTARG" >&2; usage;;
     esac
@@ -352,6 +355,7 @@ fi
 
 
 ##ENTRYPOINT: if everything is ok, run the script.
+[[ $CONTAINER ]] && figlet -f smslant -c "OpenSpot-NG" && echo -e "\n\n"
 if [[ $WORKING_MODE == "C" ]]
 then
     create
