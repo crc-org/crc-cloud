@@ -81,6 +81,18 @@ login () {
     done
 }
 
+check_cluster_access_with_new_ca() {
+    pr_info "Checking cluster access with new ca"
+    COUNTER=0
+    until `oc --kubeconfig=${KUBECONFIG} get co > /dev/null 2>&1`
+    do
+        [[$COUNTER == $MAXIMUM_LOGIN_RETRY]] && stop_if_failed 1 "impossible to access cluster with new ca, installation failed."
+        pr_info "Checking cluster access with new ca try $COUNTER, hang on...."
+        sleep 5
+        ((COUNTER++))
+    done
+}
+
 #Replaces the default pubkey with the new one just generated to avoid the mysterious service to replace it later on :-\
 replace_default_pubkey() {
     pr_info "replacing the default public key from /etc/machine-config-daemon/currentconfig"
@@ -246,6 +258,7 @@ stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIE
 
 set_credentials
 replace_default_ca
+check_cluster_access_with_new_ca
 login
 stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
 
