@@ -69,18 +69,6 @@ replace_default_ca() {
     oc --kubeconfig=${KUBECONFIG} config set-credentials admin --client-certificate=${USER}.crt --client-key=${USER}.key  --embed-certs=true
 }
 
-login () {
-    pr_info "logging in again to update $KUBECONFIG"
-    COUNTER=0
-    until `oc login --insecure-skip-tls-verify=true -u kubeadmin -p "$PASS_KUBEADMIN" https://api.crc.testing:6443 > /dev/null 2>&1`
-    do 
-        [[$COUNTER == $MAXIMUM_LOGIN_RETRY]] && stop_if_failed 1 "impossible to login on OpenShift, installation failed."
-        pr_info "logging into OpenShift with updated credentials try $COUNTER, hang on...."
-        sleep 5
-        ((COUNTER++))
-    done
-}
-
 check_cluster_access_with_new_ca() {
     pr_info "Checking cluster access with new ca"
     COUNTER=0
@@ -259,7 +247,6 @@ stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIE
 set_credentials
 replace_default_ca
 check_cluster_access_with_new_ca
-login
 stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
 
 
