@@ -65,6 +65,8 @@ replace_default_ca() {
     oc create configmap admin-kubeconfig-client-ca -n openshift-config --from-file=ca-bundle.crt=$NAME-ca.crt \
     --dry-run=client -o yaml | oc replace -f -
     stop_if_failed $? "failed to replace OpenShift CA"
+    pr_info "Updating the system:admin user client-certificate-data and client-key-data to $KUBECONFIG"
+    oc --kubeconfig=${KUBECONFIG} config set-credentials admin --client-certificate=${USER}.crt --client-key=${USER}.key  --embed-certs=true
 }
 
 login () {
