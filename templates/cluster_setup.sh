@@ -278,3 +278,4 @@ done
 
 CONSOLE_ROUTE=`oc get route console-custom -n openshift-console -o json | jq -r '.spec.host'`
 pr_end $CONSOLE_ROUTE
+
