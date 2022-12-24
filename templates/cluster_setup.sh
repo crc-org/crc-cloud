@@ -63,7 +63,7 @@ replace_default_ca() {
     oc patch apiserver cluster --type=merge -p '{"spec": {"clientCA": {"name": "client-ca-custom"}}}'
     stop_if_failed $? "failed to patch API server with newly created certificate"
     oc create configmap admin-kubeconfig-client-ca -n openshift-config --from-file=ca-bundle.crt=$NAME-ca.crt \
-    --dry-run -o yaml | oc replace -f -
+    --dry-run=client -o yaml | oc replace -f -
     stop_if_failed $? "failed to replace OpenShift CA"
 }
 
