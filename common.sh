@@ -71,3 +71,15 @@ get_instance_private_ip_aws(){
     $JQ -r '.Instances[0].PrivateIpAddress' $1
 }
 
+get_instance_id_gcp() {
+    $JQ -r '.[0].name' $1
+}
+
+get_instance_public_ip_gcp(){
+    $JQ -r '.[0].networkInterfaces[0].accessConfigs[0].natIP' $1
+}
+
+get_instance_private_ip_gcp(){
+    $JQ -r '.[0].networkInterfaces[0].networkIP' /tmp/crc_gcp.json
+}
+

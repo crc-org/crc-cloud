@@ -114,6 +114,43 @@ destroy_ec2_resources() {
 
 }
 
+create_gcp_resources() {
+    pr_info "creating GCP resources"
+    RESOURCES_NAME="openspot-ng-$RANDOM_SUFFIX"
+    # Check if the Instance_type available
+    $GCP compute machine-types describe $INSTANCE_TYPE --quiet
+    stop_if_failed $? "failed to get $INSTANCE_TYPE on gcp"
+    # Create separate network and subnet
+    $GCP compute networks create "${RESOURCES_NAME}" --subnet-mode=custom --bgp-routing-mode=regional --quiet
+    stop_if_failed $? "failed to create GCP compute network"
+    $GCP compute networks subnets create "${RESOURCES_NAME}" --network "${RESOURCES_NAME}" --range=10.0.0.0/9 --quiet
+    stop_if_failed $? "failed to create GCP compute subnet"
+    # Create firewall rules and add to network
+    $GCP compute firewall-rules create "${RESOURCES_NAME}" --network "${RESOURCES_NAME}" --allow tcp:22,tcp:6443,tcp:443,tcp:80 --quiet
+    stop_if_failed $? "failed to create GCP network resource"
+    #CREATE INSTANCE
+    $GCP compute instances create "${RESOURCES_NAME}" --machine-type $INSTANCE_TYPE --image=crc  --tags $RESOURCES_NAME \
+    --subnet "${RESOURCES_NAME}" --network "${RESOURCES_NAME}" --format=json > $WORKDIR/$INSTANCE_DESCRIPTION
+    stop_if_failed $? "failed to launch GCP instance"
+}
+
+destroy_gcp_resources() {
+    pr_info "deleting GCP resources"
+    ID=$WORKDIR/$INSTANCE_DESCRIPTION
+    [ ! -f  $ID ] && stop_if_failed 1 "Missing GCP resource descriptor $INSTANCE_DESCRIPTION in $WORKDIR"
+    INSTANCE_ID=`get_instance_id_gcp $WORKDIR/$INSTANCE_DESCRIPTION`
+    $GCP compute instances delete "${INSTANCE_ID}" --quiet
+    stop_if_failed $? "failed to delete GCP instance"
+    $GCP compute firewall-rules delete "${INSTANCE_ID}" --quiet
+    stop_if_failed $? "failed to delete GCP firewall-rules"
+    $GCP compute networks subnets delete "${INSTANCE_ID}" --quiet
+    stop_if_failed $? "failed to delete GCP subnet"
+    $GCP  compute networks delete "${INSTANCE_ID}" --quiet
+    stop_if_failed $? "failed to delete GCP network"
+    pr_end "everything has been cleaned up!"
+    exit 0
+}
+
 swap_ssh_key() {
     pr_info "changing default private key permissions to 400"
     chmod 400 $PRIVATE_KEY
@@ -191,6 +228,12 @@ create () {
             IIP=`get_instance_private_ip_aws $WORKDIR/$INSTANCE_DESCRIPTION`
             EIP=`get_instance_public_ip_aws $INSTANCE_ID`
         ;;
+        "gcp")
+            create_gcp_resources
+            INSTANCE_ID=`get_instance_id_gcp $WORKDIR/$INSTANCE_DESCRIPTION`
+            IIP=`get_instance_private_ip_gcp $WORKDIR/$INSTANCE_DESCRIPTION`
+            EIP=`get_instance_public_ip_gcp $WORKDIR/$INSTANCE_DESCRIPTION`
+        ;;
         *)
             echo "Unknown cloud provider"
             usuage
@@ -216,6 +259,9 @@ teardown() {
     case $CLOUD_PROVIDER in
         "aws")
             destroy_ec2_resources
+            ;;
+        "gcp")
+            destroy_gcp_resources
             ;;
          *)
             echo "Unknown cloud provider"
@@ -336,6 +382,11 @@ then
             [[ -z $AWS_SECRET_ACCESS_KEY ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
             [[ -z $AWS_DEFAULT_REGION ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
             ;;
+         "gcp")
+            #check GCP credentials
+            [[ -z $GOOGLE_APPLICATION_CREDENTIALS ]] && stop_if_failed 1 "GOOGLE_APPLICATION_CREDENTIALS must be set, please refer to GCP CLI documentation https://cloud.google.com/docs/authentication/application-default-credentials"
+            [[ -z $CLOUDSDK_COMPUTE_REGION ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to GCP CLI documentation https://cloud.google.com/compute/docs/gcloud-compute"
+            ;;
         *)
             echo "Unknown provider"
             exit 1
@@ -370,6 +421,10 @@ else
     "aws")
         AWS=`which aws 2>/dev/null`
         [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: aws cli, please install it and try again"
+    ;;
+    "gcp")
+        GCP=`which gcloud 2>/dev/null`
+        [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: gcloud cli, please install it and try again"
     ;;
     *)
         echo "unknown cloud provider"
