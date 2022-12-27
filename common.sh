@@ -54,11 +54,11 @@ wait_instance_readiness(){
 }
 
 
-get_instance_id() {
+get_instance_id_aws() {
     $JQ -r '.Instances[0].InstanceId' $1
 }
 
-get_instance_public_ip(){
+get_instance_public_ip_aws(){
     INSTANCE_IP=""
     while [ -z $INSTANCE_IP ]
     do
@@ -67,7 +67,7 @@ get_instance_public_ip(){
     echo "$INSTANCE_IP"
 }
 
-get_instance_private_ip(){
+get_instance_private_ip_aws(){
     $JQ -r '.Instances[0].PrivateIpAddress' $1
 }
 
