@@ -184,11 +184,19 @@ set_cluster_infos() {
 create () {
     SECONDS=0
     prepare_workdir
-    create_ec2_resources
+    case $CLOUD_PROVIDER in
+        "aws")
+            create_ec2_resources
+            INSTANCE_ID=`get_instance_id_aws $WORKDIR/$INSTANCE_DESCRIPTION`
+            IIP=`get_instance_private_ip_aws $WORKDIR/$INSTANCE_DESCRIPTION`
+            EIP=`get_instance_public_ip_aws $INSTANCE_ID`
+        ;;
+        *)
+            echo "Unknown cloud provider"
+            usuage
+            exit 1
+    esac
 
-    INSTANCE_ID=`get_instance_id $WORKDIR/$INSTANCE_DESCRIPTION`
-    IIP=`get_instance_private_ip $WORKDIR/$INSTANCE_DESCRIPTION`
-    EIP=`get_instance_public_ip $INSTANCE_ID`
 
     wait_instance_readiness $EIP
     swap_ssh_key
@@ -205,7 +213,15 @@ create () {
 teardown() {
     WORKDIR="$WORKDIR_PATH/$TEARDOWN_RUN_ID"
     [ ! -d $WORKDIR ] && stop_if_failed 1 "$WORKDIR not found, please provide a correct path"
-    destroy_ec2_resources
+    case $CLOUD_PROVIDER in
+        "aws")
+            destroy_ec2_resources
+            ;;
+         *)
+            echo "Unknown cloud provider"
+            exit 1
+            ;;
+     esac
 }
 
 set_workdir_dependent_variables() {
@@ -223,21 +239,23 @@ usage() {
     usage="
 Cluster Creation :
 
-$(basename "$0") -C -p pull secret path [-d developer user password] [-k kubeadmin user password] [-r redhat user password] [-a AMI ID] [-t Instance type]
+$(basename "$0") -C -p pull secret path [-i cloud provider] [-d developer user password] [-k kubeadmin user password] [-r redhat user password] [-a AMI ID] [-t Instance type]
 where:
     -C  Cluster Creation mode
+    -i  Cloud/Infra provider (optional, default: $CLOUD_PROVIDER)
     -p  pull secret file path (download from https://console.redhat.com/openshift/create/local) 
     -d  developer user password (optional, default: $PASS_DEVELOPER)
     -k  kubeadmin user password (optional, default: $PASS_KUBEADMIN)
     -r  redhat    user password (optional, default: $PASS_REDHAT)
-    -a  AMI ID (Amazon Machine Image) from which the VM will be Instantiated (optional, default: $AMI_ID)
-    -t  EC2 Instance Type (optional, default; $INSTANCE_TYPE)
+    -a  Image ID (Cloud provider Machine Image) from which the VM will be Instantiated (optional, default: $AMI_ID)
+    -t  Cloud provider Instance Type (optional, default; $INSTANCE_TYPE)
     -h  show this help text
 
 Cluster Teardown:
 
-$(basename "$0") -T [-v run id]
+$(basename "$0") -T [-i cloud provider] [-v run id]
     -T  Cluster Teardown mode
+    -i  Cloud/Infra provider (optional, default: $CLOUD_PROVIDER)
     -v  The Id of the run that is gonna be destroyed, corresponds with the numeric name of the folders created in workdir (optional, default: latest)
     -h  show this help text 
     "
@@ -254,8 +272,6 @@ JQ=`which jq 2>/dev/null`
 [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: jq, please install it and try again"
 MD5SUM=`which md5sum 2>/dev/null`
 [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: md5sum, please install it and try again"
-AWS=`which aws 2>/dev/null`
-[[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: aws cli, please install it and try again"
 HEAD=`which head 2>/dev/null`
 [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: head, please install it and try again"
 SSHKEYGEN=`which ssh-keygen 2>/dev/null`
@@ -282,6 +298,7 @@ FIGLET=`which figlet 2>/dev/null`
 [ -z $WORKDIR_PATH ] && WORKDIR_PATH="workdir"
 [ -z $WORKING_MODE ] && WORKING_MODE=""
 [ -z $TEARDOWN_RUN_ID ] && TEARDOWN_RUN_ID="latest"
+[ -z $CLOUD_PROVIDER ] && CLOUD_PROVIDER="aws"
 
 ##CONST
 SSH_PORT="22"
@@ -311,14 +328,23 @@ then
     [[ ! -d $WORKDIR_PATH ]] && stop_if_failed 1 "please mount the workdir filesystem, refer to README.md for further instructions"
     [[ ! -w $WORKDIR_PATH ]] && \
     stop_if_failed 1 "please grant write permissions to the host folder mounted as volume, please refer to README.md for further instructions"
-    #check AWS credentials
-    [[ -z $AWS_ACCESS_KEY_ID ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
-    [[ -z $AWS_SECRET_ACCESS_KEY ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
-    [[ -z $AWS_DEFAULT_REGION ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
+    #check the cloud provider env and set env variable accordingly
+    case $CLOUD_PROVIDER in
+        "aws")
+            #check AWS credentials
+            [[ -z $AWS_ACCESS_KEY_ID ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
+            [[ -z $AWS_SECRET_ACCESS_KEY ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
+            [[ -z $AWS_DEFAULT_REGION ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
+            ;;
+        *)
+            echo "Unknown provider"
+            exit 1
+            ;;
+    esac
     [[ ( $WORKING_MODE == "T" ) && ($TEARDOWN_RUN_ID == "latest") ]] && stop_if_failed 1 "TEARDOWN_RUN_ID must be set in container mode. Please set this value with the run id that you want to teardown, refer to README.md for further instructions"
 else
     set_workdir_dependent_variables
-    options=':h:CTp:d:k:r:a:t:v:'
+    options=':h:CTp:d:k:r:a:t:v:i:'
     while getopts $options option; do
     case "$option" in
         h) usage;;
@@ -331,6 +357,7 @@ else
         a) AMI_ID=$OPTARG;;
         t) INSTANCE_TYPE=$OPTARG;;
         v) TEARDOWN_RUN_ID=$OPTARG;;
+        i) CLOUD_PROVIDER=$OPTARG;;
         :) printf "missing argument for -%s\n" "$OPTARG" >&2; usage;;
     \?) printf "illegal option: -%s\n" "$OPTARG" >&2; usage;;
     esac
@@ -339,6 +366,17 @@ else
     ##VARIABLE SANITY CHECKS
 
     #WORKING MODE CHECK
+    case $CLOUD_PROVIDER in
+    "aws")
+        AWS=`which aws 2>/dev/null`
+        [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: aws cli, please install it and try again"
+    ;;
+    *)
+        echo "unknown cloud provider"
+        usage
+        exit 1
+    esac
+
     [[ (-z $WORKING_MODE ) ]] && echo -e "\nERROR: Working mode must be set\n" && usage
     [[ ( $WORKING_MODE != "C" ) && ( $WORKING_MODE != "T" )  ]] && echo \
     -e "\nERROR: Working mode Must be either -C (creation) or -T (teardown), not $WORKING_MODE\n" && usage
