@@ -121,9 +121,9 @@ swap_ssh_key() {
     pr_info "swapping default key with the one just created"
     $SSHKEYGEN -f $WORKDIR/id_rsa -q -N ''
     stop_if_failed $? "failed to generate the key pair"
-    $SCP -o StrictHostKeychecking=no -o UserKnownHostsFile=/dev/null -P $SSH_PORT -i $PRIVATE_KEY $WORKDIR/id_rsa.pub core@$EIP:.
+    $SCP -q -o StrictHostKeychecking=no -o UserKnownHostsFile=/dev/null -P $SSH_PORT -i $PRIVATE_KEY $WORKDIR/id_rsa.pub core@$EIP:.
     stop_if_failed $? "failed to upload the public key on the machine @ $EIP"
-    $SSH -o StrictHostKeychecking=no -o UserKnownHostsFile=/dev/null -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "cat /home/core/id_rsa.pub > /home/core/.ssh/authorized_keys"
+    $SSH -q -o StrictHostKeychecking=no -o UserKnownHostsFile=/dev/null -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "cat /home/core/id_rsa.pub > /home/core/.ssh/authorized_keys"
     stop_if_failed $? "failed to swap the key on the authorized_keys  @ $EIP"
     #after swapping on VM private key is replaced by the new one
     PRIVATE_KEY=$WORKDIR/id_rsa
@@ -132,19 +132,19 @@ swap_ssh_key() {
 inject_and_run_cluster_setup() {
     pr_info "injecting the setup script on the machine & running it [next logs will be remote]"
     $SCP -o StrictHostKeychecking=no -o UserKnownHostsFile=/dev/null -P $SSH_PORT -i $PRIVATE_KEY $WORKDIR/cluster_setup.sh core@$EIP:/var/home/core/
-    $SSH -o StrictHostKeychecking=no -o UserKnownHostsFile=/dev/null -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "chmod +x /var/home/core/cluster_setup.sh"
-    $SSH -o StrictHostKeychecking=no -o UserKnownHostsFile=/dev/null -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "sudo /var/home/core/cluster_setup.sh"
+    $SSH -q -o StrictHostKeychecking=no -o UserKnownHostsFile=/dev/null -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "chmod +x /var/home/core/cluster_setup.sh"
+    $SSH -q -o StrictHostKeychecking=no -o UserKnownHostsFile=/dev/null -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "sudo /var/home/core/cluster_setup.sh"
 }
 
 tail_cluster_setup() {
     pr_info "reading from VM logs from remote instance"
     pr_info "waiting the log to be created, hang on...."
-    $SSH -o StrictHostKeychecking=no -o UserKnownHostsFile=/dev/null -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "while [ ! -f /tmp/$RANDOM_SUFFIX.log ]; do sleep 1; done"
+    $SSH -q -o StrictHostKeychecking=no -o UserKnownHostsFile=/dev/null -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "while [ ! -f /tmp/$RANDOM_SUFFIX.log ]; do sleep 1; done"
     pr_info "log detected, printing remote output on $EIP:"
     PREVIOUS_LINE=""
     while :
     do
-        LINE=$($SSH -o StrictHostKeychecking=no -o UserKnownHostsFile=/dev/null -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "sudo tail -n 1 /tmp/$RANDOM_SUFFIX.log")
+        LINE=$($SSH -q -o StrictHostKeychecking=no -o UserKnownHostsFile=/dev/null -p $SSH_PORT -i $PRIVATE_KEY core@$EIP "sudo tail -n 1 /tmp/$RANDOM_SUFFIX.log")
         stop_if_failed $? "impossible to get the logs from $EIP"
         #xargs used to remove leading space
         if [[ $LINE =~ "[ERR]" ]]
