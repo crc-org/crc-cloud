@@ -151,6 +151,43 @@ destroy_gcp_resources() {
     exit 0
 }
 
+create_openstack_resources() {
+    pr_info "creating Openstack resources"
+    RESOURCES_NAME="openspot-ng-$RANDOM_SUFFIX"
+    # Check if the Instance_type available
+    $OSP flavor show $INSTANCE_TYPE -f json > /dev/null
+    stop_if_failed $? "failed to get $INSTANCE_TYPE on openstack"
+    # Create separate network and subnet
+    $OSP security group create --description "CRC security group" "${RESOURCES_NAME}" -f json > /dev/null
+    stop_if_failed $? "failed to create openstack security group"
+    $OSP security group rule create --proto tcp --dst-port 22 "${RESOURCES_NAME}" -f json > /dev/null
+    stop_if_failed $? "failed to add port 22 to ${RESOURCES_NAME} group"
+    $OSP security group rule create --proto tcp --dst-port 80 "${RESOURCES_NAME}" -f json > /dev/null
+    stop_if_failed $? "failed to add port 80 to ${RESOURCES_NAME} group"
+    $OSP security group rule create --proto tcp --dst-port 443 "${RESOURCES_NAME}" -f json > /dev/null
+    stop_if_failed $? "failed to add port 443 to ${RESOURCES_NAME} group"
+    $OSP security group rule create --proto tcp --dst-port 6443 "${RESOURCES_NAME}" -f json > /dev/null
+    stop_if_failed $? "failed to add port 6443 to ${RESOURCES_NAME} group"
+    #CREATE INSTANCE
+    $OSP server create --flavor $INSTANCE_TYPE --image crc --nic net-id=provider_net_cci_5 --security-group $RESOURCES_NAME \
+        $RESOURCES_NAME -f json --wait > $WORKDIR/$INSTANCE_DESCRIPTION
+    stop_if_failed $? "failed to launch openstack instance"
+}
+
+destroy_openstack_resources() {
+    pr_info "deleting openstack resources"
+    ID=$WORKDIR/$INSTANCE_DESCRIPTION
+    [ ! -f  $ID ] && stop_if_failed 1 "Missing openstack resource descriptor $INSTANCE_DESCRIPTION in $WORKDIR"
+    INSTANCE_ID=`get_instance_id_osp $WORKDIR/$INSTANCE_DESCRIPTION`
+    $OSP server delete "${INSTANCE_ID}" --wait --quiet
+    stop_if_failed $? "failed to delete openstack instance"
+    $OSP security group delete "${INSTANCE_ID}" --quiet
+    stop_if_failed $? "failed to delete openstack security group"
+    pr_end "everything has been cleaned up!"
+    exit 0
+}
+
+
 swap_ssh_key() {
     pr_info "changing default private key permissions to 400"
     chmod 400 $PRIVATE_KEY
@@ -234,6 +271,12 @@ create () {
             IIP=`get_instance_private_ip_gcp $WORKDIR/$INSTANCE_DESCRIPTION`
             EIP=`get_instance_public_ip_gcp $WORKDIR/$INSTANCE_DESCRIPTION`
         ;;
+        "openstack")
+            create_openstack_resources
+            INSTANCE_ID=`get_instance_id_osp $WORKDIR/$INSTANCE_DESCRIPTION`
+            IIP=`get_instance_private_ip_osp $WORKDIR/$INSTANCE_DESCRIPTION`
+            EIP=`get_instance_public_ip_osp $WORKDIR/$INSTANCE_DESCRIPTION`
+        ;;
         *)
             echo "Unknown cloud provider"
             usuage
@@ -262,6 +305,9 @@ teardown() {
             ;;
         "gcp")
             destroy_gcp_resources
+            ;;
+        "openstack")
+            destroy_openstack_resources
             ;;
          *)
             echo "Unknown cloud provider"
@@ -426,6 +472,10 @@ else
     "gcp")
         GCP=`which gcloud 2>/dev/null`
         [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: gcloud cli, please install it and try again"
+    ;;
+    "openstack")
+        OSP=`which openstack 2>/dev/null`
+        [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: openstack cli, please install it and try again"
     ;;
     *)
         echo "unknown cloud provider"

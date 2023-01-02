@@ -83,3 +83,15 @@ get_instance_private_ip_gcp(){
     $JQ -r '.[0].networkInterfaces[0].networkIP' /tmp/crc_gcp.json
 }
 
+
+get_instance_id_osp() {
+    $JQ -r '.name' $1
+}
+
+get_instance_public_ip_osp(){
+    $JQ -r '.addresses.provider_net_cci_5[0]' $1
+}
+
+get_instance_private_ip_osp(){
+    $JQ -r '.addresses.provider_net_cci_5[0]' $1
+}
