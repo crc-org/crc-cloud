@@ -63,17 +63,19 @@ replace_default_ca() {
     oc patch apiserver cluster --type=merge -p '{"spec": {"clientCA": {"name": "client-ca-custom"}}}'
     stop_if_failed $? "failed to patch API server with newly created certificate"
     oc create configmap admin-kubeconfig-client-ca -n openshift-config --from-file=ca-bundle.crt=$NAME-ca.crt \
-    --dry-run -o yaml | oc replace -f -
+    --dry-run=client -o yaml | oc replace -f -
     stop_if_failed $? "failed to replace OpenShift CA"
+    pr_info "Updating the system:admin user client-certificate-data and client-key-data to $KUBECONFIG"
+    oc --kubeconfig=${KUBECONFIG} config set-credentials admin --client-certificate=${USER}.crt --client-key=${USER}.key  --embed-certs=true
 }
 
-login () {
-    pr_info "logging in again to update $KUBECONFIG"
+check_cluster_access_with_new_ca() {
+    pr_info "Checking cluster access with new ca"
     COUNTER=0
-    until `oc login --insecure-skip-tls-verify=true -u kubeadmin -p "$PASS_KUBEADMIN" https://api.crc.testing:6443 > /dev/null 2>&1`
-    do 
-        [[$COUNTER == $MAXIMUM_LOGIN_RETRY]] && stop_if_failed 1 "impossible to login on OpenShift, installation failed."
-        pr_info "logging into OpenShift with updated credentials try $COUNTER, hang on...."
+    until `oc --kubeconfig=${KUBECONFIG} get co > /dev/null 2>&1`
+    do
+        [[$COUNTER == $MAXIMUM_LOGIN_RETRY]] && stop_if_failed 1 "impossible to access cluster with new ca, installation failed."
+        pr_info "Checking cluster access with new ca try $COUNTER, hang on...."
         sleep 5
         ((COUNTER++))
     done
@@ -244,7 +246,7 @@ stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIE
 
 set_credentials
 replace_default_ca
-login
+check_cluster_access_with_new_ca
 stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
 
 
@@ -276,3 +278,4 @@ done
 
 CONSOLE_ROUTE=`oc get route console-custom -n openshift-console -o json | jq -r '.spec.host'`
 pr_end $CONSOLE_ROUTE
+
