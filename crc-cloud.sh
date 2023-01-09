@@ -50,8 +50,8 @@ prepare_cluster_setup() {
 
 create_ec2_resources() {
     pr_info "creating EC2 resources"
-    RESOURCES_NAME="openspot-ng-$RANDOM_SUFFIX"
-    GROUPID=`aws ec2 create-security-group --group-name $RESOURCES_NAME --description "openspot-ng security group run timestamp: $RUN_TIMESTAMP" --no-paginate | $JQ -r '.GroupId'`
+    RESOURCES_NAME="crc-cloud-$RANDOM_SUFFIX"
+    GROUPID=`aws ec2 create-security-group --group-name $RESOURCES_NAME --description "crc-cloud security group run timestamp: $RUN_TIMESTAMP" --no-paginate | $JQ -r '.GroupId'`
     stop_if_failed $? "failed to create EC2 security group"
     #KEYPAIR (Created just because mandatory, will be swapped manually fore core user later on)
     $AWS ec2 create-key-pair --key-name $RESOURCES_NAME --no-paginate
@@ -218,7 +218,7 @@ set_workdir_dependent_variables() {
 
 usage() {
     echo ""
-    echo "*********** OpenSpot-NG ***********"
+    echo "*********** crc-cloud ***********"
     
     usage="
 Cluster Creation :
@@ -355,7 +355,7 @@ fi
 
 
 ##ENTRYPOINT: if everything is ok, run the script.
-[[ $CONTAINER ]] && figlet -f smslant -c "OpenSpot-NG" && echo -e "\n\n"
+[[ $CONTAINER ]] && figlet -f slant -c "CRC-Cloud `cat VERSION`" && echo -e "\n\n"
 if [[ $WORKING_MODE == "C" ]]
 then
     create
