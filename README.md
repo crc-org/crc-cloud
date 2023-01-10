@@ -1,7 +1,7 @@
-# OpenSpot-NG
-### Disposable OpenShift instances on AWS in minutes
+# CRC-Cloud
+### Disposable OpenShift instances on cloud in minutes
 
-| ![space-1.jpg](assets/openspot_ng_logo.png) |
+| ![space-1.jpg](assets/crc-cloud.png) |
 |:--:|
 | <sub><sup>kindly created by OpenAI DALL-E (https://openai.com/dall-e-2) </sup></sub>|
 
@@ -25,7 +25,7 @@ For the moment only AWS is supported. Other will be added soon.
 
 #### Prerequisites
 <a name="prereq"></a>
-The basic requirements to run a single-node OpenShift cluster with **OpenSpot-NG** are:
+The basic requirements to run a single-node OpenShift cluster with **CRC-Cloud** are:
 - register a Red Hat account and get a pull secret from https://console.redhat.com/openshift/create/local 
 - create an access key for your AWS account and grab the *ACCESS_KEY_ID* and the *SECRET_ACCESS_KEY* (instructions can be found [here](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html)) 
 <br/>
@@ -41,7 +41,7 @@ Increasing or decreasing the resources will affect the deployment time together 
 
 ### Containers (the easy way)
 
-Running **OpenSpot-NG** from a container (podman/docker) is strongly recommended for the following reasons:
+Running **CRC-Cloud** from a container (podman/docker) is strongly recommended for the following reasons:
 - Compatible with any platform (Linux/MacOs/Windows)
 - No need to satisfy any software dependency in you're OS since everything is packed into the container
 - In CI/CD systems (eg. Jenkins) won't be necessary to propagate dependencies to the agents (only podman/docker needed)
@@ -49,10 +49,10 @@ Running **OpenSpot-NG** from a container (podman/docker) is strongly recommended
 
 #### Working directory
 <a name="workdir"></a>
-In the working directory that will be mounted into the container, **OpenSpot-NG** will store all the cluster metadata including those needed to teardown the cluster once you'll be done.
-Per each run **OpenSpot-NG** will create a folder named with the run timestamp, this folder name will be referred as *TEARDOWN_RUN_ID* and will be used to cleanup the cluster in teardown mode and to store all the logs and the infos related to the cluster deployment.
+In the working directory that will be mounted into the container, **CRC-Cloud** will store all the cluster metadata including those needed to teardown the cluster once you'll be done.
+Per each run **CRC-Cloud** will create a folder named with the run timestamp, this folder name will be referred as *TEARDOWN_RUN_ID* and will be used to cleanup the cluster in teardown mode and to store all the logs and the infos related to the cluster deployment.
 
-Please **be careful** on deleting the working directory content because without the metadata **OpenSpot-NG** won't be able to teardown the cluster and associated resources from AWS.
+Please **be careful** on deleting the working directory content because without the metadata **CRC-Cloud** won't be able to teardown the cluster and associated resources from AWS.
 
 **NOTE (podman only):** In order to make the mounted workdir read-write accessible from the container is need to change the SELinux security context related to the folder with the following command 
 ```chcon -Rt svirt_sandbox_file_t <HOST_WORKDIR_PATH>```
@@ -65,7 +65,7 @@ Please **be careful** on deleting the working directory content because without 
  -e AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>\
  -e AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS>\
  -e AWS_DEFAULT_REGION=<AWS_REGION_OF_YOUR_CHOICE>\
- -ti quay.io/tsebastiani/openspot-ng
+ -ti quay.io/crcont/crc-cloud
 ```
 
 #### Single node cluster teardown
@@ -76,7 +76,7 @@ Please **be careful** on deleting the working directory content because without 
  -e AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>\
  -e AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS>\
  -e AWS_DEFAULT_REGION=us-west-2\
- -ti quay.io/tsebastiani/openspot-ng
+ -ti quay.io/crcont/crc-cloud
 ```
 (check [here](#workdir) for **TEARDOWN_RUN_ID** infos and **WORKDIR** setup instructions )
 
@@ -119,7 +119,7 @@ Environment variables will be passed to the container from the command line invo
 
 ### Linux Bash (the hard path)
 #### Dependencies 
-To run **OpenSpot-NG** from your command line you must be on Linux, be sure to have installed and configured the following programs in your box
+To run **CRC-Cloud** from your command line you must be on Linux, be sure to have installed and configured the following programs in your box
 
 - bash (>=v4)
 - AWS CLI
@@ -136,19 +136,19 @@ To run **OpenSpot-NG** from your command line you must be on Linux, be sure to h
 #### Single node cluster creation
 Once copied and downloaded the pull secret somewhere in your filesystem you'll be able to run the cluster with
 
-```./openspot-ng.sh -C -p <pull_secret_path>```
+```./crc-cloud.sh -C -p <pull_secret_path>```
 
 A folder with the run id will be created under ```<openspot_path>/workspace``` containing all the logs, the keypair needed to login into the VM, and the VM metadata. The last run will be also linked automatically to ```<openspot_path>/latest```
 <br/>
 <br/>
-**WARNING:** if you delete the working directory **OpenSpot-NG** won't be able to teardown the cluster so be **extremely careful** with the workspace folder content.
+**WARNING:** if you delete the working directory **CRC-Cloud** won't be able to teardown the cluster so be **extremely careful** with the workspace folder content.
 <br/>
 <br/>
 at the end of the process the script will print the public address of the console.
 Below you'll find all the options available
 
 ```
-./openspot-ng.sh -C -p pull secret path [-d developer user password] [-k kubeadmin user password] [-r redhat user password] [-a AMI ID] [-t Instance type]
+./crc-cloud.sh -C -p pull secret path [-d developer user password] [-k kubeadmin user password] [-r redhat user password] [-a AMI ID] [-t Instance type]
 where:
     -C  Cluster Creation mode
     -p  pull secret file path (download from https://console.redhat.com/openshift/create/local) 
@@ -161,11 +161,11 @@ where:
 ```
 #### Single node cluster teardown
 To teardown the single node cluster the basic command is 
-```./openspot-ng.sh -T```
+```./crc-cloud.sh -T```
 this will refer to the *latest* run found in ```<openspot_path>/workspace```, if you have several run folders in your workspace, you can specify the one you want to teardown with the parameter ```-v <run_id>``` where ```<run_id>``` corresponds to the numeric folder name containing the metadata of the cluster that will be deleted
 
 ```
-./openspot-ng.sh -T [-v run id]
+./crc-cloud.sh -T [-v run id]
     -T  Cluster Teardown mode
     -v  The Id of the run that is gonna be destroyed, corresponds with the numeric name of the folders created in workdir (optional, default: latest)
     -h  show this help text 
