@@ -15,10 +15,49 @@ I stumbled upon OpenSpot (https://github.com/ksingh7/openspot) made by my collea
 Moreover the solution was based on CRC that creates a qemu VM to run the (single-node) cluster, so bare metal instances were needed and the startup time was too long for the purpose.
 We had a meeting and they gave me all the detailed instructions on how to run the qemu image directly on AWS standard EC2 instances and configure properly the OpenShift single-node cluster, only the code was missing....
 
-## Cloud Providers
-For the moment only AWS is supported. Other will be added soon.
+## Infrastructure Deployers
+<a name="deployer"></a>
+In order to abstract the Infrastructure and the OpenShift Instance provisioning has been developed an **Infrastructure Deployer API**. If you're interested on how to implement a new Infrastructure Deployer please refer to the [documentation](api/deployer/README.md).
+
+### Available Deployers
+| Name | Status|
+--- | ---|
+| bash-aws| Stable (Default)|
+
+### bash-aws
+<a name="bash-aws-deployer"></a>
+This deployer is designed to deploy **CRC-Cloud** on AWS. It's build on top the AWS CLI v2 and it's logic relies on bash scripting.
+
+#### Prerequisites
+<a name="bash-aws-deployer-prereq"></a>
+- create an access key for your AWS account and grab the *ACCESS_KEY_ID* and the *SECRET_ACCESS_KEY* (instructions can be found [here](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html)) 
+- AWS CLI Installed and in $PATH
 <br/>
 <br/>
+
+The AWS instance type of choice is *c6in.2xlarge* with 8vcpu and 16 GB of RAM.
+This instance will cost ~0.45$ per hour (price may vary depending from the region) and will take ~11 minutes to have a working cluster.
+Increasing or decreasing the resources will affect the deployment time together with the price per hour. If you want to change instance type keep in mind that the minimum hardware requirements to run CRC (on which this solution is based) are 4vcpus and 8GB of RAM, please refer to the [documentation](https://developers.redhat.com/blog/2019/09/05/red-hat-openshift-4-on-your-laptop-introducing-red-hat-codeready-containers) for further informations.
+
+
+#### CLI arguments
+| Argument | Description | Mandatory |
+ --- | --- | --- | 
+ | -a  | AMI ID (Amazon Machine Image) from which the VM will be Instantiated | false |
+ | -i | EC2 Instance Type | false
+
+#### Container variables
+| Variable | Description | Mandatory |
+| --- | --- | --- |
+| AWS_ACCESS_KEY_ID  | AWS access key (infos [here](#bash-aws-deployer-prereq))  | true | 
+| AWS_SECRET_ACCESS_KEY | AWS secret access key (infos [here](#bash-aws-deployer-prereq)) | true |
+| AWS_DEFAULT_REGION | AWS region where the cluster will be deployed ( currently us-west-2 is the only supported) | true |
+| INSTANCE_TYPE | AWS EC2 Instance Type | false |
+| AMI_ID | AMI ID (Amazon Machine Image) from which the VM will be Instantiated | false |
+
+<br/>
+<br/>
+
 **Note:** AWS AMIs (Amazon Machine Images) are regional resources so,for the moment, the only supported region is **us-west-2**. In the next few days the AMI will be copied to other regions, please be patient, it will take a while.
 
 ## Usage
@@ -27,15 +66,9 @@ For the moment only AWS is supported. Other will be added soon.
 <a name="prereq"></a>
 The basic requirements to run a single-node OpenShift cluster with **CRC-Cloud** are:
 - register a Red Hat account and get a pull secret from https://console.redhat.com/openshift/create/local 
-- create an access key for your AWS account and grab the *ACCESS_KEY_ID* and the *SECRET_ACCESS_KEY* (instructions can be found [here](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html)) 
-<br/>
-<br/>
 
-The AWS instance type of choice is *c6in.2xlarge* with 8vcpu and 16 GB of RAM.
-This instance will cost ~0.45$ per hour (price may vary depending from the region) and will take ~11 minutes to have a working cluster.
-Increasing or decreasing the resources will affect the deployment time together with the price per hour. If you want to change instance type keep in mind that the minimum hardware requirements to run CRC (on which this solution is based) are 4vcpus and 8GB of RAM, please refer to the [documentation](https://developers.redhat.com/blog/2019/09/05/red-hat-openshift-4-on-your-laptop-introducing-red-hat-codeready-containers) for further informations.
 
-**WARNING:** Running VM instances will cost you **real money** so be extremely careful to verify that all the resources instantiated are **removed** once you're done and remember that you're running them at **your own risk and cost**
+**WARNING:** Running VM instances on cloud will cost you **real money** so be extremely careful to verify that all the resources instantiated are **removed** once you're done and remember that you're running them at **your own risk and cost**
 
 
 
@@ -57,7 +90,7 @@ Please **be careful** on deleting the working directory content because without 
 **NOTE (podman only):** In order to make the mounted workdir read-write accessible from the container is need to change the SELinux security context related to the folder with the following command 
 ```chcon -Rt svirt_sandbox_file_t <HOST_WORKDIR_PATH>```
 
-#### Single node cluster creation
+#### Single node cluster creation ([bash-aws](#bash-aws-deployer) Infrastructure deployer)
 ```
 <podman|docker> run -v <HOST_WORKDIR_PATH>:/workdir\
  -e WORKING_MODE=C\
@@ -68,7 +101,7 @@ Please **be careful** on deleting the working directory content because without 
  -ti quay.io/crcont/crc-cloud
 ```
 
-#### Single node cluster teardown
+#### Single node cluster teardown ([bash-aws](#bash-aws-deployer) Infrastructure deployer)
 ```
 <podman|docker> run -v <HOST_WORKDIR_PATH>:/workdir\
  -e WORKING_MODE=T\
@@ -82,6 +115,8 @@ Please **be careful** on deleting the working directory content because without 
 
 #### Environment variables
 Environment variables will be passed to the container from the command line invocation with the ```-e VARIABLE=VALUE``` option that you can find above.
+**NOTE:** Every deployer may have its own environment variables please refer to the [Infrastructure Deployer Section](#deployer) for further details.
+
 ##### Mandatory Variables
 
 **Cluster creation**
@@ -90,9 +125,7 @@ Environment variables will be passed to the container from the command line invo
 |---|---|
 |  WORKING_MODE | C (creation mode)  |
 |  PULL_SECRET | base64 string of the Red Hat account pull secret ( it is recommended to use the command substitution to generate the string as described above)  |
-| AWS_ACCESS_KEY_ID  | AWS access key (infos [here](#prereq))  |
-| AWS_SECRET_ACCESS_KEY | AWS secret access key (infos [here](#prereq)) |
-| AWS_DEFAULT_REGION | AWS region where the cluster will be deployed ( currently us-west-2 is the only supported)
+
 
 
 **Cluster teardown**
@@ -114,6 +147,8 @@ Environment variables will be passed to the container from the command line invo
 |  PASS_KUBEADMIN | overrides the default password (kubeadmin) for kubeadmin account   |
 |  PASS_REDHAT |  overrides the default password (redhat) for redhat account |
 | INSTANCE_TYPE | overrides the default AWS instance type (c6in.2xlarge, infos [here](#prereq)) |
+| DEPLOYER_API | selects the infrastructure deployer ( please refer to [deployer API documentation](api/deployer/README.md)
+
 
 
 
@@ -122,13 +157,14 @@ Environment variables will be passed to the container from the command line invo
 To run **CRC-Cloud** from your command line you must be on Linux, be sure to have installed and configured the following programs in your box
 
 - bash (>=v4)
-- AWS CLI
 - jq
 - md5sum
 - curl
 - head
 - ssh-keygen
 - GNU sed
+- GNU grep
+- cat
 - nc (netcat)
 - ssh client
 - scp
@@ -148,15 +184,16 @@ at the end of the process the script will print the public address of the consol
 Below you'll find all the options available
 
 ```
-./crc-cloud.sh -C -p pull secret path [-d developer user password] [-k kubeadmin user password] [-r redhat user password] [-a AMI ID] [-t Instance type]
+./crc-cloud.sh -C -p pull secret path [-D infrastructure_deployer] [-d developer user password] [-k kubeadmin user password] [-r redhat user password] [-a AMI ID] [-t Instance type]
 where:
+    -D  Infrastructure Deployer (default: $DEFAULT_DEPLOYER) *NOTE* Must match with the folder name placed in api/deployer (please refer to the deployer documentation in api/deployer/README.md)
     -C  Cluster Creation mode
     -p  pull secret file path (download from https://console.redhat.com/openshift/create/local) 
-    -d  developer user password (optional, default: developer)
-    -k  kubeadmin user password (optional, default: kubeadmin)
-    -r  redhat    user password (optional, default: redhat)
-    -a  AMI ID (Amazon Machine Image) from which the VM will be Instantiated (optional, default: ami-0569ce8a44f2351be)
-    -i  EC2 Instance Type (optional, default; c6in.2xlarge)
+    -d  developer user password (optional, default: $PASS_DEVELOPER)
+    -k  kubeadmin user password (optional, default: $PASS_KUBEADMIN)
+    -r  redhat    user password (optional, default: $PASS_REDHAT)
+    -a  AMI ID (Amazon Machine Image) from which the VM will be Instantiated (optional, default: $AMI_ID)
+    -i  EC2 Instance Type (optional, default; $INSTANCE_TYPE)
     -h  show this help text
 ```
 #### Single node cluster teardown
@@ -165,7 +202,8 @@ To teardown the single node cluster the basic command is
 this will refer to the *latest* run found in ```<openspot_path>/workspace```, if you have several run folders in your workspace, you can specify the one you want to teardown with the parameter ```-v <run_id>``` where ```<run_id>``` corresponds to the numeric folder name containing the metadata of the cluster that will be deleted
 
 ```
-./crc-cloud.sh -T [-v run id]
+./crc-cloud.sh -T [-D infrastructure_deployer] [-v run id]
+    -D  Infrastructure Deployer (default: $DEFAULT_DEPLOYER) *NOTE* Must match with the folder name placed in api/deployer (please refer to the deployer documentation in api/deployer/README.md)
     -T  Cluster Teardown mode
     -v  The Id of the run that is gonna be destroyed, corresponds with the numeric name of the folders created in workdir (optional, default: latest)
     -h  show this help text 
