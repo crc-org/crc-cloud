@@ -3,11 +3,17 @@
 The Infrastructure Deployer API has been designed to abstract the Infrastructure provisioning from the OpenShift instance provisioning. The first version of CRC-Cloud was relying on AWS and AWS CLI, but as soon as the project was gaining interest, we started considering to support other cloud providers so we decided to implement this abstraction to easily implement other deployment technologies such as IaC tools like [Ansible](https://www.redhat.com/it/engage/delivery-with-ansible-20170906?sc_cid=7013a000002w14JAAQ&gclid=EAIaIQobChMIwLPlpZG9_AIVA5zVCh2EPw9VEAAYASAAEgJJXfD_BwE&gclsrc=aw.ds), [Terraform](https://terraform.io), [Pulumi](https://https://www.pulumi.com/) etc.
 
 ## Plugin loading and API implementation
-In order to be loaded, an Infrastructure Deployer Plugin must have a folder in ```plugin/deployer```. This folder must have the name of the plugin that will be passed to ```crc-cloud.sh``` with the ```-D``` option, so for example, if you want to create a plugin named ```my-deployer``` the plugin code and resources will be stored in ```<openspot_path>/plugin/deployer/my-deployer```.
+In order to be loaded, an Infrastructure Deployer Plugin must have a folder in ```plugin/deployer```. This folder must have the name of the plugin and the plugin name must contain **only** lowercase letters and underscores, that will be passed to ```crc-cloud.sh``` with the ```-D``` option, so for example, if you want to create a plugin named ```my_deployer``` the plugin code and resources will be stored in ```<openspot_path>/plugin/deployer/my-deployer```.
 You can find an example implementation from which start to develop a new plugin in ```plugin/deployer/example``` (and you can even run it!!).
-The plugin folder must contain a ```main.sh``` script that is the entrypoint of the plugin. The ```main.sh``` must implement the following methods:
+The plugin folder must contain a ```main.sh``` script that is the entrypoint of the plugin. The ```main.sh``` **must** implement the following methods:
 
 ```
+
+deployer_load_dependencies() {
+    pr_info "loads (if needed otherwise keep it empty) the plugin dependencies"
+    source $PLUGIN_ROOT_FOLDER/example_include.sh
+}
+
 deployer_create() {
     #all the command line args will be passed to that function
     pr_info "creates the infrastructure"
@@ -49,4 +55,4 @@ The **CRC-Cloud** engine will expose to the plugin some variables that must be u
 
  ## *Private* methods names conventions
 
- In order to increase code readability, non interface method names (kinda private) must start with an underscore "_"
+ In order to increase code readability and avoid conflicts non interface method names (kinda private) must start with _<plugin_name>_ for example if you name your plugin *example_plugin* all the non interface methods defined inside the plugin must start with _example_plugin_

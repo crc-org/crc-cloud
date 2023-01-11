@@ -120,6 +120,7 @@ set_cluster_infos() {
 create () {
     SECONDS=0
     prepare_workdir
+    deployer_load_dependencies
     deployer_create $@
     IIP=`deployer_get_iip`
     EIP=`deployer_get_eip`
@@ -198,6 +199,8 @@ check_command_dependencies() {
     [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: cat, please install it and try again"
     GREP=`which grep 2>/dev/null`
     [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: grep, please install it and try again"
+    EXPR=`which expr 2>/dev/null`
+    [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: expr, please install it and try again"
     FIGLET=`which figlet 2>/dev/null`
     [[ $CONTAINER && ( $? != 0 ) ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: figlet (container mode only), please install it and try again"
 }

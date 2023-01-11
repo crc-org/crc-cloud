@@ -17,7 +17,7 @@ We had a meeting and they gave me all the detailed instructions on how to run th
 
 ## Infrastructure Deployers
 <a name="deployer"></a>
-In order to abstract the Infrastructure and the OpenShift Instance provisioning has been developed an **Infrastructure Deployer API**. If you're interested on how to implement a new Infrastructure Deployer please refer to the [documentation](api/deployer/README.md).
+In order to abstract the Infrastructure and the OpenShift Instance provisioning has been developed an **Infrastructure Deployer API**. If you're interested on how to implement a new Infrastructure Deployer please refer to the [documentation](api/README.md).
 
 ### Available Deployers
 | Name | Status|
@@ -147,7 +147,7 @@ Environment variables will be passed to the container from the command line invo
 |  PASS_KUBEADMIN | overrides the default password (kubeadmin) for kubeadmin account   |
 |  PASS_REDHAT |  overrides the default password (redhat) for redhat account |
 | INSTANCE_TYPE | overrides the default AWS instance type (c6in.2xlarge, infos [here](#prereq)) |
-| DEPLOYER_API | selects the infrastructure deployer ( please refer to [deployer API documentation](api/deployer/README.md)
+| DEPLOYER_API | selects the infrastructure deployer ( please refer to [deployer API documentation](api/README.md)
 
 
 
@@ -164,6 +164,7 @@ To run **CRC-Cloud** from your command line you must be on Linux, be sure to hav
 - ssh-keygen
 - GNU sed
 - GNU grep
+- expr
 - cat
 - nc (netcat)
 - ssh client
@@ -186,7 +187,7 @@ Below you'll find all the options available
 ```
 ./crc-cloud.sh -C -p pull secret path [-D infrastructure_deployer] [-d developer user password] [-k kubeadmin user password] [-r redhat user password] [-a AMI ID] [-t Instance type]
 where:
-    -D  Infrastructure Deployer (default: $DEFAULT_DEPLOYER) *NOTE* Must match with the folder name placed in api/deployer (please refer to the deployer documentation in api/deployer/README.md)
+    -D  Infrastructure Deployer (default: $DEFAULT_DEPLOYER) *NOTE* Must match with the folder name placed in plugin/deployer (please refer to the deployer documentation in api/README.md)
     -C  Cluster Creation mode
     -p  pull secret file path (download from https://console.redhat.com/openshift/create/local) 
     -d  developer user password (optional, default: $PASS_DEVELOPER)
@@ -203,7 +204,7 @@ this will refer to the *latest* run found in ```<openspot_path>/workspace```, if
 
 ```
 ./crc-cloud.sh -T [-D infrastructure_deployer] [-v run id]
-    -D  Infrastructure Deployer (default: $DEFAULT_DEPLOYER) *NOTE* Must match with the folder name placed in api/deployer (please refer to the deployer documentation in api/deployer/README.md)
+    -D  Infrastructure Deployer (default: $DEFAULT_DEPLOYER) *NOTE* Must match with the folder name placed in api/ (please refer to the deployer documentation in api/README.md)
     -T  Cluster Teardown mode
     -v  The Id of the run that is gonna be destroyed, corresponds with the numeric name of the folders created in workdir (optional, default: latest)
     -h  show this help text 
