@@ -55,6 +55,7 @@ wait_instance_readiness(){
 # PARAMS $1: file path $2 plugin name
 api_check_method_name() {
     # CHECKS FOR NOT INTERFACE METHDODS NAME NOT STARTING WITH UNDERSCORE, IF THE INTERFACE WILL BE EXTENDED ADD THEM TO THE SWITCH CASE
+    # IF THE INTERFACE WILL BE EXTENDED WITH OTHER METHODS ADD THEM HERE
     PLUGIN_NAME_LENGTH=`expr length $2`
     for i in `$CAT $1 | $GREP -P "^\s*.+\s*\(\)\s*\{"|$SED -r 's/(.+)\(\)\s*\{/\1/'`
     do 
@@ -79,27 +80,30 @@ api_load_deployer() {
         (*[![:lower:]_]*) stop_if_failed 1 "plugin name must contain only lowercase letters and underscores";;
         (*);;
     esac
-
+    # IF THE INTERFACE WILL BE EXTENDED WITH OTHER METHODS ADD THEM HERE
     [ ! -d "$PLUGIN_DEPLOYER_FOLDER/$1" ] && stop_if_failed 1 "deployer API $1 folder not found in $PLUGIN_DEPLOYER_FOLDER/$1, please refer api/README.md for API specifications"
     [ ! -f "$PLUGIN_DEPLOYER_FOLDER/$1/main.sh" ] && stop_if_failed 1 "main.sh not found for deployer $1 in folder $PLUGIN_DEPLOYER_FOLDER/$1, please refer api/README.md for API specifications"
     source $PLUGIN_DEPLOYER_FOLDER/$1/main.sh
     [[ ! `declare -F deployer_create` ]] &&\
-    stop_if_failed 1 "deployer_create method not found in main.sh implementation for $1 infrastructure deployer api, please refer api/README.md for API specifications"
+    stop_if_failed 1 "deployer_create method not found in main.sh implementation for $1 infrastructure deployer plugin, please refer api/README.md for API specifications"
 
     [[ ! `declare -F deployer_teardown` ]] &&\
-    stop_if_failed 1 "deployer_teardown method not found in main.sh implementation for $1 infrastructure deployer api, please refer api/README.md for API specifications"
+    stop_if_failed 1 "deployer_teardown method not found in main.sh implementation for $1 infrastructure deployer plugin, please refer api/README.md for API specifications"
 
     [[ ! `declare -F deployer_get_eip` ]] &&\
-    stop_if_failed 1 "deployer_get_eip method not found in main.sh implementation for $1 infrastructure deployer api, please refer api/README.md for API specifications"
+    stop_if_failed 1 "deployer_get_eip method not found in main.sh implementation for $1 infrastructure deployer plugin, please refer api/README.md for API specifications"
 
     [[ ! `declare -F deployer_get_iip` ]] &&\
-    stop_if_failed 1 "deployer_get_iip method not found in main.sh implementation for $1 infrastructure deployer api, please refer api/README.md for API specifications"
+    stop_if_failed 1 "deployer_get_iip method not found in main.sh implementation for $1 infrastructure deployer plugin, please refer api/README.md for API specifications"
 
     [[ ! `declare -F deployer_usage` ]] &&\
-    stop_if_failed 1 "deployer_usage method not found in main.sh implementation for $1 infrastructure deployer api, please refer api/README.md for API specifications"
+    stop_if_failed 1 "deployer_usage method not found in main.sh implementation for $1 infrastructure deployer plugin, please refer api/README.md for API specifications"
+    
+    [[ ! `declare -F deployer_load_dependencies` ]] &&\
+    stop_if_failed 1 "deployer_load_dependencies method not found in main.sh implementation for $1 infrastructure deployer plugin, please refer api/README.md for API specifications"
 
 
-    # CHECKS FOR NOT INTERFACE METHDODS NAME NOT STARTING WITH UNDERSCORE, IF THE INTERFACE WILL BE EXTENDED ADD THEM TO THE SWITCH CASE
+    # CHECKS FOR INTERFACE METHDODS NAME NOT STARTING WITH _<plugin_name>_ , 
     api_check_method_name $PLUGIN_DEPLOYER_FOLDER/$1/main.sh $1
     # CHECKS main.sh INCLUDES FOR METHOD NAME COMPLIANCE
     for i in `$CAT $PLUGIN_DEPLOYER_FOLDER/$1/main.sh | $GREP -P "^\s+source .+\.sh" | sed -r 's#source\s+.+/(.*)#\1#'`

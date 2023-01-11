@@ -1,29 +1,33 @@
 #!/bin/bash
 
-# TO AVOID AWS CLI PAGINATION
-export AWS_PAGER=""
+_bash_ec2_init() {
+    # TO AVOID AWS CLI PAGINATION
+    export AWS_PAGER=""
 
-# CHECK CONTAINER VARS 
-if [ $CONTAINER ] 
-then
-    [[ -z $AWS_ACCESS_KEY_ID ]] &&\
-    stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
-    [[ -z $AWS_SECRET_ACCESS_KEY ]] &&\
-    stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
-    [[ -z $AWS_DEFAULT_REGION ]] &&\
-    stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
-fi
+    # CHECK CONTAINER VARS 
+    if [ $CONTAINER ] 
+    then
+        [[ -z $AWS_ACCESS_KEY_ID ]] &&\
+        stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
+        [[ -z $AWS_SECRET_ACCESS_KEY ]] &&\
+        stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
+        [[ -z $AWS_DEFAULT_REGION ]] &&\
+        stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
+        [[ -z $TARGET_INFRASTRUCTURE ]] &&\
+        stop_if_failed 1 "TARGET_INFRASTRUCTURE must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
+    fi
 
-# CONSTS
-INSTANCE_DESCRIPTION="instance_description.json"
+    # CONSTS
+    INSTANCE_DESCRIPTION="instance_description.json"
 
-# CAN BE OVERRIDE BY CONTAINER ENV VARS 
-[ -z $INSTANCE_TYPE ] && INSTANCE_TYPE="c6in.2xlarge"
-[ -z $AMI_ID ] && AMI_ID="ami-0569ce8a44f2351be"
+    # CAN BE OVERRIDE BY CONTAINER ENV VARS 
+    [ -z $INSTANCE_TYPE ] && INSTANCE_TYPE="c6in.2xlarge"
+    [ -z $AMI_ID ] && AMI_ID="ami-0569ce8a44f2351be"
 
-# DEPENDENCIES CHECKS
-AWS=`which aws 2>/dev/null`
-[[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: aws cli, please install it and try again"
+    # DEPENDENCIES CHECKS
+    AWS=`which aws 2>/dev/null`
+    [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: aws cli, please install it and try again"
+}
 
 
 # PRIVATE AWS METHODS
@@ -46,8 +50,8 @@ _bash_get_ec2_instance_private_ip(){
 
 _bash_create_ec2_resources() {
     pr_info "creating EC2 resources"
-    RESOURCES_NAME="openspot-ng-$RANDOM_SUFFIX"
-    GROUPID=`aws ec2 create-security-group --group-name $RESOURCES_NAME --description "openspot-ng security group run timestamp: $RUN_TIMESTAMP" --no-paginate | $JQ -r '.GroupId'`
+    RESOURCES_NAME="crc-cloud-$RANDOM_SUFFIX"
+    GROUPID=`aws ec2 create-security-group --group-name $RESOURCES_NAME --description "crc-cloud security group run timestamp: $RUN_TIMESTAMP" --no-paginate | $JQ -r '.GroupId'`
     stop_if_failed $? "failed to create EC2 security group"
     # KEYPAIR (Created just because mandatory, will be swapped manually fore core user later on)
     $AWS ec2 create-key-pair --key-name $RESOURCES_NAME --no-paginate
@@ -107,5 +111,4 @@ _bash_destroy_ec2_resources() {
   stop_if_failed $? "failed to remove keypair $KEY_NAME"
   pr_end "everything has been cleaned up!"
   exit 0
-
 }

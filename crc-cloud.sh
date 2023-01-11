@@ -140,7 +140,8 @@ create () {
 teardown() {
     WORKDIR="$WORKDIR_PATH/$TEARDOWN_RUN_ID"
     [ ! -d $WORKDIR ] && stop_if_failed 1 "$WORKDIR not found, please provide a correct path"
-    deployer_teardown
+    deployer_load_dependencies
+    deployer_teardown $@
 }
 
 set_workdir_dependent_variables() {
@@ -154,7 +155,7 @@ set_workdir_dependent_variables() {
 parse_args () {
     while getopts $BASE_OPTIONS option; do
     case "$option" in
-        h) usage;;
+        h) SHOW_HELP=1;;
         C) WORKING_MODE="C";pr_info "working mode: CREATE";;
         D) DEPLOYER_API=$OPTARG;pr_info "deployer api: $OPTARG";;
         T) WORKING_MODE="T";pr_info "working mode: TEARDOWN";;
@@ -250,7 +251,7 @@ $(basename "$0") -T [-D infrastructure_deployer] [-v run id]
 
     echo -e "\n*********** Deployer: $DEPLOYER_API ***********"
     deployer_usage
-    exit 1
+    exit 0
 }
 ### END FUNCTIONS
 
@@ -273,6 +274,8 @@ source ./api/common.sh
 
 set_workdir_dependent_variables
 
+
+
 ## PARSE & CHECK ARGS
 if [ $CONTAINER ] 
 then
@@ -291,20 +294,25 @@ else
     parse_args $@
     ## VARIABLES SANITY CHECKS
     # WORKING MODE CHECK
-    [[ (-z $WORKING_MODE ) ]] && echo -e "\nERROR: Working mode must be set\n" && usage
-    [[ ( $WORKING_MODE != "C" ) && ( $WORKING_MODE != "T" )  ]] && echo \
-    -e "\nERROR: Working mode Must be either -C (creation) or -T (teardown), not $WORKING_MODE\n" && usage
-    # CHECK MANDATORY ARGS FOR CREATION
-    [[ ($WORKING_MODE == "C" ) && ( ! "$PULL_SECRET_PATH" ) ]] && \
-    echo -e "\nERROR: in creation mode argument -p <pull_secret_path> must be provided\n" && usage 
-    # CHECK PULL SECRET PATH
-    [[ ($WORKING_MODE == "C" ) && ( ! -f $PULL_SECRET_PATH ) ]] && \
-    echo -e "\nERROR: $PULL_SECRET_PATH pull secret file not found" && usage
+    if [[ ! $SHOW_HELP ]]
+    then
+        [[ (-z $WORKING_MODE ) ]] && echo -e "\nERROR: Working mode must be set\n" && usage
+        [[ ( $WORKING_MODE != "C" ) && ( $WORKING_MODE != "T" )  ]] && echo \
+        -e "\nERROR: Working mode Must be either -C (creation) or -T (teardown), not $WORKING_MODE\n" && usage
+        # CHECK MANDATORY ARGS FOR CREATION
+        [[ ($WORKING_MODE == "C" ) && ( ! "$PULL_SECRET_PATH" ) ]] && \
+        echo -e "\nERROR: in creation mode argument -p <pull_secret_path> must be provided\n" && usage 
+        # CHECK PULL SECRET PATH
+        [[ ($WORKING_MODE == "C" ) && ( ! -f $PULL_SECRET_PATH ) ]] && \
+        echo -e "\nERROR: $PULL_SECRET_PATH pull secret file not found" && usage
+    fi
 
 fi
 
 ## LOAD DEPLOYER API
 api_load_deployer $DEPLOYER_API
+
+[[ $SHOW_USAGE ]] && usage
 
 ## ENTRYPOINT: if everything is ok, run the script.
 if [[ $WORKING_MODE == "C" ]]
@@ -312,7 +320,7 @@ then
     create $@
 elif [[ $WORKING_MODE == "T" ]]
 then
-    teardown
+    teardown $@
 else
     usage
 fi

@@ -44,16 +44,18 @@ Increasing or decreasing the resources will affect the deployment time together 
 | Argument | Description | Mandatory |
  --- | --- | --- | 
  | -a  | AMI ID (Amazon Machine Image) from which the VM will be Instantiated | false |
- | -i | EC2 Instance Type | false
+ | -t | EC2 Instance Type | false |
+ | -i | Target infrastructure (aws,gcp) | true |
 
 #### Container variables
 | Variable | Description | Mandatory |
 | --- | --- | --- |
-| AWS_ACCESS_KEY_ID  | AWS access key (infos [here](#bash-aws-deployer-prereq))  | true | 
-| AWS_SECRET_ACCESS_KEY | AWS secret access key (infos [here](#bash-aws-deployer-prereq)) | true |
-| AWS_DEFAULT_REGION | AWS region where the cluster will be deployed ( currently us-west-2 is the only supported) | true |
+| AWS_ACCESS_KEY_ID  | AWS access key (aws target infrastructure only) (infos [here](#bash-aws-deployer-prereq))  | true | 
+| AWS_SECRET_ACCESS_KEY | AWS secret (aws target infrastructure only) access key (infos [here](#bash-aws-deployer-prereq)) | true |
+| AWS_DEFAULT_REGION | AWS region where the cluster will be deployed (aws target infrastructure only) ( currently us-west-2 is the only supported) | true |
 | INSTANCE_TYPE | AWS EC2 Instance Type | false |
 | AMI_ID | AMI ID (Amazon Machine Image) from which the VM will be Instantiated | false |
+| TARGET_INFRASTRUCTURE | Target infrastructure (aws,gcp) | true |
 
 <br/>
 <br/>
