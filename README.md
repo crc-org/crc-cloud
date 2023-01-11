@@ -195,8 +195,6 @@ where:
     -d  developer user password (optional, default: $PASS_DEVELOPER)
     -k  kubeadmin user password (optional, default: $PASS_KUBEADMIN)
     -r  redhat    user password (optional, default: $PASS_REDHAT)
-    -a  AMI ID (Amazon Machine Image) from which the VM will be Instantiated (optional, default: $AMI_ID)
-    -i  EC2 Instance Type (optional, default; $INSTANCE_TYPE)
     -h  show this help text
 ```
 #### Single node cluster teardown
