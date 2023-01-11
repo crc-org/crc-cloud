@@ -55,27 +55,27 @@ wait_instance_readiness(){
 
 
 api_load_deployer() {
-    [ ! -d "$DEPLOYER_API_FOLDER/$1" ] && stop_if_failed 1 "Deployer API $1 folder not found in $DEPLOYER_API_FOLDER/$1, please refer api/README.md for API specifications"
-    [ ! -f "$DEPLOYER_API_FOLDER/$1/main.sh" ] && stop_if_failed 1 "main.sh not found for deployer $1 in folder $DEPLOYER_API_FOLDER/$1, please refer api/README.md for API specifications"
-    source $DEPLOYER_API_FOLDER/$1/main.sh
+    [ ! -d "$PLUGIN_DEPLOYER_FOLDER/$1" ] && stop_if_failed 1 "Deployer API $1 folder not found in $PLUGIN_DEPLOYER_FOLDER/$1, please refer api/README.md for API specifications"
+    [ ! -f "$PLUGIN_DEPLOYER_FOLDER/$1/main.sh" ] && stop_if_failed 1 "main.sh not found for deployer $1 in folder $PLUGIN_DEPLOYER_FOLDER/$1, please refer api/README.md for API specifications"
+    source $PLUGIN_DEPLOYER_FOLDER/$1/main.sh
     [[ ! `declare -F deployer_create` ]] &&\
-    stop_if_failed 1 "deployer_create method not found in main.sh implementation for $1 deployer api, please refer api/README.md for API specifications"
+    stop_if_failed 1 "deployer_create method not found in main.sh implementation for $1 infrastructure deployer api, please refer api/README.md for API specifications"
 
     [[ ! `declare -F deployer_teardown` ]] &&\
-    stop_if_failed 1 "deployer_teardown method not found in main.sh implementation for $1 deployer api, please refer api/README.md for API specifications"
+    stop_if_failed 1 "deployer_teardown method not found in main.sh implementation for $1 infrastructure deployer api, please refer api/README.md for API specifications"
 
     [[ ! `declare -F deployer_get_eip` ]] &&\
-    stop_if_failed 1 "deployer_get_eip method not found in main.sh implementation for $1 deployer api, please refer api/README.md for API specifications"
+    stop_if_failed 1 "deployer_get_eip method not found in main.sh implementation for $1 infrastructure deployer api, please refer api/README.md for API specifications"
 
     [[ ! `declare -F deployer_get_iip` ]] &&\
-    stop_if_failed 1 "deployer_get_iip method not found in main.sh implementation for $1 deployer api, please refer api/README.md for API specifications"
+    stop_if_failed 1 "deployer_get_iip method not found in main.sh implementation for $1 infrastructure deployer api, please refer api/README.md for API specifications"
 
     [[ ! `declare -F deployer_usage` ]] &&\
-    stop_if_failed 1 "deployer_usage method not found in main.sh implementation for $1 deployer api, please refer api/README.md for API specifications"
-    pr_info "successfully loaded $1 deployer API"
+    stop_if_failed 1 "deployer_usage method not found in main.sh implementation for $1 infrastructure deployer api, please refer api/README.md for API specifications"
+
 
     # CHECKS FOR NOT INTERFACE METHDODS NAME NOT STARTING WITH UNDERSCORE, IF THE INTERFACE WILL BE EXTENDED ADD THEM TO THE SWITCH CASE
-    for i in `$CAT $DEPLOYER_API_FOLDER/$1/main.sh | $GREP -P "^\s*.+\s*\(\)\s*\{"|$SED -r 's/(.+)\(\)\s*\{/\1/'`
+    for i in `$CAT $PLUGIN_DEPLOYER_FOLDER/$1/main.sh | $GREP -P "^\s*.+\s*\(\)\s*\{"|$SED -r 's/(.+)\(\)\s*\{/\1/'`
     do 
         case "$i" in
             deployer_create);;
@@ -88,5 +88,6 @@ api_load_deployer() {
             ;;
         esac
     done
+    pr_info "successfully loaded $1 deployer plugin"
 }
 

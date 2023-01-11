@@ -180,8 +180,6 @@ check_command_dependencies() {
     [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: jq, please install it and try again"
     MD5SUM=`which md5sum 2>/dev/null`
     [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: md5sum, please install it and try again"
-    AWS=`which aws 2>/dev/null`
-    [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: aws cli, please install it and try again"
     HEAD=`which head 2>/dev/null`
     [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: head, please install it and try again"
     SSHKEYGEN=`which ssh-keygen 2>/dev/null`
@@ -215,10 +213,10 @@ set_const() {
     TEMPLATES="templates"
     TEARDOWN_MAX_RETRIES=500
     CLUSTER_INFOS_TEMPLATE="$TEMPLATES/$CLUSTER_INFOS_FILE"
-    DEFAULT_DEPLOYER="bash-aws"
+    DEFAULT_DEPLOYER="bash"
     BASE_OPTIONS=":hCTp:D:d:k:r:v:"
-    ROOT_API_FOLDER="api"
-    DEPLOYER_API_FOLDER="$ROOT_API_FOLDER/deployer"
+    PLUGIN_FOLDER="plugin"
+    PLUGIN_DEPLOYER_FOLDER="$PLUGIN_FOLDER/deployer"
     [[ $CONTAINER ]] && WORKDIR_PATH="/workdir"
 }
 
@@ -229,20 +227,18 @@ Cluster Creation :
 
 $(basename "$0") -C -p pull secret path [-D infrastructure_deployer] [-d developer user password] [-k kubeadmin user password] [-r redhat user password]
 where:
-    -D  Infrastructure Deployer (default: $DEFAULT_DEPLOYER) *NOTE* Must match with the folder name placed in api/deployer (please refer to the deployer documentation in api/deployer/README.md)
+    -D  Infrastructure Deployer (default: $DEFAULT_DEPLOYER) *NOTE* Must match with the folder name placed in plugin/deployer (please refer to the deployer documentation in api/README.md)
     -C  Cluster Creation mode
     -p  pull secret file path (download from https://console.redhat.com/openshift/create/local) 
     -d  developer user password (optional, default: $PASS_DEVELOPER)
     -k  kubeadmin user password (optional, default: $PASS_KUBEADMIN)
     -r  redhat    user password (optional, default: $PASS_REDHAT)
-    -a  AMI ID (Amazon Machine Image) from which the VM will be Instantiated (optional, default: $AMI_ID)
-    -i  EC2 Instance Type (optional, default; $INSTANCE_TYPE)
     -h  show this help text
 
 Cluster Teardown:
 
 $(basename "$0") -T [-D infrastructure_deployer] [-v run id]
-    -D  Infrastructure Deployer (default: $DEFAULT_DEPLOYER) *NOTE* Must match with the folder name placed in api/deployer (please refer to the deployer documentation in api/deployer/README.md)
+    -D  Infrastructure Deployer (default: $DEFAULT_DEPLOYER) *NOTE* Must match with the folder name placed in plugin/deployer (please refer to the deployer documentation in api/README.md)
     -T  Cluster Teardown mode
     -v  The Id of the run that is gonna be destroyed, corresponds with the numeric name of the folders created in workdir (optional, default: latest)
     -h  show this help text 
@@ -260,7 +256,7 @@ $(basename "$0") -T [-D infrastructure_deployer] [-v run id]
 check_command_dependencies
 set_const
 
-## IMPORT COMMON
+## IMPORT API COMMON
 source ./api/common.sh
 
 ## DEFAULT VALUES THAT CAN BE OVERRIDDEN BY ENV (podman/docker)
@@ -289,10 +285,6 @@ then
     [[ ! -d $WORKDIR_PATH ]] && stop_if_failed 1 "please mount the workdir filesystem, refer to README.md for further instructions"
     [[ ! -w $WORKDIR_PATH ]] && \
     stop_if_failed 1 "please grant write permissions to the host folder mounted as volume, please refer to README.md for further instructions"
-    # check AWS credentials
-    [[ -z $AWS_ACCESS_KEY_ID ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
-    [[ -z $AWS_SECRET_ACCESS_KEY ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
-    [[ -z $AWS_DEFAULT_REGION ]] && stop_if_failed 1 "AWS_ACCESS_KEY_ID must be set, please refer to AWS CLI documentation https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html"
     [[ ( $WORKING_MODE == "T" ) && ($TEARDOWN_RUN_ID == "latest") ]] && stop_if_failed 1 "TEARDOWN_RUN_ID must be set in container mode. Please set this value with the run id that you want to teardown, refer to README.md for further instructions"
 else
     parse_args $@

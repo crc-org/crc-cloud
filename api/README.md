@@ -3,8 +3,8 @@
 The Infrastructure Deployer API has been designed to abstract the Infrastructure provisioning from the OpenShift instance provisioning. The first version of CRC-Cloud was relying on AWS and AWS CLI, but as soon as the project was gaining interest, we started considering to support other cloud providers so we decided to implement this abstraction to easily implement other deployment technologies such as IaC tools like [Ansible](https://www.redhat.com/it/engage/delivery-with-ansible-20170906?sc_cid=7013a000002w14JAAQ&gclid=EAIaIQobChMIwLPlpZG9_AIVA5zVCh2EPw9VEAAYASAAEgJJXfD_BwE&gclsrc=aw.ds), [Terraform](https://terraform.io), [Pulumi](https://https://www.pulumi.com/) etc.
 
 ## Plugin loading and API implementation
-In order to be loaded, an Infrastructure Deployer Plugin must have a folder in ```api/deployer```. This folder must have the name of the plugin that will be passed to ```crc-cloud.sh``` with the ```-D``` option, so for example, if you want to create a plugin named ```my-deployer``` the plugin code and resources will be stored in ```<openspot_path>/api/deployer/my-deployer```.
-You can find an example implementation from which start to develop a new plugin in ```api/deployer/example``` (and you can even run it!!).
+In order to be loaded, an Infrastructure Deployer Plugin must have a folder in ```plugin/deployer```. This folder must have the name of the plugin that will be passed to ```crc-cloud.sh``` with the ```-D``` option, so for example, if you want to create a plugin named ```my-deployer``` the plugin code and resources will be stored in ```<openspot_path>/plugin/deployer/my-deployer```.
+You can find an example implementation from which start to develop a new plugin in ```plugin/deployer/example``` (and you can even run it!!).
 The plugin folder must contain a ```main.sh``` script that is the entrypoint of the plugin. The ```main.sh``` must implement the following methods:
 
 ```
