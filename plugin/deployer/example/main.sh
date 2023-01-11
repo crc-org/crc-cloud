@@ -24,6 +24,10 @@ _parse_args() {
 deployer_create() {
     #all the command line args will be passed to that function
     pr_info "creates the infrastructure"
+    pr_info "\$CONTAINER: $CONTAINER"
+    pr_info "\$RANDOM_SUFFIX: $RANDOM_SUFFIX"
+    pr_info "\$WORKDIR: $WORKDIR"
+    pr_info "\$PLUGIN_ROOT_FOLDER: $PLUGIN_ROOT_FOLDER"
     exit 0
 }
 

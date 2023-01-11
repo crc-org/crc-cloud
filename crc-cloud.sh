@@ -267,9 +267,7 @@ source ./api/common.sh
 [ -z $WORKING_MODE ] && WORKING_MODE=""
 [ -z $TEARDOWN_RUN_ID ] && TEARDOWN_RUN_ID="latest"
 [ -z $DEPLOYER_API ] && DEPLOYER_API=$DEFAULT_DEPLOYER 
-## LOAD DEPLOYER API
 
-api_load_deployer $DEPLOYER_API
 set_workdir_dependent_variables
 
 ## PARSE & CHECK ARGS
@@ -302,6 +300,8 @@ else
 
 fi
 
+## LOAD DEPLOYER API
+api_load_deployer $DEPLOYER_API
 
 ## ENTRYPOINT: if everything is ok, run the script.
 if [[ $WORKING_MODE == "C" ]]

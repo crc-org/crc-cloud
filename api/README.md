@@ -44,7 +44,8 @@ The **CRC-Cloud** engine will expose to the plugin some variables that must be u
 | --- | --- | --- |
 | $CONTAINER | Boolean | It's valorized if the script is running inside a container |
 | $RANDOM_SUFFIX | String | It's the random suffix applied to the resources created inside the cloud provider in order to avoid conflicts with other **CRC-Cloud** instances running in the same namespace (can be ignored if the deployment methods provides it's own logic) |
-| $WORKDIR | String | That's the folder where all the deployment status infos must be stored (will be created by the engine) | 
+| $WORKDIR | String | That's the folder where all the deployment status infos must be stored (will be created by the engine) |
+| $PLUGIN_ROOT_FOLDER | String | That's the folder containing the loaded plugin, this can be used as starting path for plugin resources | 
 
  ## *Private* methods names conventions
 

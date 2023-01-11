@@ -88,6 +88,8 @@ api_load_deployer() {
             ;;
         esac
     done
+    
+    PLUGIN_ROOT_FOLDER=$PLUGIN_DEPLOYER_FOLDER/$1
     pr_info "successfully loaded $1 deployer plugin"
 }
 
