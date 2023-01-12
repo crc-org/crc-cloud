@@ -70,13 +70,13 @@ Please **be careful** on deleting the working directory content because without 
 
 #### Single node cluster teardown
 ```
-<podman|docker> run -v <HOST_WORKDIR_PATH>:/workdir\
+<podman|docker> run -v <HOST_WORKDIR_ABSOLUTE_PATH>:/workdir\
  -e WORKING_MODE=T\
  -e TEARDOWN_RUN_ID=<TEARDOWN_RUN_ID>\ 
  -e AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>\
  -e AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS>\
  -e AWS_DEFAULT_REGION=us-west-2\
- -ti quay.io/crcont/crc-cloud
+ quay.io/crcont/crc-cloud
 ```
 (check [here](#workdir) for **TEARDOWN_RUN_ID** infos and **WORKDIR** setup instructions )
 
@@ -95,12 +95,13 @@ Environment variables will be passed to the container from the command line invo
 | AWS_DEFAULT_REGION | AWS region where the cluster will be deployed ( currently us-west-2 is the only supported)
 
 
+
 **Cluster teardown**
 
 | VARIABLE | DESCRIPTION |
 | --- | ---|
 | WORKING_MODE | T (teardown) |
-| TEARDOWN_ID | the name (unix timestamp format) of the folder created inside the working directory, containing all the metadata needed to teardown the cluster |
+| TEARDOWN_ID | the name of the folder created inside the working directory, containing all the metadata needed to teardown the cluster (if specified in creation will match with CREATE_RUN_ID)|
 | AWS_ACCESS_KEY_ID  | AWS access key (infos [here](#prereq))  |
 | AWS_SECRET_ACCESS_KEY | AWS secret access key (infos [here](#prereq)) |
 | AWS_DEFAULT_REGION | AWS region where the cluster has been deployed ( currently us-west-2 is the only supported) |
@@ -110,6 +111,7 @@ Environment variables will be passed to the container from the command line invo
 
 |  VARIABLE | DESCRIPTION  |
 |---|---|
+| CREATE_RUN_ID | Overrides the folder where the **CRC-Cloud** will put the output files, if not set will use the current timestamp, useful for CI/CD pipelines or everywhere there is the need to know this value upfront |
 |  PASS_DEVELOPER |  overrides the default password (developer) for developer account  |
 |  PASS_KUBEADMIN | overrides the default password (kubeadmin) for kubeadmin account   |
 |  PASS_REDHAT |  overrides the default password (redhat) for redhat account |

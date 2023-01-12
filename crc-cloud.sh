@@ -17,7 +17,7 @@ prepare_workdir() {
     rm -rf $WORKDIR_PATH/latest
     #link only if not running in container (teardown will need mandatory run id)
     [[ ! $CONTAINER ]] && ln -s $(readlink -f $WORKDIR) $(readlink -f $WORKDIR_PATH)/latest
-    pr_info "preparing working directory"
+    pr_info "preparing working directory: $WORKDIR"
 }
 
 
@@ -209,7 +209,7 @@ teardown() {
 }
 
 set_workdir_dependent_variables() {
-    WORKDIR="$WORKDIR_PATH/$RUN_TIMESTAMP"
+    WORKDIR="$WORKDIR_PATH/$CREATE_RUN_ID"
     LOG_FILE="$WORKDIR/local.log"
     TEARDOWN_LOGFILE="$WORKDIR_PATH/teardown_$RUN_TIMESTAMP.log"
     RANDOM_SUFFIX_FILE="$WORKDIR/suffix"
@@ -274,14 +274,6 @@ FIGLET=`which figlet 2>/dev/null`
 [[ $CONTAINER && ( $? != 0 ) ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: figlet (container mode only), please install it and try again"
 
 
-##DEFAULT VALUES THAT CAN BE OVERRIDDEN BY ENV (podman/docker)
-[ -z $PASS_DEVELOPER ] && PASS_DEVELOPER="developer"
-[ -z $KUBEADMIN ] && PASS_KUBEADMIN="kubeadmin"
-[ -z $PASS_REDHAT ] && PASS_REDHAT="redhat"
-[ -z $INSTANCE_TYPE ] && INSTANCE_TYPE="c6in.2xlarge"
-[ -z $WORKDIR_PATH ] && WORKDIR_PATH="workdir"
-[ -z $WORKING_MODE ] && WORKING_MODE=""
-[ -z $TEARDOWN_RUN_ID ] && TEARDOWN_RUN_ID="latest"
 
 ##CONST
 SSH_PORT="22"
@@ -294,6 +286,16 @@ TEMPLATES="templates"
 TEARDOWN_MAX_RETRIES=500
 CLUSTER_INFOS_TEMPLATE="$TEMPLATES/$CLUSTER_INFOS_FILE"
 AMI_ID="ami-0569ce8a44f2351be"
+
+##DEFAULT VALUES THAT CAN BE OVERRIDDEN BY ENV (podman/docker)
+[ -z $PASS_DEVELOPER ] && PASS_DEVELOPER="developer"
+[ -z $KUBEADMIN ] && PASS_KUBEADMIN="kubeadmin"
+[ -z $PASS_REDHAT ] && PASS_REDHAT="redhat"
+[ -z $INSTANCE_TYPE ] && INSTANCE_TYPE="c6in.2xlarge"
+[ -z $WORKDIR_PATH ] && WORKDIR_PATH="workdir"
+[ -z $WORKING_MODE ] && WORKING_MODE=""
+[ -z $TEARDOWN_RUN_ID ] && TEARDOWN_RUN_ID="latest"
+[ -z $CREATE_RUN_ID ] && CREATE_RUN_ID=$RUN_TIMESTAMP
 
 ##ARGS
 #collects args from commandline only if not in container otherwise variables are fed by -e VAR=VALUE 
