@@ -81,11 +81,26 @@ check_cluster_access_with_new_ca() {
     done
 }
 
+wait_for_resource() {
+    local resource=$1
+    local retry=0
+    local max_retry=20
+    until `oc get $resource > /dev/null 2>&1`
+    do
+        [[$retry == $max_retry]] && stop_if_failed 1 "impossible to get resource ${resource}"
+        pr_info "waiting for ${resource} to become available try $retry, hang on...."
+        sleep 5
+        ((retry++))
+    done
+}
+
 #Replaces the default pubkey with the new one just generated to avoid the mysterious service to replace it later on :-\
 replace_default_pubkey() {
-    pr_info "replacing the default public key from /etc/machine-config-daemon/currentconfig"
-    cat <<< $(jq --arg pubkey "$(cat /home/core/id_rsa.pub)" '.spec.config.passwd.users[0].sshAuthorizedKeys=$pubkey' /etc/machine-config-daemon/currentconfig) > /etc/machine-config-daemon/currentconfig
-    stop_if_failed $? "failed to replace public key"
+    pr_info "Updating the public key resource for machine config operator"
+    local pub_key=$(tr -d '\n\r' < /home/core/id_rsa.pub)
+    wait_for_resource machineconfig
+    oc patch machineconfig 99-master-ssh -p "{\"spec\": {\"config\": {\"passwd\": {\"users\": [{\"name\": \"core\", \"sshAuthorizedKeys\": [\"${pub_key}\"]}]}}}}" --type merge
+    stop_if_failed $? "failed to update public key to machine config operator"
 }
 
 setup_dsnmasq(){
@@ -237,10 +252,10 @@ set_credentials() {
     stop_if_failed $? "failed to replace Cluster secret"
 }
 
-replace_default_pubkey
 setup_dsnmasq
 
 enable_and_start_kubelet
+replace_default_pubkey
 wait_cluster_become_healthy "etcd|openshift-apiserver"
 stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
 
