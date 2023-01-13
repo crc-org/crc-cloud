@@ -1,9 +1,7 @@
 # CRC-Cloud
 ### Disposable OpenShift instances on cloud in minutes
 
-| ![space-1.jpg](assets/crc-cloud.png) |
-|:--:|
-| <sub><sup>kindly created by OpenAI DALL-E (https://openai.com/dall-e-2) </sup></sub>|
+![CRC Cloud](assets/crc-cloud.png)
 
 ## Disclaimer
 This project has been developed for **experimental** purpose only and it's not **absolutely** meant to run production clusters. The author is not responsible in any manner of any cost on which the user may incur for inexperience or software failure.
