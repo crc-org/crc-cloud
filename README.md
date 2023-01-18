@@ -1,4 +1,5 @@
-# CRC-Cloud
+# CRC Cloud - Runs Containers in the Cloud
+
 ### Disposable OpenShift instances on cloud in minutes
 
 ![CRC Cloud](assets/crc-cloud.png)
