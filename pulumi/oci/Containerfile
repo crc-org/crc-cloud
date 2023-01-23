@@ -1,0 +1,32 @@
+FROM docker.io/library/golang:1.18-alpine3.17 as builder 
+
+USER root
+WORKDIR /workspace
+COPY . .
+
+ENV PULUMI_VERSION 3.51.0
+ENV PULUMI_URL https://github.com/pulumi/pulumi/releases/download/v${PULUMI_VERSION}/pulumi-v${PULUMI_VERSION}-linux-x64.tar.gz
+
+RUN apk -U upgrade \
+    && apk add make gcc musl-dev curl \
+    && make build \
+    && curl -LO ${PULUMI_URL} \
+    && tar -xzvf pulumi-v${PULUMI_VERSION}-linux-x64.tar.gz
+
+# TODO review quay build with entitlements (microdnf...)
+# FROM registry.access.redhat.com/ubi8/ubi-minimal
+FROM docker.io/library/alpine:3.17
+
+LABEL MAINTAINER "CRC <devtools-cdk@redhat.com>"
+
+COPY --from=builder /workspace/out/crc-cloud /workspace/pulumi/pulumi /workspace/oci/entrypoint.sh /usr/local/bin/
+
+ENV INTERNAL_OUTPUT /tmp/crc-cloud
+
+VOLUME [ "${INTERNAL_OUTPUT}" ]
+
+# libc6-compat
+RUN apk add --update curl aws-cli qemu-img zstd bash \
+    && mkdir -p "${INTERNAL_OUTPUT}"
+
+ENTRYPOINT entrypoint.sh 
