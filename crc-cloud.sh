@@ -320,7 +320,6 @@ AMI_ID="ami-0569ce8a44f2351be"
 [ -z $TEARDOWN_RUN_ID ] && TEARDOWN_RUN_ID="latest"
 [ -z $CLOUD_PROVIDER ] && CLOUD_PROVIDER="aws"
 [ -z $CREATE_RUN_ID ] && CREATE_RUN_ID=$RUN_TIMESTAMP
-pr_info "CLOUD PROVIDER $CLOUD_PROVIDER"
 
 ##ARGS
 #collects args from commandline only if not in container otherwise variables are fed by -e VAR=VALUE 
