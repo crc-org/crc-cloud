@@ -286,8 +286,16 @@ SCP=`which scp 2>/dev/null`
 [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: scp, please install it and try again"
 BASE64=`which base64 2>/dev/null`
 [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: base64, please install it and try again"
-FIGLET=`which figlet 2>/dev/null`
-[[ $CONTAINER && ( $? != 0 ) ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: figlet (container mode only), please install it and try again"
+
+# check & initialize container dependencies
+if [[ $CONTAINER ]]
+then
+    FIGLET=`which figlet 2>/dev/null`
+    [[  $? != 0  ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: figlet (container mode only), please install it and try again"
+    AWS=`which aws 2>/dev/null`
+    [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: aws cli, please install it and try again"
+fi
+
 
 ##CONST
 SSH_PORT="22"
@@ -304,7 +312,7 @@ AMI_ID="ami-0569ce8a44f2351be"
 
 ##DEFAULT VALUES THAT CAN BE OVERRIDDEN BY ENV (podman/docker)
 [ -z $PASS_DEVELOPER ] && PASS_DEVELOPER="developer"
-[ -z $KUBEADMIN ] && PASS_KUBEADMIN="kubeadmin"
+[ -z $PASS_KUBEADMIN ] && PASS_KUBEADMIN="kubeadmin"
 [ -z $PASS_REDHAT ] && PASS_REDHAT="redhat"
 [ -z $INSTANCE_TYPE ] && INSTANCE_TYPE="c6in.2xlarge"
 [ -z $WORKDIR_PATH ] && WORKDIR_PATH="workdir"
@@ -312,6 +320,7 @@ AMI_ID="ami-0569ce8a44f2351be"
 [ -z $TEARDOWN_RUN_ID ] && TEARDOWN_RUN_ID="latest"
 [ -z $CLOUD_PROVIDER ] && CLOUD_PROVIDER="aws"
 [ -z $CREATE_RUN_ID ] && CREATE_RUN_ID=$RUN_TIMESTAMP
+pr_info "CLOUD PROVIDER $CLOUD_PROVIDER"
 
 ##ARGS
 #collects args from commandline only if not in container otherwise variables are fed by -e VAR=VALUE 
@@ -369,8 +378,9 @@ else
     #WORKING MODE CHECK
     case $CLOUD_PROVIDER in
     "aws")
+    
         AWS=`which aws 2>/dev/null`
-        [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: aws cli, please install it and try again"
+        [[ $? != 0 ]] && stop_if_failed 1 "[DEPENDENCY MISSING]: aws cli, please install it and try again"        
     ;;
     *)
         echo "unknown cloud provider"
