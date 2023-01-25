@@ -193,7 +193,7 @@ create () {
         ;;
         *)
             echo "Unknown cloud provider"
-            usuage
+            usage
             exit 1
     esac
 
