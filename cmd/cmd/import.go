@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/crc/crc-cloud/cmd/cmd/constants"
 	"os"
 
@@ -42,6 +43,7 @@ var crcCloudImportCmd = &cobra.Command{
 			viper.GetString(constants.BundleDownloadURL),
 			viper.GetString(constants.ShasumfileDownloadURL),
 			manager.Provider(viper.GetString(constants.Provider))); err != nil {
+			fmt.Printf("error importing the image: %s\n", err)
 			os.Exit(1)
 		}
 		return nil

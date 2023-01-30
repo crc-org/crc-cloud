@@ -1,6 +1,7 @@
 package create
 
 import (
+	"fmt"
 	"github.com/crc/crc-cloud/cmd/cmd/constants"
 	"github.com/crc/crc-cloud/pkg/manager"
 	"github.com/spf13/cobra"
@@ -35,6 +36,7 @@ func getAWSProviderCmd() *cobra.Command {
 				providerParams,
 				viper.GetString(constants.OcpPullSecretFilePath),
 				viper.GetString(constants.KeyFilePath)); err != nil {
+				fmt.Printf("error creating the cluster with %s provider: %s\n", manager.AWS, err)
 				os.Exit(1)
 			}
 			return nil
