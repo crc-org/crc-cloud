@@ -19,8 +19,8 @@ func CreateParams() (params map[string]string) {
 	return
 }
 
-func Import(projectName, backerURL, provider, outputFoler string,
-	bundleDownloadURL, shasumfileDownloadURL string) error {
+func Import(projectName, backerURL, outputFoler string,
+	bundleDownloadURL, shasumfileDownloadURL string, provider Provider) error {
 	// Pick the import function according to the provider
 	p, err := getProvider(provider)
 	if err != nil {
@@ -63,7 +63,7 @@ func manageImageImportResults(stackResult auto.UpResult, destinationFolder strin
 }
 
 func Create(projectName, backerURL, outputFoler string,
-	provider string, providerArgs map[string]string,
+	provider Provider, providerArgs map[string]string,
 	ocpPullSecretFilePath, bootKeyFilePath string) error {
 	// this will return a provider which implements the api.Provider interface
 	p, err := getProvider(provider)
@@ -98,7 +98,7 @@ func Create(projectName, backerURL, outputFoler string,
 	return manageCreateResults(stackResult, outputFoler)
 }
 
-func Destroy(projectName, backedURL string, provider string) error {
+func Destroy(projectName, backedURL string, provider Provider) error {
 	// this will return a provider which implements the api.Provider interface
 	p, err := getProvider(provider)
 	if err != nil {
