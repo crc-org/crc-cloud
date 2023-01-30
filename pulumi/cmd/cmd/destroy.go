@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/crc/crc-cloud/cmd/cmd/constants"
 	"os"
 
@@ -36,6 +37,7 @@ var crcCloudDestroyCmd = &cobra.Command{
 			viper.GetString(constants.ProjectName),
 			viper.GetString(constants.BackedURL),
 			manager.Provider(viper.GetString(constants.Provider))); err != nil {
+			fmt.Printf("error destroying the cluster: %s\n", err)
 			os.Exit(1)
 		}
 		return nil
