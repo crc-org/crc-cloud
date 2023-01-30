@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/crc/crc-cloud/cmd/cmd/constants"
 	"os"
 
 	"github.com/crc/crc-cloud/pkg/manager"
@@ -18,12 +19,12 @@ func init() {
 	rootCmd.AddCommand(crcCloudImportCmd)
 	flagSet := pflag.NewFlagSet(importImageCmdName, pflag.ExitOnError)
 	// Fixed params
-	flagSet.StringP(projectName, "", "", projectNameDesc)
-	flagSet.StringP(backedURL, "", "", backedURLDesc)
-	flagSet.StringP(provider, "", "", providerDesc)
-	flagSet.StringP(outputFolder, "", "", outputFolderDesc)
-	flagSet.StringP(bundleDownloadURL, "", "", bundleDownloadURLDesc)
-	flagSet.StringP(shasumfileDownloadURL, "", "", shasumfileDownloadURLDesc)
+	flagSet.StringP(constants.ProjectName, "", "", constants.ProjectNameDesc)
+	flagSet.StringP(constants.BackedURL, "", "", constants.BackedURLDesc)
+	flagSet.StringP(constants.Provider, "", "", constants.ProviderDesc)
+	flagSet.StringP(constants.OutputFolder, "", "", constants.OutputFolderDesc)
+	flagSet.StringP(constants.BundleDownloadURL, "", "", constants.BundleDownloadURLDesc)
+	flagSet.StringP(constants.ShasumfileDownloadURL, "", "", constants.ShasumfileDownloadURLDesc)
 	crcCloudImportCmd.Flags().AddFlagSet(flagSet)
 }
 
@@ -35,12 +36,12 @@ var crcCloudImportCmd = &cobra.Command{
 			return err
 		}
 		if err := manager.Import(
-			viper.GetString(projectName),
-			viper.GetString(backedURL),
-			viper.GetString(provider),
-			viper.GetString(outputFolder),
-			viper.GetString(bundleDownloadURL),
-			viper.GetString(shasumfileDownloadURL)); err != nil {
+			viper.GetString(constants.ProjectName),
+			viper.GetString(constants.BackedURL),
+			viper.GetString(constants.Provider),
+			viper.GetString(constants.OutputFolder),
+			viper.GetString(constants.BundleDownloadURL),
+			viper.GetString(constants.ShasumfileDownloadURL)); err != nil {
 			os.Exit(1)
 		}
 		return nil
