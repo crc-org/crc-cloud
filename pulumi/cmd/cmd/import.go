@@ -38,10 +38,10 @@ var crcCloudImportCmd = &cobra.Command{
 		if err := manager.Import(
 			viper.GetString(constants.ProjectName),
 			viper.GetString(constants.BackedURL),
-			viper.GetString(constants.Provider),
 			viper.GetString(constants.OutputFolder),
 			viper.GetString(constants.BundleDownloadURL),
-			viper.GetString(constants.ShasumfileDownloadURL)); err != nil {
+			viper.GetString(constants.ShasumfileDownloadURL),
+			manager.Provider(viper.GetString(constants.Provider))); err != nil {
 			os.Exit(1)
 		}
 		return nil

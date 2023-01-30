@@ -31,7 +31,7 @@ func getAWSProviderCmd() *cobra.Command {
 				viper.GetString(constants.ProjectName),
 				viper.GetString(constants.BackedURL),
 				viper.GetString(constants.OutputFolder),
-				viper.GetString(constants.Provider),
+				manager.AWS,
 				providerParams,
 				viper.GetString(constants.OcpPullSecretFilePath),
 				viper.GetString(constants.KeyFilePath)); err != nil {

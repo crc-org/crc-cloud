@@ -22,6 +22,7 @@ func init() {
 	flagSet.StringP(constants.BackedURL, "", "", constants.BackedURLDesc)
 	flagSet.StringP(constants.Provider, "", "", constants.ProviderDesc)
 	crcCloudDestroyCmd.Flags().AddFlagSet(flagSet)
+	crcCloudDestroyCmd.MarkFlagRequired("provider")
 }
 
 var crcCloudDestroyCmd = &cobra.Command{
@@ -34,7 +35,7 @@ var crcCloudDestroyCmd = &cobra.Command{
 		if err := manager.Destroy(
 			viper.GetString(constants.ProjectName),
 			viper.GetString(constants.BackedURL),
-			viper.GetString(constants.Provider)); err != nil {
+			manager.Provider(viper.GetString(constants.Provider))); err != nil {
 			os.Exit(1)
 		}
 		return nil

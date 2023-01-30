@@ -7,12 +7,18 @@ import (
 	"github.com/crc/crc-cloud/pkg/provider/aws"
 )
 
-func getProvider(provider string) (providerAPI.Provider, error) {
+type Provider string
+
+const (
+	AWS Provider = "aws"
+)
+
+func getProvider(provider Provider) (providerAPI.Provider, error) {
 	switch provider {
-	case "aws":
+	case AWS:
 		return aws.GetProvider(), nil
 	}
-	return nil, fmt.Errorf("provider not supported")
+	return nil, fmt.Errorf("%s: provider not supported", provider)
 }
 
 func getSupportedProviders() (sp []providerAPI.Provider) {
