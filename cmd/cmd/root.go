@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/crc/crc-cloud/cmd/cmd/create"
 	"os"
 	"strings"
 
@@ -30,6 +31,11 @@ var rootCmd = &cobra.Command{
 	},
 	SilenceUsage:  true,
 	SilenceErrors: true,
+}
+
+func init() {
+	rootCmd.AddCommand(create.GetCreateCmd())
+
 }
 
 func runPrerun(cmd *cobra.Command) error {

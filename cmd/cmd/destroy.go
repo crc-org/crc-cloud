@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/crc/crc-cloud/cmd/cmd/constants"
 	"os"
 
 	"github.com/crc/crc-cloud/pkg/manager"
@@ -16,10 +17,10 @@ const (
 
 func init() {
 	rootCmd.AddCommand(crcCloudDestroyCmd)
-	flagSet := pflag.NewFlagSet(createCmdName, pflag.ExitOnError)
-	flagSet.StringP(projectName, "", "", projectNameDesc)
-	flagSet.StringP(backedURL, "", "", backedURLDesc)
-	flagSet.StringP(provider, "", "", providerDesc)
+	flagSet := pflag.NewFlagSet(destroyCmdName, pflag.ExitOnError)
+	flagSet.StringP(constants.ProjectName, "", "", constants.ProjectNameDesc)
+	flagSet.StringP(constants.BackedURL, "", "", constants.BackedURLDesc)
+	flagSet.StringP(constants.Provider, "", "", constants.ProviderDesc)
 	crcCloudDestroyCmd.Flags().AddFlagSet(flagSet)
 }
 
@@ -31,9 +32,9 @@ var crcCloudDestroyCmd = &cobra.Command{
 			return err
 		}
 		if err := manager.Destroy(
-			viper.GetString(projectName),
-			viper.GetString(backedURL),
-			viper.GetString(provider)); err != nil {
+			viper.GetString(constants.ProjectName),
+			viper.GetString(constants.BackedURL),
+			viper.GetString(constants.Provider)); err != nil {
 			os.Exit(1)
 		}
 		return nil
