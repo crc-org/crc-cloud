@@ -4,7 +4,7 @@ import (
 	_ "embed"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/crc/crc-cloud/pkg/bundle"
 	"github.com/crc/crc-cloud/pkg/util"
@@ -15,7 +15,7 @@ import (
 //go:embed clustersetup.sh
 var script []byte
 
-type SetupData struct {
+type Data struct {
 	PrivateIP             *pulumi.StringOutput
 	PublicIP              *pulumi.StringOutput
 	OCPPullSecretFilePath string
@@ -30,7 +30,7 @@ func SwapKeys(ctx *pulumi.Context, publicIP *pulumi.StringOutput,
 	bootingPrivateKeyFilePath string, newPublicKey *pulumi.StringOutput) ([]pulumi.Resource, error) {
 	dependencies := []pulumi.Resource{}
 	// Load pull secret content
-	privateKey, err := ioutil.ReadFile(bootingPrivateKeyFilePath)
+	privateKey, err := os.ReadFile(bootingPrivateKeyFilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -76,11 +76,11 @@ func SwapKeys(ctx *pulumi.Context, publicIP *pulumi.StringOutput,
 
 func Setup(ctx *pulumi.Context,
 	publicIP, privateKey *pulumi.StringOutput,
-	data SetupData) ([]pulumi.Resource, error) {
+	data Data) ([]pulumi.Resource, error) {
 	dependencies := []pulumi.Resource{}
 
 	// Load pull secret content
-	pullsecret, err := ioutil.ReadFile(data.OCPPullSecretFilePath)
+	pullsecret, err := os.ReadFile(data.OCPPullSecretFilePath)
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	NETWORKING_CIDR_ANY_IPV4 string = "0.0.0.0/0"
+	NetworkingCIDRAnyIPV4 string = "0.0.0.0/0"
 )
 
 func Create(ctx *pulumi.Context, rules []IngressRule,
@@ -44,10 +44,11 @@ func getSecurityGroupIngressArray(rules []IngressRule) (sgia ec2.SecurityGroupIn
 		}
 		if r.SG != nil {
 			args.SecurityGroups = pulumi.StringArray{r.SG.ID()}
-		} else if len(r.CidrBlocks) > 0 {
+		}
+		if len(r.CidrBlocks) > 0 {
 			args.CidrBlocks = pulumi.StringArray{pulumi.String(r.CidrBlocks)}
 		} else {
-			args.CidrBlocks = pulumi.StringArray{pulumi.String(NETWORKING_CIDR_ANY_IPV4)}
+			args.CidrBlocks = pulumi.StringArray{pulumi.String(NetworkingCIDRAnyIPV4)}
 		}
 		sgia = append(sgia, args)
 	}
@@ -59,5 +60,5 @@ var egressAll = &ec2.SecurityGroupEgressArgs{
 	ToPort:   pulumi.Int(0),
 	Protocol: pulumi.String("-1"),
 	CidrBlocks: pulumi.StringArray{
-		pulumi.String(NETWORKING_CIDR_ANY_IPV4),
+		pulumi.String(NetworkingCIDRAnyIPV4),
 	}}

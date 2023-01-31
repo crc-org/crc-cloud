@@ -1,10 +1,9 @@
 package aws
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
-	"math/rand"
-	"time"
 
 	"github.com/crc/crc-cloud/pkg/bundle"
 	bundleExtract "github.com/crc/crc-cloud/pkg/bundle/extract"
@@ -83,16 +82,11 @@ func (r importRequest) runFunc(ctx *pulumi.Context) error {
 	return nil
 }
 
-// random name for temporary assets requried for importing the image
+// random name for temporary assets required for importing the image
 func randomID() string {
-	var letters = []rune(
-		"abcdefghijklmnopqrstuvwxyz1234567890")
-	b := make([]rune, 7)
-	rand.Seed(time.Now().UnixNano())
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return fmt.Sprintf("crc-cloud-%s", string(b))
+	b := make([]byte, 4)
+	_, _ = rand.Read(b)
+	return fmt.Sprintf("crc-cloud-%x", b)
 }
 
 // This function creates a temporary bucket to upload the disk image to be imported

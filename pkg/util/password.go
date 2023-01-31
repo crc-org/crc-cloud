@@ -5,7 +5,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-const passwordOverrideSpecial = "!#%&*()-_=+[]{}<>.?"
+const passwordOverrideSpecial = "!#%&*()-_=+[]{}<>.?" //nolint
 
 func CreatePassword(ctx *pulumi.Context, name string) (*random.RandomPassword, error) {
 	return CreateDependingPassword(ctx, name, []pulumi.Resource{})

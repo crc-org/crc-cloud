@@ -10,19 +10,19 @@ const (
 	azureNativePluginVersion = "v1.92.0"
 )
 
-type AzureProvider struct{}
+type Provider struct{}
 
-func GetProvider() *AzureProvider {
-	return &AzureProvider{}
+func GetProvider() *Provider {
+	return &Provider{}
 }
 
-func (a *AzureProvider) GetPlugin() *providerAPI.PluginInfo {
+func (a *Provider) GetPlugin() *providerAPI.PluginInfo {
 	return &providerAPI.PluginInfo{
 		Name:    azureNativePluginName,
 		Version: azureNativePluginVersion}
 }
 
-func (a *AzureProvider) ImportImageRunFunc(projectName, bundleDownloadURL, shasumfileDownloadURL string) (pulumi.RunFunc, error) {
+func (a *Provider) ImportImageRunFunc(projectName, bundleDownloadURL, shasumfileDownloadURL string) (pulumi.RunFunc, error) {
 	r, err := fillImportRequest(projectName, bundleDownloadURL, shasumfileDownloadURL)
 	if err != nil {
 		return nil, err
