@@ -1,0 +1,30 @@
+name: Run 'make check'
+on:
+  push:
+    branches:
+      - "main"
+      - "pulumi"
+  pull_request: {}
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macOS-latest
+          - ubuntu-latest
+        go:
+          - 1.18
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Run lint checks
+        run: make lint
+      - name: Run fmt checks
+        run: make fmt
+
