@@ -6,7 +6,7 @@ IMG ?= quay.io/crcont/crc-cloud:${VERSION}
 # Go and compilation related variables
 GOPATH ?= $(shell go env GOPATH)
 BUILD_DIR ?= out
-SOURCE_DIRS = cmd pkg test
+SOURCE_DIRS = cmd pkg
 # https://golang.org/cmd/link/
 LDFLAGS := $(VERSION_VARIABLES) -extldflags='-static' ${GO_EXTRA_LDFLAGS}
 GCFLAGS := all=-N -l
