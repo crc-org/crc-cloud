@@ -53,29 +53,34 @@ Per each run **CRC-Cloud** will create a folder named with the run timestamp, th
 
 Please **be careful** on deleting the working directory content because without the metadata **CRC-Cloud** won't be able to teardown the cluster and associated resources from AWS.
 
-**NOTE (podman only):** In order to make the mounted workdir read-write accessible from the container is need to change the SELinux security context related to the folder with the following command 
-```chcon -Rt svirt_sandbox_file_t <HOST_WORKDIR_PATH>```
-
 #### Single node cluster creation
 ```
-<podman|docker> run -v <HOST_WORKDIR_PATH>:/workdir\
- -e WORKING_MODE=C\
- -e PULL_SECRET="`base64 <PULL_SECRET_PATH>`"\
- -e AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>\
- -e AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS>\
- -e AWS_DEFAULT_REGION=<AWS_REGION_OF_YOUR_CHOICE>\
- -ti quay.io/crcont/crc-cloud
+podman run -d --rm \
+    -v ${PWD}:/workspace:z \
+    -e AWS_ACCESS_KEY_ID=XXX \
+    -e AWS_SECRET_ACCESS_KEY=XXX \
+    -e AWS_DEFAULT_REGION=eu-west-1 \
+    quay.io/ariobolo/crc-cloud:v0.0.1 create \
+        --project-name "crc-ocp412" \
+        --backed-url "file:///workspace" \
+        --output "/workspace" \
+        --provider "aws" \
+        --aws-ami-id "ami-0ab26eb25f41697ef" \
+        --pullsecret-filepath "/workspace/pullsecret" \
+        --key-filepath "/workspace/id_ecdsa"
 ```
 
 #### Single node cluster teardown
 ```
-<podman|docker> run -v <HOST_WORKDIR_PATH>:/workdir\
- -e WORKING_MODE=T\
- -e TEARDOWN_RUN_ID=<TEARDOWN_RUN_ID>\ 
- -e AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>\
- -e AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS>\
- -e AWS_DEFAULT_REGION=us-west-2\
- -ti quay.io/crcont/crc-cloud
+podman run -d --rm \
+    -v ${PWD}:/workspace:z \
+    -e AWS_ACCESS_KEY_ID=XXX \
+    -e AWS_SECRET_ACCESS_KEY=XXX \
+    -e AWS_DEFAULT_REGION=eu-west-1 \
+    quay.io/ariobolo/crc-cloud:v0.0.1 destroy \
+        --project-name "crc-ocp412" \
+        --backed-url "file:///workspace" \
+        --provider "aws"
 ```
 (check [here](#workdir) for **TEARDOWN_RUN_ID** infos and **WORKDIR** setup instructions )
 
@@ -114,59 +119,3 @@ Environment variables will be passed to the container from the command line invo
 |  PASS_REDHAT |  overrides the default password (redhat) for redhat account |
 | INSTANCE_TYPE | overrides the default AWS instance type (c6in.2xlarge, infos [here](#prereq)) |
 
-
-
-### Linux Bash (the hard path)
-#### Dependencies 
-To run **CRC-Cloud** from your command line you must be on Linux, be sure to have installed and configured the following programs in your box
-
-- bash (>=v4)
-- AWS CLI
-- jq
-- md5sum
-- curl
-- head
-- ssh-keygen
-- GNU sed
-- nc (netcat)
-- ssh client
-- scp
-  
-#### Single node cluster creation
-Once copied and downloaded the pull secret somewhere in your filesystem you'll be able to run the cluster with
-
-```./crc-cloud.sh -C -p <pull_secret_path>```
-
-A folder with the run id will be created under ```<openspot_path>/workspace``` containing all the logs, the keypair needed to login into the VM, and the VM metadata. The last run will be also linked automatically to ```<openspot_path>/latest```
-<br/>
-<br/>
-**WARNING:** if you delete the working directory **CRC-Cloud** won't be able to teardown the cluster so be **extremely careful** with the workspace folder content.
-<br/>
-<br/>
-at the end of the process the script will print the public address of the console.
-Below you'll find all the options available
-
-```
-./crc-cloud.sh -C -p pull secret path [-d developer user password] [-k kubeadmin user password] [-r redhat user password] [-a AMI ID] [-t Instance type]
-where:
-    -C  Cluster Creation mode
-    -p  pull secret file path (download from https://console.redhat.com/openshift/create/local) 
-    -d  developer user password (optional, default: developer)
-    -k  kubeadmin user password (optional, default: kubeadmin)
-    -r  redhat    user password (optional, default: redhat)
-    -a  AMI ID (Amazon Machine Image) from which the VM will be Instantiated (optional, default: ami-0569ce8a44f2351be)
-    -i  EC2 Instance Type (optional, default; c6in.2xlarge)
-    -h  show this help text
-```
-#### Single node cluster teardown
-To teardown the single node cluster the basic command is 
-```./crc-cloud.sh -T```
-this will refer to the *latest* run found in ```<openspot_path>/workspace```, if you have several run folders in your workspace, you can specify the one you want to teardown with the parameter ```-v <run_id>``` where ```<run_id>``` corresponds to the numeric folder name containing the metadata of the cluster that will be deleted
-
-```
-./crc-cloud.sh -T [-v run id]
-    -T  Cluster Teardown mode
-    -v  The Id of the run that is gonna be destroyed, corresponds with the numeric name of the folders created in workdir (optional, default: latest)
-    -h  show this help text 
-
-```
