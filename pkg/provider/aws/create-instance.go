@@ -71,7 +71,7 @@ func (r createRequest) runFunc(ctx *pulumi.Context) error {
 	}
 	_, err = setup.Setup(ctx,
 		&instance.PublicIp, &privateKey.PrivateKeyOpenssh,
-		setup.SetupData{
+		setup.Data{
 			PrivateIP:             &instance.PrivateIp,
 			PublicIP:              &instance.PublicIp,
 			Password:              &password.Result,

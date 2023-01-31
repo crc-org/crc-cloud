@@ -15,9 +15,8 @@ const (
 )
 
 var (
-	bundleVersionRegex string = "\\d.\\d+.\\d+"
-	bundleNameRegex    string = fmt.Sprintf(
-		"crc_libvirt_%s_amd64.crcbundle", bundleVersionRegex)
+	bundleVersionRegex = "\\d.\\d+.\\d+"
+	bundleNameRegex    = fmt.Sprintf("crc_libvirt_%s_amd64.crcbundle", bundleVersionRegex)
 )
 
 // Bundle name format contains the version number we are managing

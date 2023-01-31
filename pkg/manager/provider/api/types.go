@@ -23,7 +23,7 @@ type Stack struct {
 
 type Provider interface {
 	// Plugin information, required to dynamically install the plugin
-	//for the specific provider
+	// for the specific provider
 	GetPlugin() *PluginInfo
 
 	// Manage all the image import process for the specific provider

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
 
 	providerAPI "github.com/crc/crc-cloud/pkg/manager/provider/api"
 	"github.com/pulumi/pulumi/sdk/v3/go/auto"
@@ -75,7 +74,7 @@ func getOpts(target providerAPI.Stack) []auto.LocalWorkspaceOption {
 				URL: target.BackedURL,
 			},
 		}),
-		auto.WorkDir(filepath.Join(".")),
+		auto.WorkDir("."),
 		// auto.SecretsProvider("awskms://alias/pulumi-secret-encryption"),
 	}
 }

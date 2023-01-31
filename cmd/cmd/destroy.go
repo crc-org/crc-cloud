@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/crc/crc-cloud/cmd/cmd/constants"
 	"os"
 
+	"github.com/crc/crc-cloud/cmd/cmd/constants"
 	"github.com/crc/crc-cloud/pkg/manager"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -23,7 +23,10 @@ func init() {
 	flagSet.StringP(constants.BackedURL, "", "", constants.BackedURLDesc)
 	flagSet.StringP(constants.Provider, "", "", constants.ProviderDesc)
 	crcCloudDestroyCmd.Flags().AddFlagSet(flagSet)
-	crcCloudDestroyCmd.MarkFlagRequired("provider")
+	if err := crcCloudDestroyCmd.MarkFlagRequired("provider"); err != nil {
+		fmt.Printf("Error setting provider as required flag: %s", err)
+		os.Exit(1)
+	}
 }
 
 var crcCloudDestroyCmd = &cobra.Command{

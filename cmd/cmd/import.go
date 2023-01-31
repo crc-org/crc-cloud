@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/crc/crc-cloud/cmd/cmd/constants"
 	"os"
 
+	"github.com/crc/crc-cloud/cmd/cmd/constants"
 	"github.com/crc/crc-cloud/pkg/manager"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"

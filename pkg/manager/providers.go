@@ -11,11 +11,13 @@ type Provider string
 
 const (
 	AWS Provider = "aws"
+	GCP Provider = "gcp"
+	AZ  Provider = "azure"
 )
 
 func getProvider(provider Provider) (providerAPI.Provider, error) {
 	switch provider {
-	case AWS:
+	case AWS, AZ:
 		return aws.GetProvider(), nil
 	}
 	return nil, fmt.Errorf("%s: provider not supported", provider)

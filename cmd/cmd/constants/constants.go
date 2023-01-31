@@ -13,7 +13,6 @@ const (
 	OcpPullSecretFilePathDesc string = "path for pullsecret file"
 	KeyFilePath               string = "key-filepath"
 	KeyFilePathDesc           string = "path to init key obtained when importing the image"
-
 	BundleDownloadURL         string = "bundle-url"
 	BundleDownloadURLDesc     string = "custom url to download the bundle artifact"
 	ShasumfileDownloadURL     string = "bundle-shasumfile-url"
