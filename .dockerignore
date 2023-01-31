@@ -1,0 +1,7 @@
+out/
+.git/
+.dockerignore
+.gitignore
+.gitleaks.toml
+Dockerfile
+README.md
