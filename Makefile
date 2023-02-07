@@ -1,7 +1,7 @@
-VERSION ?= 0.0.1
+VERSION ?= 0.0.2
 CONTAINER_MANAGER ?= podman
 # Image URL to use all building/pushing image targets
-IMG ?= quay.io/crcont/crc-cloud:${VERSION}
+IMG ?= quay.io/crcont/crc-cloud:v${VERSION}
 
 # Go and compilation related variables
 GOPATH ?= $(shell go env GOPATH)
