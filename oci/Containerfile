@@ -19,14 +19,11 @@ FROM docker.io/library/alpine:3.17
 
 LABEL MAINTAINER "CRC <devtools-cdk@redhat.com>"
 
-COPY --from=builder /workspace/out/crc-cloud /workspace/pulumi/pulumi /workspace/oci/entrypoint.sh /usr/local/bin/
+# https://www.pulumi.com/docs/reference/cli/environment-variables/
+ENV PULUMI_CONFIG_PASSPHRASE "defaultPassphrase"
 
-ENV INTERNAL_OUTPUT /tmp/crc-cloud
+COPY --from=builder /workspace/out/crc-cloud /workspace/pulumi/pulumi /usr/local/bin/
 
-VOLUME [ "${INTERNAL_OUTPUT}" ]
+RUN apk add --update curl aws-cli qemu-img zstd bash 
 
-# libc6-compat
-RUN apk add --update curl aws-cli qemu-img zstd bash \
-    && mkdir -p "${INTERNAL_OUTPUT}"
-
-ENTRYPOINT entrypoint.sh 
+ENTRYPOINT [ "crc-cloud" ]
