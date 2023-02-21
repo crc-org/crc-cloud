@@ -24,6 +24,7 @@ ENV PULUMI_CONFIG_PASSPHRASE "defaultPassphrase"
 
 COPY --from=builder /workspace/out/crc-cloud /workspace/pulumi/pulumi /usr/local/bin/
 
-RUN apk add --update curl aws-cli qemu-img zstd bash 
+RUN apk add --update curl aws-cli qemu-img zstd bash \
+    && pulumi plugin install resource command v0.7.0
 
 ENTRYPOINT [ "crc-cloud" ]
