@@ -1,0 +1,6 @@
+config:
+  aws:region: us-east-1
+  crc-pulumi:instance_ami: ami-0c9978668f8d55984
+  crc-pulumi:instance_type: t2.micro
+  crc-pulumi:key_name: pulumi-crc-key-pair
+  crc-pulumi:region: us-east-1
