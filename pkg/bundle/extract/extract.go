@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/crc/crc-cloud/pkg/util"
+	"github.com/crc/crc-cloud/pkg/util/command"
+	"github.com/pulumi/pulumi-command/sdk/go/command/local"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -25,9 +27,11 @@ func Extract(ctx *pulumi.Context,
 		return nil, nil, err
 	}
 	scriptXRightsCommand, err :=
-		util.LocalExec(ctx,
-			"extractScriptXRights",
-			pulumi.String(fmt.Sprintf("chmod +x %s", scriptfileName)), nil)
+		local.NewCommand(ctx, "extractScriptXRights",
+			&local.CommandArgs{
+				Create: pulumi.String(fmt.Sprintf("chmod +x %s", scriptfileName)),
+			},
+			command.DefaultTimeouts())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -35,20 +39,23 @@ func Extract(ctx *pulumi.Context,
 		"BUNDLE_DOWNLOAD_URL":     bundleDownloadURL,
 		"SHASUMFILE_DOWNLOAD_URL": shasumfileDownloadURL}
 	execScriptCommand, err :=
-		util.LocalExecWithDependencies(ctx,
-			"execExtractScript",
-			pulumi.String(fmt.Sprintf(". %s", scriptfileName)),
-			pulumi.ToStringMap(execScriptENVS),
-			[]pulumi.Resource{scriptXRightsCommand})
+		local.NewCommand(ctx, "execExtractScript",
+			&local.CommandArgs{
+				Create:      pulumi.String(fmt.Sprintf(". %s", scriptfileName)),
+				Environment: pulumi.ToStringMap(execScriptENVS),
+			},
+			command.DefaultTimeouts(),
+			pulumi.DependsOn([]pulumi.Resource{scriptXRightsCommand}))
 	if err != nil {
 		return nil, nil, err
 	}
 	bootKeyContentCommand, err :=
-		util.LocalExecWithDependencies(ctx,
-			"execBootKeyContent",
-			pulumi.String(fmt.Sprintf("cat %s", bootKeyfilename)),
-			nil,
-			[]pulumi.Resource{execScriptCommand})
+		local.NewCommand(ctx, "execBootKeyContent",
+			&local.CommandArgs{
+				Create: pulumi.String(fmt.Sprintf("cat %s", bootKeyfilename)),
+			},
+			command.DefaultTimeouts(),
+			pulumi.DependsOn([]pulumi.Resource{execScriptCommand}))
 	if err != nil {
 		return nil, nil, err
 	}
