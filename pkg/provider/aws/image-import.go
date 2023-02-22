@@ -120,10 +120,12 @@ func uploadDisk(ctx *pulumi.Context, bucketName string,
 	dependecies []pulumi.Resource) (pulumi.Resource, error) {
 
 	uploadCommand := fmt.Sprintf("aws s3 cp disk.raw s3://%s/disk.raw --only-show-errors", bucketName)
+	deleteCommand := fmt.Sprintf("aws s3 rm s3://%s/disk.raw --only-show-errors", bucketName)
 
 	return local.NewCommand(ctx, "crcCloudImporterDiskUploadByCli",
 		&local.CommandArgs{
 			Create: pulumi.String(uploadCommand),
+			Delete: pulumi.String(deleteCommand),
 		},
 		command.DefaultTimeouts(),
 		pulumi.DependsOn(dependecies))
