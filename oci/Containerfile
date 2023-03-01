@@ -4,7 +4,7 @@ USER root
 WORKDIR /workspace
 COPY . .
 
-ENV PULUMI_VERSION 3.51.0
+ENV PULUMI_VERSION 3.54.0
 ENV PULUMI_URL https://github.com/pulumi/pulumi/releases/download/v${PULUMI_VERSION}/pulumi-v${PULUMI_VERSION}-linux-x64.tar.gz
 
 RUN apk -U upgrade \
@@ -19,14 +19,12 @@ FROM docker.io/library/alpine:3.17
 
 LABEL MAINTAINER "CRC <devtools-cdk@redhat.com>"
 
-COPY --from=builder /workspace/out/crc-cloud /workspace/pulumi/pulumi /workspace/oci/entrypoint.sh /usr/local/bin/
+# https://www.pulumi.com/docs/reference/cli/environment-variables/
+ENV PULUMI_CONFIG_PASSPHRASE "defaultPassphrase"
 
-ENV INTERNAL_OUTPUT /tmp/crc-cloud
+COPY --from=builder /workspace/out/crc-cloud /workspace/pulumi/pulumi /usr/local/bin/
 
-VOLUME [ "${INTERNAL_OUTPUT}" ]
-
-# libc6-compat
 RUN apk add --update curl aws-cli qemu-img zstd bash \
-    && mkdir -p "${INTERNAL_OUTPUT}"
+    && pulumi plugin install resource command v0.7.0
 
-ENTRYPOINT entrypoint.sh 
+ENTRYPOINT [ "crc-cloud" ]
