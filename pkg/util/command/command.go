@@ -1,7 +1,6 @@
-package util
+package command
 
 import (
-	"github.com/pulumi/pulumi-command/sdk/go/command/local"
 	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
@@ -33,7 +32,7 @@ func CopyFileWithDependencies(ctx *pulumi.Context, resourceName string,
 		LocalPath:  pulumi.String(localPath),
 		RemotePath: pulumi.String(remotePath),
 	},
-		defaultTimeouts(),
+		DefaultTimeouts(),
 		pulumi.DependsOn(dependecies))
 }
 
@@ -61,32 +60,14 @@ func RemoteExecWithDependencies(ctx *pulumi.Context, resourceName string,
 			Update:      remoteCommand,
 			Environment: environment,
 		},
-		defaultTimeouts(),
+		DefaultTimeouts(),
 		pulumi.DependsOn(dependecies))
 }
 
-func LocalExec(ctx *pulumi.Context, resourceName string,
-	command pulumi.StringPtrInput, environment pulumi.StringMapInput) (*local.Command, error) {
-	return LocalExecWithDependencies(ctx, resourceName,
-		command, environment, []pulumi.Resource{})
-}
-
-func LocalExecWithDependencies(ctx *pulumi.Context, resourceName string,
-	command pulumi.StringPtrInput, environment pulumi.StringMapInput,
-	dependecies []pulumi.Resource) (*local.Command, error) {
-	return local.NewCommand(ctx, resourceName,
-		&local.CommandArgs{
-			Create: command,
-			// Update: command,
-			Environment: environment,
-		},
-		defaultTimeouts(),
-		pulumi.DependsOn(dependecies))
-}
-
-func defaultTimeouts() pulumi.ResourceOption {
+func DefaultTimeouts() pulumi.ResourceOption {
 	return pulumi.Timeouts(
 		&pulumi.CustomTimeouts{
 			Create: commandTimeout,
-			Update: commandTimeout})
+			Update: commandTimeout,
+			Delete: commandTimeout})
 }

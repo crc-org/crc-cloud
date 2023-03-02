@@ -8,11 +8,12 @@ import (
 	"github.com/crc/crc-cloud/pkg/bundle"
 	bundleExtract "github.com/crc/crc-cloud/pkg/bundle/extract"
 	providerAPI "github.com/crc/crc-cloud/pkg/manager/provider/api"
-	"github.com/crc/crc-cloud/pkg/util"
+	"github.com/crc/crc-cloud/pkg/util/command"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ebs"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ec2"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/s3"
+	"github.com/pulumi/pulumi-command/sdk/go/command/local"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -116,15 +117,18 @@ func createTempBucket(ctx *pulumi.Context, bucketName string) (*s3.BucketV2, pul
 // we take advangate of aws cli to run this as a cmd
 // as cli defaults upload with multipart 10
 func uploadDisk(ctx *pulumi.Context, bucketName string,
-	dependsOn []pulumi.Resource) (pulumi.Resource, error) {
+	dependecies []pulumi.Resource) (pulumi.Resource, error) {
 
 	uploadCommand := fmt.Sprintf("aws s3 cp disk.raw s3://%s/disk.raw --only-show-errors", bucketName)
-	return util.LocalExecWithDependencies(
-		ctx,
-		"crcCloudImporterDiskUploadByCli",
-		pulumi.String(uploadCommand),
-		nil,
-		dependsOn)
+	deleteCommand := fmt.Sprintf("aws s3 rm s3://%s/disk.raw --only-show-errors", bucketName)
+
+	return local.NewCommand(ctx, "crcCloudImporterDiskUploadByCli",
+		&local.CommandArgs{
+			Create: pulumi.String(uploadCommand),
+			Delete: pulumi.String(deleteCommand),
+		},
+		command.DefaultTimeouts(),
+		pulumi.DependsOn(dependecies))
 }
 
 // from an image as a raw on a s3 bucket this function will import it as a snapshot
