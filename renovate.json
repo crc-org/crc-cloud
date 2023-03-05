@@ -5,6 +5,12 @@
       ":enablePreCommit",
       "group:allNonMajor"
   ],
+  "dockerfile": {
+    "fileMatch": [
+      "(^|/|\\.)Containerfile$",
+      "(^|/)Containerfile[^/]*$"
+    ]
+  },
   "automerge": false,
   "schedule": [
       "every weekend"
