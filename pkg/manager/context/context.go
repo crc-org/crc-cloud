@@ -5,6 +5,12 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
+const (
+	originTagName  = "origin"
+	originTagValue = "crc-cloud"
+	projectTagName = "project"
+)
+
 // store details for the current execution
 type context struct {
 	projectName string
@@ -20,6 +26,7 @@ func Init(projectName string, tags map[string]string) {
 			func(name string) string { return name },
 			func(value string) pulumi.StringInput { return pulumi.String(value) }),
 	}
+	addCommonTags()
 }
 
 func GetTags() pulumi.StringMap {
@@ -28,4 +35,9 @@ func GetTags() pulumi.StringMap {
 
 func GetName() string {
 	return c.projectName
+}
+
+func addCommonTags() {
+	c.tags[originTagName] = pulumi.String(originTagValue)
+	c.tags[projectTagName] = pulumi.String(c.projectName)
 }
