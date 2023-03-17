@@ -1,6 +1,7 @@
 package sg
 
 import (
+	"github.com/crc/crc-cloud/pkg/manager/context"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ec2"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
@@ -24,9 +25,7 @@ func Create(ctx *pulumi.Context, rules []IngressRule,
 			VpcId:       pulumi.String(vpc.Id),
 			Ingress:     getSecurityGroupIngressArray(rules),
 			Egress:      ec2.SecurityGroupEgressArray{egressAll},
-			Tags: pulumi.StringMap{
-				"Name": pulumi.String(name),
-			},
+			Tags:        context.GetTags(),
 		})
 	if err != nil {
 		return pulumi.IDOutput{}, err

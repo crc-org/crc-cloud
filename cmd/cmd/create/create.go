@@ -28,6 +28,7 @@ func GetCreateCmd() *cobra.Command {
 	flagSet.StringP(constants.ProjectName, "", "", constants.ProjectNameDesc)
 	flagSet.StringP(constants.BackedURL, "", "", constants.BackedURLDesc)
 	flagSet.StringP(constants.OutputFolder, "", "", constants.OutputFolderDesc)
+	flagSet.StringToStringP(constants.Tags, "", nil, constants.TagsDesc)
 	flagSet.StringP(constants.OcpPullSecretFilePath, "", "", constants.OcpPullSecretFilePathDesc)
 	flagSet.StringP(constants.KeyFilePath, "", "", constants.KeyFilePathDesc)
 	createCmd.PersistentFlags().AddFlagSet(flagSet)

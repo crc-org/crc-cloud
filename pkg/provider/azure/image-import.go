@@ -1,6 +1,7 @@
 package azure
 
 import (
+	"github.com/crc/crc-cloud/pkg/manager/context"
 	"github.com/pulumi/pulumi-azure-native-sdk/resources"
 	"github.com/pulumi/pulumi-azure-native-sdk/storage"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -46,6 +47,7 @@ func createTempBlobStorageContainer(ctx *pulumi.Context) (*storage.BlobContainer
 		"crcCloudImporterRG",
 		&resources.ResourceGroupArgs{
 			Location: pulumi.String("West Europe"),
+			Tags:     context.GetTags(),
 		})
 	if err != nil {
 		return nil, err
@@ -55,7 +57,8 @@ func createTempBlobStorageContainer(ctx *pulumi.Context) (*storage.BlobContainer
 		&storage.StorageAccountArgs{
 			ResourceGroupName: rg.Name,
 			Location:          rg.Location,
-			AccessTier:        storage.AccessTierHot})
+			AccessTier:        storage.AccessTierHot,
+			Tags:              context.GetTags()})
 	if err != nil {
 		return nil, err
 	}
