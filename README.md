@@ -65,6 +65,7 @@ Flags:
       --bundle-url string              custom url to download the bundle artifact
   -h, --help                           help for import
       --output string                  path to export assets
+      --tags                           tags to add on each resource (--tags name1=value1,name2=value2)
       --project-name string            project name to identify the instance of the stack
       --provider string                target cloud provider
 ```
@@ -86,9 +87,10 @@ podman run -d --rm \
         --project-name "ami-ocp412" \
         --backed-url "file:///workspace" \
         --output "/workspace" \
+        --tags version=nightly \
         --provider "aws" \
-        --bundle-url "https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients/crc/bundles/openshift/4.12.0/crc_libvirt_4.12.0_amd64.crcbundle" \
-        --bundle-shasumfile-url "https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients/crc/bundles/openshift/4.12.0/sha256sum.txt"
+        --bundle-url "https://mirror.openshift.com/pub/openshift-v4/clients/crc/bundles/openshift/4.12.5/crc_libvirt_4.12.5_amd64.crcbundle" \
+        --bundle-shasumfile-url "https://mirror.openshift.com/pub/openshift-v4/clients/crc/bundles/openshift/4.12.5/sha256sum.txt"
 
 ```
 
@@ -112,6 +114,7 @@ Global Flags:
       --backed-url string            backed for stack state. Can be a local path with format file:///path/subpath or s3 s3://existing-bucket
       --key-filepath string          path to init key obtained when importing the image
       --output string                path to export assets
+      --tags                         tags to add on each resource (--tags name1=value1,name2=value2)
       --project-name string          project name to identify the instance of the stack
       --pullsecret-filepath string   path for pullsecret file
 ```
@@ -135,6 +138,7 @@ podman run -d --rm \
         --project-name "crc-ocp412" \
         --backed-url "file:///workspace" \
         --output "/workspace" \
+        --tags account=qe-pt,profile=builder \
         --aws-ami-id "ami-xxxx" \
         --pullsecret-filepath "/workspace/pullsecret" \
         --key-filepath "/workspace/id_ecdsa"
