@@ -7,6 +7,8 @@ const (
 	BackedURLDesc             string = "backed for stack state. Can be a local path with format file:///path/subpath or s3 s3://existing-bucket"
 	OutputFolder              string = "output"
 	OutputFolderDesc          string = "path to export assets"
+	Tags                      string = "tags"
+	TagsDesc                  string = "tags to add on each resource (--tags name1=value1,name2=value2)"
 	Provider                  string = "provider"
 	ProviderDesc              string = "target cloud provider"
 	OcpPullSecretFilePath     string = "pullsecret-filepath"

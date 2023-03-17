@@ -36,7 +36,8 @@ func getAWSProviderCmd() *cobra.Command {
 				manager.AWS,
 				providerParams,
 				viper.GetString(constants.OcpPullSecretFilePath),
-				viper.GetString(constants.KeyFilePath)); err != nil {
+				viper.GetString(constants.KeyFilePath),
+				viper.GetStringMapString(constants.Tags)); err != nil {
 				fmt.Printf("error creating the cluster with %s provider: %s\n", manager.AWS, err)
 				os.Exit(1)
 			}

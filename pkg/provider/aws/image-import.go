@@ -7,6 +7,7 @@ import (
 
 	"github.com/crc/crc-cloud/pkg/bundle"
 	bundleExtract "github.com/crc/crc-cloud/pkg/bundle/extract"
+	"github.com/crc/crc-cloud/pkg/manager/context"
 	providerAPI "github.com/crc/crc-cloud/pkg/manager/provider/api"
 	"github.com/crc/crc-cloud/pkg/util/command"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ebs"
@@ -97,9 +98,7 @@ func createTempBucket(ctx *pulumi.Context, bucketName string) (*s3.BucketV2, pul
 		"crcCloudImporterTempBucket",
 		&s3.BucketV2Args{
 			Bucket: pulumi.String(bucketName),
-			Tags: pulumi.StringMap{
-				"Product": pulumi.String("crc-cloud"),
-			},
+			Tags:   context.GetTags(),
 		})
 	if err != nil {
 		return nil, nil, err
@@ -147,9 +146,7 @@ func registerAMI(ctx *pulumi.Context, amiName string,
 				},
 			},
 			RoleName: vmieRole.Name,
-			Tags: pulumi.StringMap{
-				"Name": pulumi.String(amiName),
-			},
+			Tags:     context.GetTags(),
 		},
 		pulumi.DependsOn(dependsOn),
 		// This allows to mask the import operation with a create and destroy
@@ -175,9 +172,7 @@ func registerAMI(ctx *pulumi.Context, amiName string,
 			VirtualizationType: pulumi.String("hvm"),
 			// Required by c6a instances
 			EnaSupport: pulumi.Bool(true),
-			Tags: pulumi.StringMap{
-				"Name": pulumi.String(amiName),
-			},
+			Tags:       context.GetTags(),
 		},
 		// This allows to mask the import operation with a create and destroy
 		// keeping only the AMI the other resources are ephermeral only tied to
@@ -197,6 +192,7 @@ func createVMIEmportExportRole(ctx *pulumi.Context,
 		&iam.RoleArgs{
 			Name:             pulumi.String(id),
 			AssumeRolePolicy: pulumi.String(*tpJSON),
+			Tags:             context.GetTags(),
 		})
 	if err != nil {
 		return nil, nil, err

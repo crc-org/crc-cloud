@@ -24,6 +24,7 @@ func init() {
 	flagSet.StringP(constants.BackedURL, "", "", constants.BackedURLDesc)
 	flagSet.StringP(constants.Provider, "", "", constants.ProviderDesc)
 	flagSet.StringP(constants.OutputFolder, "", "", constants.OutputFolderDesc)
+	flagSet.StringToStringP(constants.Tags, "", nil, constants.TagsDesc)
 	flagSet.StringP(constants.BundleDownloadURL, "", "", constants.BundleDownloadURLDesc)
 	flagSet.StringP(constants.ShasumfileDownloadURL, "", "", constants.ShasumfileDownloadURLDesc)
 	crcCloudImportCmd.Flags().AddFlagSet(flagSet)
@@ -42,7 +43,8 @@ var crcCloudImportCmd = &cobra.Command{
 			viper.GetString(constants.OutputFolder),
 			viper.GetString(constants.BundleDownloadURL),
 			viper.GetString(constants.ShasumfileDownloadURL),
-			manager.Provider(viper.GetString(constants.Provider))); err != nil {
+			manager.Provider(viper.GetString(constants.Provider)),
+			viper.GetStringMapString(constants.Tags)); err != nil {
 			fmt.Printf("error importing the image: %s\n", err)
 			os.Exit(1)
 		}

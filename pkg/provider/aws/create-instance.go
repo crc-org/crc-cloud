@@ -5,6 +5,7 @@ import (
 
 	"github.com/crc/crc-cloud/pkg/bundle"
 	"github.com/crc/crc-cloud/pkg/bundle/setup"
+	"github.com/crc/crc-cloud/pkg/manager/context"
 	providerAPI "github.com/crc/crc-cloud/pkg/manager/provider/api"
 	"github.com/crc/crc-cloud/pkg/provider/aws/sg"
 	"github.com/crc/crc-cloud/pkg/util"
@@ -51,9 +52,7 @@ func (r createRequest) runFunc(ctx *pulumi.Context) error {
 		RootBlockDevice: ec2.InstanceRootBlockDeviceArgs{
 			VolumeSize: pulumi.Int(ocpDefaultRootBlockDeviceSize),
 		},
-		Tags: pulumi.StringMap{
-			"ProjectName": pulumi.String(r.projectName),
-		},
+		Tags: context.GetTags(),
 	}
 	instance, err := ec2.NewInstance(ctx, r.projectName, &args)
 	if err != nil {
@@ -113,7 +112,8 @@ func createKey(ctx *pulumi.Context) (*tls.PrivateKey, *ec2.KeyPair, error) {
 	kp, err := ec2.NewKeyPair(ctx,
 		"OpenshiftLocal-OCP",
 		&ec2.KeyPairArgs{
-			PublicKey: pk.PublicKeyOpenssh})
+			PublicKey: pk.PublicKeyOpenssh,
+			Tags:      context.GetTags()})
 	if err != nil {
 		return nil, nil, err
 	}

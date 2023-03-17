@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"github.com/crc/crc-cloud/pkg/manager/context"
 	providerAPI "github.com/crc/crc-cloud/pkg/manager/provider/api"
 	"github.com/pulumi/pulumi/sdk/v3/go/auto"
 	"golang.org/x/exp/maps"
@@ -20,7 +21,10 @@ func CreateParams() (params map[string]string) {
 }
 
 func Import(projectName, backerURL, outputFoler string,
-	bundleDownloadURL, shasumfileDownloadURL string, provider Provider) error {
+	bundleDownloadURL, shasumfileDownloadURL string, provider Provider,
+	tags map[string]string) error {
+	// Initialize context
+	context.Init(tags)
 	// Pick the import function according to the provider
 	p, err := getProvider(provider)
 	if err != nil {
@@ -64,7 +68,12 @@ func manageImageImportResults(stackResult auto.UpResult, destinationFolder strin
 
 func Create(projectName, backerURL, outputFoler string,
 	provider Provider, providerArgs map[string]string,
-	ocpPullSecretFilePath, bootKeyFilePath string) error {
+	ocpPullSecretFilePath, bootKeyFilePath string,
+	tags map[string]string) error {
+
+	// Initialize context
+	context.Init(tags)
+
 	// this will return a provider which implements the api.Provider interface
 	p, err := getProvider(provider)
 	if err != nil {
