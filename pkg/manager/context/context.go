@@ -7,13 +7,15 @@ import (
 
 // store details for the current execution
 type context struct {
-	tags pulumi.StringMap
+	projectName string
+	tags        pulumi.StringMap
 }
 
 var c context
 
-func Init(tags map[string]string) {
+func Init(projectName string, tags map[string]string) {
 	c = context{
+		projectName: projectName,
 		tags: maps.Convert(tags,
 			func(name string) string { return name },
 			func(value string) pulumi.StringInput { return pulumi.String(value) }),
@@ -22,4 +24,8 @@ func Init(tags map[string]string) {
 
 func GetTags() pulumi.StringMap {
 	return c.tags
+}
+
+func GetName() string {
+	return c.projectName
 }
