@@ -28,7 +28,6 @@ type Data struct {
 // Switch the fixed initial key with self created one
 func SwapKeys(ctx *pulumi.Context, publicIP *pulumi.StringOutput,
 	bootingPrivateKeyFilePath string, newPublicKey *pulumi.StringOutput) ([]pulumi.Resource, error) {
-	dependencies := []pulumi.Resource{}
 	// Load pull secret content
 	privateKey, err := os.ReadFile(bootingPrivateKeyFilePath)
 	if err != nil {
@@ -42,43 +41,34 @@ func SwapKeys(ctx *pulumi.Context, publicIP *pulumi.StringOutput,
 		Port:       pulumi.Float64(bundle.ImageSSHPort),
 	}
 
-	_ = newPublicKey.ApplyT(
-		func(pubKey string) (string, error) {
-			pubKeyFilename, err := util.WriteTempFile(pubKey)
-			if err != nil {
-				return "", err
-			}
-			pubKeyRemoteCopyResource, err :=
-				remote.NewCopyFile(ctx, "uploadNewPublicKey",
-					&remote.CopyFileArgs{
-						Connection: c,
-						LocalPath:  pulumi.String(pubKeyFilename),
-						RemotePath: pulumi.String("id_rsa.pub"),
-					})
-			if err != nil {
-				return "", err
-			}
-			overrideKeyCommand := "cat /home/core/id_rsa.pub >> /home/core/.ssh/authorized_keys"
-			_, err =
-				remote.NewCommand(ctx, "addPublicKeyAsAuthorized",
-					&remote.CommandArgs{
-						Connection: c,
-						Create:     pulumi.String(overrideKeyCommand),
-					},
-					pulumi.DependsOn([]pulumi.Resource{pubKeyRemoteCopyResource}))
-			if err != nil {
-				return "", err
-			}
-			return "", nil
-		})
-	return dependencies, nil
+	pubKeyFilename := newPublicKey.ApplyT(util.WriteTempFile).(pulumi.StringOutput)
+	pubKeyRemoteCopyResource, err :=
+		remote.NewCopyFile(ctx, "uploadNewPublicKey",
+			&remote.CopyFileArgs{
+				Connection: c,
+				LocalPath:  pubKeyFilename,
+				RemotePath: pulumi.String("id_rsa.pub"),
+			})
+	if err != nil {
+		return nil, err
+	}
+	overrideKeyCommand := "cat /home/core/id_rsa.pub >> /home/core/.ssh/authorized_keys"
+	overrideKeyResource, err :=
+		remote.NewCommand(ctx, "addPublicKeyAsAuthorized",
+			&remote.CommandArgs{
+				Connection: c,
+				Create:     pulumi.String(overrideKeyCommand),
+			},
+			pulumi.DependsOn([]pulumi.Resource{pubKeyRemoteCopyResource}))
+	if err != nil {
+		return nil, err
+	}
+	return []pulumi.Resource{overrideKeyResource}, nil
 }
 
 func Setup(ctx *pulumi.Context,
 	publicIP, privateKey *pulumi.StringOutput,
 	data Data) ([]pulumi.Resource, error) {
-	dependencies := []pulumi.Resource{}
-
 	// Load pull secret content
 	pullsecret, err := os.ReadFile(data.OCPPullSecretFilePath)
 	if err != nil {
@@ -93,11 +83,36 @@ func Setup(ctx *pulumi.Context,
 		Port:       pulumi.Float64(bundle.ImageSSHPort),
 	}
 
-	_ = pulumi.All(
+	clusterSetupfileName, err := util.WriteTempFile(string(script))
+	if err != nil {
+		return nil, err
+	}
+	clusterSetupRemoteCopyResource, err :=
+		remote.NewCopyFile(ctx, "uploadClusterSetupScript",
+			&remote.CopyFileArgs{
+				Connection: c,
+				LocalPath:  pulumi.String(clusterSetupfileName),
+				RemotePath: pulumi.String("/var/home/core/cluster_setup.sh"),
+			})
+	if err != nil {
+		return nil, err
+	}
+	scriptXRightsCommand := "chmod +x /var/home/core/cluster_setup.sh"
+	scriptXRightsCommandResource, err :=
+		remote.NewCommand(ctx, "setXRightsForClusterSetupScript",
+			&remote.CommandArgs{
+				Connection: c,
+				Create:     pulumi.String(scriptXRightsCommand),
+			},
+			pulumi.DependsOn([]pulumi.Resource{clusterSetupRemoteCopyResource}))
+	if err != nil {
+		return nil, err
+	}
+	execClusterSetupCommand := pulumi.All(
 		data.Password,
 		data.PublicIP,
 		data.PrivateIP).ApplyT(
-		func(args []interface{}) (string, error) {
+		func(args []interface{}) string {
 
 			execScriptENVS := map[string]string{
 				"IIP":            args[2].(string),
@@ -107,31 +122,6 @@ func Setup(ctx *pulumi.Context,
 				"PASS_KUBEADMIN": args[0].(string),
 				"PASS_REDHAT":    args[0].(string)}
 
-			clusterSetupfileName, err := util.WriteTempFile(string(script))
-			if err != nil {
-				return "", err
-			}
-			clusterSetupRemoteCopyResource, err :=
-				remote.NewCopyFile(ctx, "uploadClusterSetupScript",
-					&remote.CopyFileArgs{
-						Connection: c,
-						LocalPath:  pulumi.String(clusterSetupfileName),
-						RemotePath: pulumi.String("/var/home/core/cluster_setup.sh"),
-					})
-			if err != nil {
-				return "", err
-			}
-			scriptXRightsCommand := "chmod +x /var/home/core/cluster_setup.sh"
-			scriptXRightsCommandResource, err :=
-				remote.NewCommand(ctx, "setXRightsForClusterSetupScript",
-					&remote.CommandArgs{
-						Connection: c,
-						Create:     pulumi.String(scriptXRightsCommand),
-					},
-					pulumi.DependsOn([]pulumi.Resource{clusterSetupRemoteCopyResource}))
-			if err != nil {
-				return "", err
-			}
 			// https://github.com/pulumi/pulumi-command/issues/48
 			// using Environment from remote Command would require customice
 			// ssh server config + restart it. So we workaround it just adding the
@@ -142,49 +132,38 @@ func Setup(ctx *pulumi.Context,
 				execClusterSetupCommand =
 					fmt.Sprintf("%s %s=\"%s\"", execClusterSetupCommand, k, v)
 			}
-			execClusterSetupCommand = fmt.Sprintf("%s %s",
+			return fmt.Sprintf("%s %s",
 				execClusterSetupCommand,
 				"/var/home/core/cluster_setup.sh")
-
-			execClusterSetup, err :=
-				remote.NewCommand(ctx, "runClusterSetupScript",
-					&remote.CommandArgs{
-						Connection: c,
-						Create:     pulumi.String(execClusterSetupCommand),
-						// https://github.com/pulumi/pulumi-command/issues/48
-						// Environment: pulumi.ToStringMap(execScriptENVS),
-					},
-					pulumi.DependsOn([]pulumi.Resource{scriptXRightsCommandResource}))
-			if err != nil {
-				execClusterSetup.Stderr.ApplyT(func(err string) error {
-					return ctx.Log.Error(err, nil)
-				})
-				return "", err
-			}
-			return "", nil
-			// getKCCmd := ("cat /opt/kubeconfig")
-			// getKC, err :=
-			// 	remote.NewCommand(ctx, "getKCCmd",
-			// 		&remote.CommandArgs{
-			// 			Connection: c,
-			// 			Create:     pulumi.String(getKCCmd)},
-			// 		pulumi.DependsOn([]pulumi.Resource{execClusterSetup}))
-			// if err != nil {
-			// 	return "", err
-			// }
-
-			// return getKC.Stdout.ApplyT(func(kubeconfig string) (string, error) {
-			// 	return kubeconfig, nil
-			// }), nil
 		}).(pulumi.StringOutput)
-	// _= pulumi.All(data.PublicIP,kubeconfig).ApplyT(
-	// 	func(args []interface{}) (string, error) {
-	// 	}
-	// )
+	execClusterSetup, err :=
+		remote.NewCommand(ctx, "runClusterSetupScript",
+			&remote.CommandArgs{
+				Connection: c,
+				Create:     execClusterSetupCommand,
+				// https://github.com/pulumi/pulumi-command/issues/48
+				// Environment: pulumi.ToStringMap(execScriptENVS),
+			},
+			pulumi.DependsOn([]pulumi.Resource{scriptXRightsCommandResource}))
+	if err != nil {
+		execClusterSetup.Stderr.ApplyT(func(err string) error {
+			return ctx.Log.Error(err, nil)
+		})
+		return nil, err
+	}
+	// getKCCmd := ("cat /opt/kubeconfig")
+	// getKC, err :=
+	// 	remote.NewCommand(ctx, "getKCCmd",
+	// 		&remote.CommandArgs{
+	// 			Connection: c,
+	// 			Create:     pulumi.String(getKCCmd)},
+	// 		pulumi.DependsOn([]pulumi.Resource{execClusterSetup}))
+	// if err != nil {
+	// 	return "", err
+	// }
 
-	// )
-	// // pulumi.StringPtrInput
-	// // pulumi.StringOutput
-	// kubeconfig.
-	return dependencies, nil
+	// return getKC.Stdout.ApplyT(func(kubeconfig string) (string, error) {
+	// 	return kubeconfig, nil
+	// }), nil
+	return []pulumi.Resource{execClusterSetup}, nil
 }
