@@ -6,6 +6,7 @@
       "group:allNonMajor"
   ],
   "automerge": false,
+  "rangeStrategy": "bump",
   "schedule": [
       "every weekend"
   ]
