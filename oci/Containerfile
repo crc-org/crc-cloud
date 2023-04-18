@@ -1,21 +1,18 @@
-FROM docker.io/library/golang:1.20-alpine3.17 as builder 
+FROM registry.access.redhat.com/ubi9/go-toolset:1.18.10-4 as builder
 
 USER root
 WORKDIR /workspace
 COPY . .
 
+# renovate: datasource=github-releases packageName=pulumi/pulumi
 ENV PULUMI_VERSION 3.54.0
 ENV PULUMI_URL https://github.com/pulumi/pulumi/releases/download/v${PULUMI_VERSION}/pulumi-v${PULUMI_VERSION}-linux-x64.tar.gz
 
-RUN apk -U upgrade \
-    && apk add make gcc musl-dev curl \
-    && make build \
+RUN make build \
     && curl -LO ${PULUMI_URL} \
     && tar -xzvf pulumi-v${PULUMI_VERSION}-linux-x64.tar.gz
 
-# TODO review quay build with entitlements (microdnf...)
-# FROM registry.access.redhat.com/ubi8/ubi-minimal
-FROM docker.io/library/alpine:3.17
+FROM registry.access.redhat.com/ubi9-minimal:9.1.0-1829
 
 LABEL MAINTAINER "CRC <devtools-cdk@redhat.com>"
 
@@ -23,8 +20,12 @@ LABEL MAINTAINER "CRC <devtools-cdk@redhat.com>"
 ENV PULUMI_CONFIG_PASSPHRASE "defaultPassphrase"
 
 COPY --from=builder /workspace/out/crc-cloud /workspace/pulumi/pulumi /usr/local/bin/
+COPY requirements.txt ./
 
-RUN apk add --update curl aws-cli qemu-img zstd bash \
-    && pulumi plugin install resource command v0.7.0
+USER root
+
+RUN microdnf install -y python3 python3-pip zstd && \
+    pip install -r requirements.txt && \
+    pulumi plugin install resource command v0.7.2
 
 ENTRYPOINT [ "crc-cloud" ]
