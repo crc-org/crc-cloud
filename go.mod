@@ -1,6 +1,6 @@
 module github.com/crc/crc-cloud
 
-go 1.20
+go 1.18
 
 require (
 	github.com/pulumi/pulumi-azure-native-sdk/resources v1.99.2
