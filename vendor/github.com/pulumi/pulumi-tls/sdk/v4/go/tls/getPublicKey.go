@@ -44,10 +44,10 @@ import (
 //			if err != nil {
 //				return err
 //			}
-//			_ = tls.GetPublicKeyOutput(ctx, GetPublicKeyOutputArgs{
+//			_ = tls.GetPublicKeyOutput(ctx, tls.GetPublicKeyOutputArgs{
 //				PrivateKeyPem: ed25519_example.PrivateKeyPem,
 //			}, nil)
-//			_, err = tls.GetPublicKey(ctx, &GetPublicKeyArgs{
+//			_, err = tls.GetPublicKey(ctx, &tls.GetPublicKeyArgs{
 //				PrivateKeyOpenssh: pulumi.StringRef(readFileOrPanic("~/.ssh/id_rsa_rfc4716")),
 //			}, nil)
 //			if err != nil {

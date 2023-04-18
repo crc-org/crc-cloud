@@ -10,7 +10,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// The Storage Account Local User keys.
+// List SSH authorized keys and shared key of the local user.
 // API Version: 2021-08-01.
 func ListLocalUserKeys(ctx *pulumi.Context, args *ListLocalUserKeysArgs, opts ...pulumi.InvokeOption) (*ListLocalUserKeysResult, error) {
 	var rv ListLocalUserKeysResult

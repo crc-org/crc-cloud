@@ -7,7 +7,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/pkg/errors"
+	"errors"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -29,6 +29,10 @@ type VpcIpam struct {
 	Arn pulumi.StringOutput `pulumi:"arn"`
 	// Enables you to quickly delete an IPAM, private scopes, pools in private scopes, and any allocations in the pools in private scopes.
 	Cascade pulumi.BoolPtrOutput `pulumi:"cascade"`
+	// The IPAM's default resource discovery association ID.
+	DefaultResourceDiscoveryAssociationId pulumi.StringOutput `pulumi:"defaultResourceDiscoveryAssociationId"`
+	// The IPAM's default resource discovery ID.
+	DefaultResourceDiscoveryId pulumi.StringOutput `pulumi:"defaultResourceDiscoveryId"`
 	// A description for the IPAM.
 	Description pulumi.StringPtrOutput `pulumi:"description"`
 	// Determines which locales can be chosen when you create pools. Locale is the Region where you want to make an IPAM pool available for allocations. You can only create pools with locales that match the operating Regions of the IPAM. You can only create VPCs from a pool whose locale matches the VPC's Region. You specify a region using the regionName parameter. You **must** set your provider block region as an operating_region.
@@ -82,6 +86,10 @@ type vpcIpamState struct {
 	Arn *string `pulumi:"arn"`
 	// Enables you to quickly delete an IPAM, private scopes, pools in private scopes, and any allocations in the pools in private scopes.
 	Cascade *bool `pulumi:"cascade"`
+	// The IPAM's default resource discovery association ID.
+	DefaultResourceDiscoveryAssociationId *string `pulumi:"defaultResourceDiscoveryAssociationId"`
+	// The IPAM's default resource discovery ID.
+	DefaultResourceDiscoveryId *string `pulumi:"defaultResourceDiscoveryId"`
 	// A description for the IPAM.
 	Description *string `pulumi:"description"`
 	// Determines which locales can be chosen when you create pools. Locale is the Region where you want to make an IPAM pool available for allocations. You can only create pools with locales that match the operating Regions of the IPAM. You can only create VPCs from a pool whose locale matches the VPC's Region. You specify a region using the regionName parameter. You **must** set your provider block region as an operating_region.
@@ -104,6 +112,10 @@ type VpcIpamState struct {
 	Arn pulumi.StringPtrInput
 	// Enables you to quickly delete an IPAM, private scopes, pools in private scopes, and any allocations in the pools in private scopes.
 	Cascade pulumi.BoolPtrInput
+	// The IPAM's default resource discovery association ID.
+	DefaultResourceDiscoveryAssociationId pulumi.StringPtrInput
+	// The IPAM's default resource discovery ID.
+	DefaultResourceDiscoveryId pulumi.StringPtrInput
 	// A description for the IPAM.
 	Description pulumi.StringPtrInput
 	// Determines which locales can be chosen when you create pools. Locale is the Region where you want to make an IPAM pool available for allocations. You can only create pools with locales that match the operating Regions of the IPAM. You can only create VPCs from a pool whose locale matches the VPC's Region. You specify a region using the regionName parameter. You **must** set your provider block region as an operating_region.
@@ -134,6 +146,8 @@ type vpcIpamArgs struct {
 	OperatingRegions []VpcIpamOperatingRegion `pulumi:"operatingRegions"`
 	// A map of tags to assign to the resource. If configured with a provider `defaultTags` configuration block present, tags with matching keys will overwrite those defined at the provider-level.
 	Tags map[string]string `pulumi:"tags"`
+	// A map of tags assigned to the resource, including those inherited from the provider `defaultTags` configuration block.
+	TagsAll map[string]string `pulumi:"tagsAll"`
 }
 
 // The set of arguments for constructing a VpcIpam resource.
@@ -146,6 +160,8 @@ type VpcIpamArgs struct {
 	OperatingRegions VpcIpamOperatingRegionArrayInput
 	// A map of tags to assign to the resource. If configured with a provider `defaultTags` configuration block present, tags with matching keys will overwrite those defined at the provider-level.
 	Tags pulumi.StringMapInput
+	// A map of tags assigned to the resource, including those inherited from the provider `defaultTags` configuration block.
+	TagsAll pulumi.StringMapInput
 }
 
 func (VpcIpamArgs) ElementType() reflect.Type {
@@ -243,6 +259,16 @@ func (o VpcIpamOutput) Arn() pulumi.StringOutput {
 // Enables you to quickly delete an IPAM, private scopes, pools in private scopes, and any allocations in the pools in private scopes.
 func (o VpcIpamOutput) Cascade() pulumi.BoolPtrOutput {
 	return o.ApplyT(func(v *VpcIpam) pulumi.BoolPtrOutput { return v.Cascade }).(pulumi.BoolPtrOutput)
+}
+
+// The IPAM's default resource discovery association ID.
+func (o VpcIpamOutput) DefaultResourceDiscoveryAssociationId() pulumi.StringOutput {
+	return o.ApplyT(func(v *VpcIpam) pulumi.StringOutput { return v.DefaultResourceDiscoveryAssociationId }).(pulumi.StringOutput)
+}
+
+// The IPAM's default resource discovery ID.
+func (o VpcIpamOutput) DefaultResourceDiscoveryId() pulumi.StringOutput {
+	return o.ApplyT(func(v *VpcIpam) pulumi.StringOutput { return v.DefaultResourceDiscoveryId }).(pulumi.StringOutput)
 }
 
 // A description for the IPAM.

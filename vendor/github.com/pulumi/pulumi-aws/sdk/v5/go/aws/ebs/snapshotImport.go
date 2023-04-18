@@ -7,7 +7,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/pkg/errors"
+	"errors"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -57,7 +57,7 @@ type SnapshotImport struct {
 	ClientData SnapshotImportClientDataPtrOutput `pulumi:"clientData"`
 	// The data encryption key identifier for the snapshot.
 	DataEncryptionKeyId pulumi.StringOutput `pulumi:"dataEncryptionKeyId"`
-	// The description of the disk image being imported.
+	// The description string for the import snapshot task.
 	Description pulumi.StringOutput `pulumi:"description"`
 	// Information about the disk container. Detailed below.
 	DiskContainer SnapshotImportDiskContainerOutput `pulumi:"diskContainer"`
@@ -125,7 +125,7 @@ type snapshotImportState struct {
 	ClientData *SnapshotImportClientData `pulumi:"clientData"`
 	// The data encryption key identifier for the snapshot.
 	DataEncryptionKeyId *string `pulumi:"dataEncryptionKeyId"`
-	// The description of the disk image being imported.
+	// The description string for the import snapshot task.
 	Description *string `pulumi:"description"`
 	// Information about the disk container. Detailed below.
 	DiskContainer *SnapshotImportDiskContainer `pulumi:"diskContainer"`
@@ -162,7 +162,7 @@ type SnapshotImportState struct {
 	ClientData SnapshotImportClientDataPtrInput
 	// The data encryption key identifier for the snapshot.
 	DataEncryptionKeyId pulumi.StringPtrInput
-	// The description of the disk image being imported.
+	// The description string for the import snapshot task.
 	Description pulumi.StringPtrInput
 	// Information about the disk container. Detailed below.
 	DiskContainer SnapshotImportDiskContainerPtrInput
@@ -199,7 +199,7 @@ func (SnapshotImportState) ElementType() reflect.Type {
 type snapshotImportArgs struct {
 	// The client-specific data. Detailed below.
 	ClientData *SnapshotImportClientData `pulumi:"clientData"`
-	// The description of the disk image being imported.
+	// The description string for the import snapshot task.
 	Description *string `pulumi:"description"`
 	// Information about the disk container. Detailed below.
 	DiskContainer SnapshotImportDiskContainer `pulumi:"diskContainer"`
@@ -215,6 +215,8 @@ type snapshotImportArgs struct {
 	StorageTier *string `pulumi:"storageTier"`
 	// A map of tags to assign to the snapshot.
 	Tags map[string]string `pulumi:"tags"`
+	// A map of tags assigned to the resource, including those inherited from the provider `defaultTags` configuration block.
+	TagsAll map[string]string `pulumi:"tagsAll"`
 	// Specifies the number of days for which to temporarily restore an archived snapshot. Required for temporary restores only. The snapshot will be automatically re-archived after this period.
 	TemporaryRestoreDays *int `pulumi:"temporaryRestoreDays"`
 }
@@ -223,7 +225,7 @@ type snapshotImportArgs struct {
 type SnapshotImportArgs struct {
 	// The client-specific data. Detailed below.
 	ClientData SnapshotImportClientDataPtrInput
-	// The description of the disk image being imported.
+	// The description string for the import snapshot task.
 	Description pulumi.StringPtrInput
 	// Information about the disk container. Detailed below.
 	DiskContainer SnapshotImportDiskContainerInput
@@ -239,6 +241,8 @@ type SnapshotImportArgs struct {
 	StorageTier pulumi.StringPtrInput
 	// A map of tags to assign to the snapshot.
 	Tags pulumi.StringMapInput
+	// A map of tags assigned to the resource, including those inherited from the provider `defaultTags` configuration block.
+	TagsAll pulumi.StringMapInput
 	// Specifies the number of days for which to temporarily restore an archived snapshot. Required for temporary restores only. The snapshot will be automatically re-archived after this period.
 	TemporaryRestoreDays pulumi.IntPtrInput
 }
@@ -345,7 +349,7 @@ func (o SnapshotImportOutput) DataEncryptionKeyId() pulumi.StringOutput {
 	return o.ApplyT(func(v *SnapshotImport) pulumi.StringOutput { return v.DataEncryptionKeyId }).(pulumi.StringOutput)
 }
 
-// The description of the disk image being imported.
+// The description string for the import snapshot task.
 func (o SnapshotImportOutput) Description() pulumi.StringOutput {
 	return o.ApplyT(func(v *SnapshotImport) pulumi.StringOutput { return v.Description }).(pulumi.StringOutput)
 }

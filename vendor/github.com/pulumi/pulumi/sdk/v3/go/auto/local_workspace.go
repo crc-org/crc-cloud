@@ -1,4 +1,4 @@
-// Copyright 2016-2022, Pulumi Corporation.
+// Copyright 2016-2023, Pulumi Corporation.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -134,8 +134,24 @@ func (l *LocalWorkspace) PostCommandCallback(ctx context.Context, stackName stri
 // GetConfig returns the value associated with the specified stack name and key,
 // scoped to the current workspace. LocalWorkspace reads this config from the matching Pulumi.stack.yaml file.
 func (l *LocalWorkspace) GetConfig(ctx context.Context, stackName string, key string) (ConfigValue, error) {
+	return l.GetConfigWithOptions(ctx, stackName, key, nil)
+}
+
+// GetConfigWithOptions returns the value associated with the specified stack name and key,
+// using the optional ConfigOptions, scoped to the current workspace.
+// LocalWorkspace reads this config from the matching Pulumi.stack.yaml file.
+func (l *LocalWorkspace) GetConfigWithOptions(
+	ctx context.Context, stackName string, key string, opts *ConfigOptions,
+) (ConfigValue, error) {
 	var val ConfigValue
-	stdout, stderr, errCode, err := l.runPulumiCmdSync(ctx, "config", "get", key, "--json", "--stack", stackName)
+	args := []string{"config", "get"}
+	if opts != nil {
+		if opts.Path {
+			args = append(args, "--path")
+		}
+	}
+	args = append(args, key, "--json", "--stack", stackName)
+	stdout, stderr, errCode, err := l.runPulumiCmdSync(ctx, args...)
 	if err != nil {
 		return val, newAutoError(fmt.Errorf("unable to read config: %w", err), stdout, stderr, errCode)
 	}
@@ -164,14 +180,27 @@ func (l *LocalWorkspace) GetAllConfig(ctx context.Context, stackName string) (Co
 // SetConfig sets the specified key-value pair on the provided stack name.
 // LocalWorkspace writes this value to the matching Pulumi.<stack>.yaml file in Workspace.WorkDir().
 func (l *LocalWorkspace) SetConfig(ctx context.Context, stackName string, key string, val ConfigValue) error {
+	return l.SetConfigWithOptions(ctx, stackName, key, val, nil)
+}
+
+// SetConfigWithOptions sets the specified key-value pair on the provided stack name using the optional ConfigOptions.
+// LocalWorkspace writes this value to the matching Pulumi.<stack>.yaml file in Workspace.WorkDir().
+func (l *LocalWorkspace) SetConfigWithOptions(
+	ctx context.Context, stackName string, key string, val ConfigValue, opts *ConfigOptions,
+) error {
+	args := []string{"config", "set", "--stack", stackName}
+	if opts != nil {
+		if opts.Path {
+			args = append(args, "--path")
+		}
+	}
 	secretArg := "--plaintext"
 	if val.Secret {
 		secretArg = "--secret"
 	}
+	args = append(args, key, secretArg, "--non-interactive", "--", val.Value)
 
-	stdout, stderr, errCode, err := l.runPulumiCmdSync(ctx,
-		"config", "set", key, secretArg, "--stack", stackName,
-		"--non-interactive", "--", val.Value)
+	stdout, stderr, errCode, err := l.runPulumiCmdSync(ctx, args...)
 	if err != nil {
 		return newAutoError(fmt.Errorf("unable to set config: %w", err), stdout, stderr, errCode)
 	}
@@ -181,8 +210,21 @@ func (l *LocalWorkspace) SetConfig(ctx context.Context, stackName string, key st
 // SetAllConfig sets all values in the provided config map for the specified stack name.
 // LocalWorkspace writes the config to the matching Pulumi.<stack>.yaml file in Workspace.WorkDir().
 func (l *LocalWorkspace) SetAllConfig(ctx context.Context, stackName string, config ConfigMap) error {
-	args := []string{"config", "set-all", "--stack", stackName}
+	return l.SetAllConfigWithOptions(ctx, stackName, config, nil)
+}
 
+// SetAllConfigWithOptions sets all values in the provided config map for the specified stack name
+// using the optional ConfigOptions.
+// LocalWorkspace writes the config to the matching Pulumi.<stack>.yaml file in Workspace.WorkDir().
+func (l *LocalWorkspace) SetAllConfigWithOptions(
+	ctx context.Context, stackName string, config ConfigMap, opts *ConfigOptions,
+) error {
+	args := []string{"config", "set-all", "--stack", stackName}
+	if opts != nil {
+		if opts.Path {
+			args = append(args, "--path")
+		}
+	}
 	for k, v := range config {
 		secretArg := "--plaintext"
 		if v.Secret {
@@ -201,7 +243,22 @@ func (l *LocalWorkspace) SetAllConfig(ctx context.Context, stackName string, con
 // RemoveConfig removes the specified key-value pair on the provided stack name.
 // It will remove any matching values in the Pulumi.<stack>.yaml file in Workspace.WorkDir().
 func (l *LocalWorkspace) RemoveConfig(ctx context.Context, stackName string, key string) error {
-	stdout, stderr, errCode, err := l.runPulumiCmdSync(ctx, "config", "rm", key, "--stack", stackName)
+	return l.RemoveConfigWithOptions(ctx, stackName, key, nil)
+}
+
+// RemoveConfigWithOptions removes the specified key-value pair on the provided stack name.
+// It will remove any matching values in the Pulumi.<stack>.yaml file in Workspace.WorkDir().
+func (l *LocalWorkspace) RemoveConfigWithOptions(
+	ctx context.Context, stackName string, key string, opts *ConfigOptions,
+) error {
+	args := []string{"config", "rm"}
+	if opts != nil {
+		if opts.Path {
+			args = append(args, "--path")
+		}
+	}
+	args = append(args, key, "--stack", stackName)
+	stdout, stderr, errCode, err := l.runPulumiCmdSync(ctx, args...)
 	if err != nil {
 		return newAutoError(fmt.Errorf("could not remove config: %w", err), stdout, stderr, errCode)
 	}
@@ -211,7 +268,21 @@ func (l *LocalWorkspace) RemoveConfig(ctx context.Context, stackName string, key
 // RemoveAllConfig removes all values in the provided key list for the specified stack name
 // It will remove any matching values in the Pulumi.<stack>.yaml file in Workspace.WorkDir().
 func (l *LocalWorkspace) RemoveAllConfig(ctx context.Context, stackName string, keys []string) error {
+	return l.RemoveAllConfigWithOptions(ctx, stackName, keys, nil)
+}
+
+// RemoveAllConfigWithOptions removes all values in the provided key list for the specified stack name
+// using the optional ConfigOptions
+// It will remove any matching values in the Pulumi.<stack>.yaml file in Workspace.WorkDir().
+func (l *LocalWorkspace) RemoveAllConfigWithOptions(
+	ctx context.Context, stackName string, keys []string, opts *ConfigOptions,
+) error {
 	args := []string{"config", "rm-all", "--stack", stackName}
+	if opts != nil {
+		if opts.Path {
+			args = append(args, "--path")
+		}
+	}
 	args = append(args, keys...)
 	stdout, stderr, errCode, err := l.runPulumiCmdSync(ctx, args...)
 	if err != nil {
@@ -233,6 +304,47 @@ func (l *LocalWorkspace) RefreshConfig(ctx context.Context, stackName string) (C
 		return nil, fmt.Errorf("could not fetch config after refresh: %w", err)
 	}
 	return cfg, nil
+}
+
+// GetTag returns the value associated with the specified stack name and key.
+func (l *LocalWorkspace) GetTag(ctx context.Context, stackName string, key string) (string, error) {
+	stdout, stderr, errCode, err := l.runPulumiCmdSync(ctx, "stack", "tag", "get", key, "--stack", stackName)
+	if err != nil {
+		return stdout, newAutoError(fmt.Errorf("unable to read tag: %w", err), stdout, stderr, errCode)
+	}
+	return strings.TrimSpace(stdout), nil
+}
+
+// SetTag sets the specified key-value pair on the provided stack name.
+func (l *LocalWorkspace) SetTag(ctx context.Context, stackName string, key string, value string) error {
+	stdout, stderr, errCode, err := l.runPulumiCmdSync(ctx, "stack", "tag", "set", key, value, "--stack", stackName)
+	if err != nil {
+		return newAutoError(fmt.Errorf("unable to set tag: %w", err), stdout, stderr, errCode)
+	}
+	return nil
+}
+
+// RemoveTag removes the specified key-value pair on the provided stack name.
+func (l *LocalWorkspace) RemoveTag(ctx context.Context, stackName string, key string) error {
+	stdout, stderr, errCode, err := l.runPulumiCmdSync(ctx, "stack", "tag", "rm", key, "--stack", stackName)
+	if err != nil {
+		return newAutoError(fmt.Errorf("could not remove tag: %w", err), stdout, stderr, errCode)
+	}
+	return nil
+}
+
+// ListTags Returns the tag map for the specified stack name.
+func (l *LocalWorkspace) ListTags(ctx context.Context, stackName string) (map[string]string, error) {
+	var vals map[string]string
+	stdout, stderr, errCode, err := l.runPulumiCmdSync(ctx, "stack", "tag", "ls", "--json", "--stack", stackName)
+	if err != nil {
+		return vals, newAutoError(fmt.Errorf("unable to read tags: %w", err), stdout, stderr, errCode)
+	}
+	err = json.Unmarshal([]byte(stdout), &vals)
+	if err != nil {
+		return vals, fmt.Errorf("unable to unmarshal tag values: %w", err)
+	}
+	return vals, nil
 }
 
 // GetEnvVars returns the environment values scoped to the current workspace.
@@ -306,6 +418,32 @@ func (l *LocalWorkspace) WhoAmI(ctx context.Context) (string, error) {
 		return "", newAutoError(fmt.Errorf("could not determine authenticated user: %w", err), stdout, stderr, errCode)
 	}
 	return strings.TrimSpace(stdout), nil
+}
+
+// WhoAmIDetails returns detailed information about the currently
+// logged-in Pulumi identity.
+func (l *LocalWorkspace) WhoAmIDetails(ctx context.Context) (WhoAmIResult, error) {
+	// 3.58 added the --json flag (https://github.com/pulumi/pulumi/releases/tag/v3.58.0)
+	if l.pulumiVersion.GTE(semver.Version{Major: 3, Minor: 58}) {
+		var whoAmIDetailedInfo WhoAmIResult
+		stdout, stderr, errCode, err := l.runPulumiCmdSync(ctx, "whoami", "--json")
+		if err != nil {
+			return whoAmIDetailedInfo, newAutoError(
+				fmt.Errorf("could not retrieve WhoAmIDetailedInfo: %w", err), stdout, stderr, errCode)
+		}
+		err = json.Unmarshal([]byte(stdout), &whoAmIDetailedInfo)
+		if err != nil {
+			return whoAmIDetailedInfo, fmt.Errorf("unable to unmarshal WhoAmIDetailedInfo: %w", err)
+		}
+		return whoAmIDetailedInfo, nil
+	}
+
+	stdout, stderr, errCode, err := l.runPulumiCmdSync(ctx, "whoami")
+	if err != nil {
+		return WhoAmIResult{}, newAutoError(
+			fmt.Errorf("could not determine authenticated user: %w", err), stdout, stderr, errCode)
+	}
+	return WhoAmIResult{User: strings.TrimSpace(stdout)}, nil
 }
 
 // Stack returns a summary of the currently selected stack, if any.
@@ -987,7 +1125,8 @@ func NewStackRemoteSource(
 // into the Workspace. Unless a WorkDir option is specified, the GitRepo will be clone
 // into a new temporary directory provided by the OS.
 func UpsertStackRemoteSource(
-	ctx context.Context, stackName string, repo GitRepo, opts ...LocalWorkspaceOption) (Stack, error) {
+	ctx context.Context, stackName string, repo GitRepo, opts ...LocalWorkspaceOption,
+) (Stack, error) {
 	opts = append(opts, Repo(repo))
 	w, err := NewLocalWorkspace(ctx, opts...)
 	var stack Stack

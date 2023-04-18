@@ -7,7 +7,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/pkg/errors"
+	"errors"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -90,9 +90,7 @@ type AmiCopy struct {
 	// ID of the kernel image (AKI) that will be used as the paravirtual
 	// kernel in created instances.
 	KernelId pulumi.StringOutput `pulumi:"kernelId"`
-	// Full ARN of the AWS Key Management Service (AWS KMS) CMK to use when encrypting the snapshots of
-	// an image during a copy operation. This parameter is only required if you want to use a non-default CMK;
-	// if this parameter is not specified, the default CMK for EBS is used
+	// Full ARN of the KMS Key to use when encrypting the snapshots of an image during a copy operation. If not specified, then the default AWS KMS Key will be used
 	KmsKeyId           pulumi.StringOutput `pulumi:"kmsKeyId"`
 	ManageEbsSnapshots pulumi.BoolOutput   `pulumi:"manageEbsSnapshots"`
 	// Region-unique name for the AMI.
@@ -197,9 +195,7 @@ type amiCopyState struct {
 	// ID of the kernel image (AKI) that will be used as the paravirtual
 	// kernel in created instances.
 	KernelId *string `pulumi:"kernelId"`
-	// Full ARN of the AWS Key Management Service (AWS KMS) CMK to use when encrypting the snapshots of
-	// an image during a copy operation. This parameter is only required if you want to use a non-default CMK;
-	// if this parameter is not specified, the default CMK for EBS is used
+	// Full ARN of the KMS Key to use when encrypting the snapshots of an image during a copy operation. If not specified, then the default AWS KMS Key will be used
 	KmsKeyId           *string `pulumi:"kmsKeyId"`
 	ManageEbsSnapshots *bool   `pulumi:"manageEbsSnapshots"`
 	// Region-unique name for the AMI.
@@ -270,9 +266,7 @@ type AmiCopyState struct {
 	// ID of the kernel image (AKI) that will be used as the paravirtual
 	// kernel in created instances.
 	KernelId pulumi.StringPtrInput
-	// Full ARN of the AWS Key Management Service (AWS KMS) CMK to use when encrypting the snapshots of
-	// an image during a copy operation. This parameter is only required if you want to use a non-default CMK;
-	// if this parameter is not specified, the default CMK for EBS is used
+	// Full ARN of the KMS Key to use when encrypting the snapshots of an image during a copy operation. If not specified, then the default AWS KMS Key will be used
 	KmsKeyId           pulumi.StringPtrInput
 	ManageEbsSnapshots pulumi.BoolPtrInput
 	// Region-unique name for the AMI.
@@ -328,9 +322,7 @@ type amiCopyArgs struct {
 	// Nested block describing an ephemeral block device that
 	// should be attached to created instances. The structure of this block is described below.
 	EphemeralBlockDevices []AmiCopyEphemeralBlockDevice `pulumi:"ephemeralBlockDevices"`
-	// Full ARN of the AWS Key Management Service (AWS KMS) CMK to use when encrypting the snapshots of
-	// an image during a copy operation. This parameter is only required if you want to use a non-default CMK;
-	// if this parameter is not specified, the default CMK for EBS is used
+	// Full ARN of the KMS Key to use when encrypting the snapshots of an image during a copy operation. If not specified, then the default AWS KMS Key will be used
 	KmsKeyId *string `pulumi:"kmsKeyId"`
 	// Region-unique name for the AMI.
 	Name *string `pulumi:"name"`
@@ -341,7 +333,8 @@ type amiCopyArgs struct {
 	// same as the AWS provider region in order to create a copy within the same region.
 	SourceAmiRegion string `pulumi:"sourceAmiRegion"`
 	// Map of tags to assign to the resource. If configured with a provider `defaultTags` configuration block present, tags with matching keys will overwrite those defined at the provider-level.
-	Tags map[string]string `pulumi:"tags"`
+	Tags    map[string]string `pulumi:"tags"`
+	TagsAll map[string]string `pulumi:"tagsAll"`
 }
 
 // The set of arguments for constructing a AmiCopy resource.
@@ -361,9 +354,7 @@ type AmiCopyArgs struct {
 	// Nested block describing an ephemeral block device that
 	// should be attached to created instances. The structure of this block is described below.
 	EphemeralBlockDevices AmiCopyEphemeralBlockDeviceArrayInput
-	// Full ARN of the AWS Key Management Service (AWS KMS) CMK to use when encrypting the snapshots of
-	// an image during a copy operation. This parameter is only required if you want to use a non-default CMK;
-	// if this parameter is not specified, the default CMK for EBS is used
+	// Full ARN of the KMS Key to use when encrypting the snapshots of an image during a copy operation. If not specified, then the default AWS KMS Key will be used
 	KmsKeyId pulumi.StringPtrInput
 	// Region-unique name for the AMI.
 	Name pulumi.StringPtrInput
@@ -374,7 +365,8 @@ type AmiCopyArgs struct {
 	// same as the AWS provider region in order to create a copy within the same region.
 	SourceAmiRegion pulumi.StringInput
 	// Map of tags to assign to the resource. If configured with a provider `defaultTags` configuration block present, tags with matching keys will overwrite those defined at the provider-level.
-	Tags pulumi.StringMapInput
+	Tags    pulumi.StringMapInput
+	TagsAll pulumi.StringMapInput
 }
 
 func (AmiCopyArgs) ElementType() reflect.Type {
@@ -546,9 +538,7 @@ func (o AmiCopyOutput) KernelId() pulumi.StringOutput {
 	return o.ApplyT(func(v *AmiCopy) pulumi.StringOutput { return v.KernelId }).(pulumi.StringOutput)
 }
 
-// Full ARN of the AWS Key Management Service (AWS KMS) CMK to use when encrypting the snapshots of
-// an image during a copy operation. This parameter is only required if you want to use a non-default CMK;
-// if this parameter is not specified, the default CMK for EBS is used
+// Full ARN of the KMS Key to use when encrypting the snapshots of an image during a copy operation. If not specified, then the default AWS KMS Key will be used
 func (o AmiCopyOutput) KmsKeyId() pulumi.StringOutput {
 	return o.ApplyT(func(v *AmiCopy) pulumi.StringOutput { return v.KmsKeyId }).(pulumi.StringOutput)
 }

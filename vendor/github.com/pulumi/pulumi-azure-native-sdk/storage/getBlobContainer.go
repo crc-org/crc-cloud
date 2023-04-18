@@ -10,7 +10,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// Properties of the blob container, including Id, resource name, resource type, Etag.
+// Gets properties of a specified container.
 // API Version: 2021-02-01.
 func LookupBlobContainer(ctx *pulumi.Context, args *LookupBlobContainerArgs, opts ...pulumi.InvokeOption) (*LookupBlobContainerResult, error) {
 	var rv LookupBlobContainerResult

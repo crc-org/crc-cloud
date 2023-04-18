@@ -37,7 +37,7 @@ import (
 //		pulumi.Run(func(ctx *pulumi.Context) error {
 //			_, err := tls.NewCertRequest(ctx, "example", &tls.CertRequestArgs{
 //				PrivateKeyPem: readFileOrPanic("private_key.pem"),
-//				Subject: &CertRequestSubjectArgs{
+//				Subject: &tls.CertRequestSubjectArgs{
 //					CommonName:   pulumi.String("example.com"),
 //					Organization: pulumi.String("ACME Examples, Inc"),
 //				},
@@ -87,6 +87,13 @@ func NewCertRequest(ctx *pulumi.Context,
 	if args.PrivateKeyPem == nil {
 		return nil, errors.New("invalid value for required argument 'PrivateKeyPem'")
 	}
+	if args.PrivateKeyPem != nil {
+		args.PrivateKeyPem = pulumi.ToSecret(args.PrivateKeyPem).(pulumi.StringInput)
+	}
+	secrets := pulumi.AdditionalSecretOutputs([]string{
+		"privateKeyPem",
+	})
+	opts = append(opts, secrets)
 	var resource CertRequest
 	err := ctx.RegisterResource("tls:index/certRequest:CertRequest", name, args, &resource, opts...)
 	if err != nil {

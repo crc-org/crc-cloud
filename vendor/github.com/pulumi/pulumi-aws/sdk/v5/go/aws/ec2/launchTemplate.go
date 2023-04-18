@@ -21,7 +21,7 @@ import (
 //
 //	"encoding/base64"
 //	"fmt"
-//	"io/ioutil"
+//	"os"
 //
 //	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ec2"
 //	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -29,7 +29,7 @@ import (
 // )
 //
 //	func filebase64OrPanic(path string) pulumi.StringPtrInput {
-//		if fileData, err := ioutil.ReadFile(path); err == nil {
+//		if fileData, err := os.ReadFile(path); err == nil {
 //			return pulumi.String(base64.StdEncoding.EncodeToString(fileData[:]))
 //		} else {
 //			panic(err.Error())
@@ -41,7 +41,7 @@ import (
 //			_, err := ec2.NewLaunchTemplate(ctx, "foo", &ec2.LaunchTemplateArgs{
 //				BlockDeviceMappings: ec2.LaunchTemplateBlockDeviceMappingArray{
 //					&ec2.LaunchTemplateBlockDeviceMappingArgs{
-//						DeviceName: pulumi.String("/dev/sda1"),
+//						DeviceName: pulumi.String("/dev/sdf"),
 //						Ebs: &ec2.LaunchTemplateBlockDeviceMappingEbsArgs{
 //							VolumeSize: pulumi.Int(20),
 //						},
@@ -521,6 +521,8 @@ type launchTemplateArgs struct {
 	TagSpecifications []LaunchTemplateTagSpecification `pulumi:"tagSpecifications"`
 	// A map of tags to assign to the launch template. If configured with a provider `defaultTags` configuration block present, tags with matching keys will overwrite those defined at the provider-level.
 	Tags map[string]string `pulumi:"tags"`
+	// A map of tags assigned to the resource, including those inherited from the provider `defaultTags` configuration block.
+	TagsAll map[string]string `pulumi:"tagsAll"`
 	// Whether to update Default Version each update. Conflicts with `defaultVersion`.
 	UpdateDefaultVersion *bool `pulumi:"updateDefaultVersion"`
 	// The base64-encoded user data to provide when launching the instance.
@@ -608,6 +610,8 @@ type LaunchTemplateArgs struct {
 	TagSpecifications LaunchTemplateTagSpecificationArrayInput
 	// A map of tags to assign to the launch template. If configured with a provider `defaultTags` configuration block present, tags with matching keys will overwrite those defined at the provider-level.
 	Tags pulumi.StringMapInput
+	// A map of tags assigned to the resource, including those inherited from the provider `defaultTags` configuration block.
+	TagsAll pulumi.StringMapInput
 	// Whether to update Default Version each update. Conflicts with `defaultVersion`.
 	UpdateDefaultVersion pulumi.BoolPtrInput
 	// The base64-encoded user data to provide when launching the instance.

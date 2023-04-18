@@ -1,4 +1,4 @@
-// Copyright 2016-2018, Pulumi Corporation.
+// Copyright 2016-2023, Pulumi Corporation.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import (
 
 	"github.com/pulumi/pulumi/sdk/v3/go/common/diag"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/diag/colors"
+	"github.com/pulumi/pulumi/sdk/v3/go/common/resource/config"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/util/rpcutil"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/workspace"
 )
@@ -47,6 +48,7 @@ type Context struct {
 	tracingSpan opentracing.Span // the OpenTracing span to parent requests within.
 
 	cancelFuncs []context.CancelFunc
+	cancelLock  *sync.Mutex // Guards cancelFuncs.
 	baseContext context.Context
 }
 
@@ -56,8 +58,8 @@ type Context struct {
 // host's.
 func NewContext(d, statusD diag.Sink, host Host, _ ConfigSource,
 	pwd string, runtimeOptions map[string]interface{}, disableProviderPreview bool,
-	parentSpan opentracing.Span) (*Context, error) {
-
+	parentSpan opentracing.Span,
+) (*Context, error) {
 	// TODO: I think really this ought to just take plugins *workspace.Plugins as an arg, but yaml depends on
 	// this function so *sigh*. For now just see if there's a project we should be using, and use it if there
 	// is.
@@ -72,14 +74,14 @@ func NewContext(d, statusD diag.Sink, host Host, _ ConfigSource,
 
 	root := ""
 	return NewContextWithRoot(d, statusD, host, pwd, root, runtimeOptions,
-		disableProviderPreview, parentSpan, plugins)
+		disableProviderPreview, parentSpan, plugins, nil)
 }
 
 // NewContextWithRoot is a variation of NewContext that also sets known project Root. Additionally accepts Plugins
 func NewContextWithRoot(d, statusD diag.Sink, host Host,
 	pwd, root string, runtimeOptions map[string]interface{}, disableProviderPreview bool,
-	parentSpan opentracing.Span, plugins *workspace.Plugins) (*Context, error) {
-
+	parentSpan opentracing.Span, plugins *workspace.Plugins, config map[config.Key]string,
+) (*Context, error) {
 	if d == nil {
 		d = diag.DefaultSink(io.Discard, io.Discard, diag.FormatOptions{Color: colors.Never})
 	}
@@ -94,9 +96,10 @@ func NewContextWithRoot(d, statusD diag.Sink, host Host,
 		Pwd:             pwd,
 		tracingSpan:     parentSpan,
 		DebugTraceMutex: &sync.Mutex{},
+		cancelLock:      &sync.Mutex{},
 	}
 	if host == nil {
-		h, err := NewDefaultHost(ctx, runtimeOptions, disableProviderPreview, plugins)
+		h, err := NewDefaultHost(ctx, runtimeOptions, disableProviderPreview, plugins, config)
 		if err != nil {
 			return nil, err
 		}
@@ -113,14 +116,23 @@ func (ctx *Context) Request() context.Context {
 	}
 	c = opentracing.ContextWithSpan(c, ctx.tracingSpan)
 	c, cancel := context.WithCancel(c)
+	ctx.cancelLock.Lock()
 	ctx.cancelFuncs = append(ctx.cancelFuncs, cancel)
+	ctx.cancelLock.Unlock()
 	return c
 }
 
 // Close reclaims all resources associated with this context.
 func (ctx *Context) Close() error {
 	defer func() {
-		for _, cancel := range ctx.cancelFuncs {
+		// It is possible that cancelFuncs may be appended while this function is running.
+		// Capture the current value of cancelFuncs and set cancelFuncs to nil to prevent cancelFuncs
+		// from being appended to while we are iterating over it.
+		ctx.cancelLock.Lock()
+		cancelFuncs := ctx.cancelFuncs
+		ctx.cancelFuncs = nil
+		ctx.cancelLock.Unlock()
+		for _, cancel := range cancelFuncs {
 			cancel()
 		}
 	}()
@@ -139,10 +151,10 @@ func (ctx *Context) Close() error {
 //
 // WARNING: Calling this function without ever closing `c` will leak go routines.
 func (ctx *Context) WithCancelChannel(c <-chan struct{}) *Context {
-	copy := *ctx
+	newCtx := *ctx
 	go func() {
 		<-c
-		copy.Close()
+		newCtx.Close()
 	}()
-	return &copy
+	return &newCtx
 }

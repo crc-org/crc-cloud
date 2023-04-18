@@ -10,7 +10,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// Deployment script object.
+// Gets a deployment script with a given name.
 // API Version: 2020-10-01.
 //
 // Deprecated: Please use one of the variants: AzureCliScript, AzurePowerShellScript.

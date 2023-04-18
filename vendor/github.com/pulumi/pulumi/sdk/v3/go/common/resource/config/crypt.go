@@ -51,8 +51,10 @@ type Crypter interface {
 // A nopCrypter simply returns the ciphertext as-is.
 type nopCrypter struct{}
 
-var NopDecrypter Decrypter = nopCrypter{}
-var NopEncrypter Encrypter = nopCrypter{}
+var (
+	NopDecrypter Decrypter = nopCrypter{}
+	NopEncrypter Encrypter = nopCrypter{}
+)
 
 func (nopCrypter) DecryptValue(ctx context.Context, ciphertext string) (string, error) {
 	return ciphertext, nil
@@ -93,7 +95,8 @@ func (t *trackingDecrypter) DecryptValue(ctx context.Context, ciphertext string)
 }
 
 func (t *trackingDecrypter) BulkDecrypt(
-	ctx context.Context, ciphertexts []string) (map[string]string, error) {
+	ctx context.Context, ciphertexts []string,
+) (map[string]string, error) {
 	return DefaultBulkDecrypt(ctx, t, ciphertexts)
 }
 
@@ -114,7 +117,7 @@ func NewBlindingDecrypter() Decrypter {
 type blindingCrypter struct{}
 
 func (b blindingCrypter) DecryptValue(ctx context.Context, _ string) (string, error) {
-	return "[secret]", nil //nolint:goconst
+	return "[secret]", nil
 }
 
 func (b blindingCrypter) EncryptValue(ctx context.Context, plaintext string) (string, error) {
@@ -210,10 +213,10 @@ func encryptAES256GCGM(plaintext string, key []byte) ([]byte, []byte) {
 	contract.Assertf(err == nil, "could not read from system random source")
 
 	block, err := aes.NewCipher(key)
-	contract.AssertNoError(err)
+	contract.AssertNoErrorf(err, "error creating AES cipher")
 
 	aesgcm, err := cipher.NewGCM(block)
-	contract.AssertNoError(err)
+	contract.AssertNoErrorf(err, "error creating AES-GCM cipher")
 
 	msg := aesgcm.Seal(nil, nonce, []byte(plaintext), nil)
 
@@ -224,10 +227,10 @@ func decryptAES256GCM(ciphertext []byte, key []byte, nonce []byte) (string, erro
 	contract.Requiref(len(key) == SymmetricCrypterKeyBytes, "key", "AES-256-GCM needs a 32 byte key")
 
 	block, err := aes.NewCipher(key)
-	contract.AssertNoError(err)
+	contract.AssertNoErrorf(err, "error creating AES cipher")
 
 	aesgcm, err := cipher.NewGCM(block)
-	contract.AssertNoError(err)
+	contract.AssertNoErrorf(err, "error creating AES-GCM cipher")
 
 	msg, err := aesgcm.Open(nil, nonce, ciphertext, nil)
 
@@ -260,7 +263,8 @@ func (c prefixCrypter) BulkDecrypt(ctx context.Context, ciphertexts []string) (m
 // map maps from ciphertext to plaintext. This should only be used by implementers of Decrypter to implement
 // their BulkDecrypt method in cases where they can't do more efficient than just individual decryptions.
 func DefaultBulkDecrypt(ctx context.Context,
-	decrypter Decrypter, ciphertexts []string) (map[string]string, error) {
+	decrypter Decrypter, ciphertexts []string,
+) (map[string]string, error) {
 	if len(ciphertexts) == 0 {
 		return nil, nil
 	}

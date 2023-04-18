@@ -78,7 +78,7 @@ type DefaultVpc struct {
 	EnableClassiclinkDnsSupport      pulumi.BoolOutput    `pulumi:"enableClassiclinkDnsSupport"`
 	EnableDnsHostnames               pulumi.BoolPtrOutput `pulumi:"enableDnsHostnames"`
 	EnableDnsSupport                 pulumi.BoolPtrOutput `pulumi:"enableDnsSupport"`
-	EnableNetworkAddressUsageMetrics pulumi.BoolPtrOutput `pulumi:"enableNetworkAddressUsageMetrics"`
+	EnableNetworkAddressUsageMetrics pulumi.BoolOutput    `pulumi:"enableNetworkAddressUsageMetrics"`
 	ExistingDefaultVpc               pulumi.BoolOutput    `pulumi:"existingDefaultVpc"`
 	// Whether destroying the resource deletes the default VPC. Default: `false`
 	ForceDestroy pulumi.BoolPtrOutput `pulumi:"forceDestroy"`
@@ -207,6 +207,7 @@ type defaultVpcArgs struct {
 	Ipv6IpamPoolId                  *string           `pulumi:"ipv6IpamPoolId"`
 	Ipv6NetmaskLength               *int              `pulumi:"ipv6NetmaskLength"`
 	Tags                            map[string]string `pulumi:"tags"`
+	TagsAll                         map[string]string `pulumi:"tagsAll"`
 }
 
 // The set of arguments for constructing a DefaultVpc resource.
@@ -226,6 +227,7 @@ type DefaultVpcArgs struct {
 	Ipv6IpamPoolId                  pulumi.StringPtrInput
 	Ipv6NetmaskLength               pulumi.IntPtrInput
 	Tags                            pulumi.StringMapInput
+	TagsAll                         pulumi.StringMapInput
 }
 
 func (DefaultVpcArgs) ElementType() reflect.Type {
@@ -362,8 +364,8 @@ func (o DefaultVpcOutput) EnableDnsSupport() pulumi.BoolPtrOutput {
 	return o.ApplyT(func(v *DefaultVpc) pulumi.BoolPtrOutput { return v.EnableDnsSupport }).(pulumi.BoolPtrOutput)
 }
 
-func (o DefaultVpcOutput) EnableNetworkAddressUsageMetrics() pulumi.BoolPtrOutput {
-	return o.ApplyT(func(v *DefaultVpc) pulumi.BoolPtrOutput { return v.EnableNetworkAddressUsageMetrics }).(pulumi.BoolPtrOutput)
+func (o DefaultVpcOutput) EnableNetworkAddressUsageMetrics() pulumi.BoolOutput {
+	return o.ApplyT(func(v *DefaultVpc) pulumi.BoolOutput { return v.EnableNetworkAddressUsageMetrics }).(pulumi.BoolOutput)
 }
 
 func (o DefaultVpcOutput) ExistingDefaultVpc() pulumi.BoolOutput {

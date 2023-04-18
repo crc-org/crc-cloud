@@ -7,7 +7,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/pkg/errors"
+	"errors"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -36,7 +36,7 @@ import (
 //				return err
 //			}
 //			_, err = ec2.NewSpotDatafeedSubscription(ctx, "defaultSpotDatafeedSubscription", &ec2.SpotDatafeedSubscriptionArgs{
-//				Bucket: defaultBucketV2.Bucket,
+//				Bucket: defaultBucketV2.ID(),
 //				Prefix: pulumi.String("my_subdirectory"),
 //			})
 //			if err != nil {
