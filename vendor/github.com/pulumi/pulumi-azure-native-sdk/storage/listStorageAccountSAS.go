@@ -10,7 +10,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// The List SAS credentials operation response.
+// List SAS credentials of a storage account.
 // API Version: 2021-02-01.
 func ListStorageAccountSAS(ctx *pulumi.Context, args *ListStorageAccountSASArgs, opts ...pulumi.InvokeOption) (*ListStorageAccountSASResult, error) {
 	var rv ListStorageAccountSASResult

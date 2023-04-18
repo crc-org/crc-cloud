@@ -21,8 +21,6 @@ import (
 //
 // import (
 //
-//	"fmt"
-//
 //	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
 //	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 //
@@ -45,23 +43,25 @@ import (
 //			if err != nil {
 //				return err
 //			}
-//			_, err = iam.NewUserPolicy(ctx, "lbRo", &iam.UserPolicyArgs{
-//				User: lbUser.Name,
-//				Policy: pulumi.Any(fmt.Sprintf(`{
-//	  "Version": "2012-10-17",
-//	  "Statement": [
-//	    {
-//	      "Action": [
-//	        "ec2:Describe*"
-//	      ],
-//	      "Effect": "Allow",
-//	      "Resource": "*"
-//	    }
-//	  ]
-//	}
-//
-// `)),
-//
+//			lbRoPolicyDocument, err := iam.GetPolicyDocument(ctx, &iam.GetPolicyDocumentArgs{
+//				Statements: []iam.GetPolicyDocumentStatement{
+//					{
+//						Effect: pulumi.StringRef("Allow"),
+//						Actions: []string{
+//							"ec2:Describe*",
+//						},
+//						Resources: []string{
+//							"*",
+//						},
+//					},
+//				},
+//			}, nil)
+//			if err != nil {
+//				return err
+//			}
+//			_, err = iam.NewUserPolicy(ctx, "lbRoUserPolicy", &iam.UserPolicyArgs{
+//				User:   lbUser.Name,
+//				Policy: *pulumi.String(lbRoPolicyDocument.Json),
 //			})
 //			if err != nil {
 //				return err
@@ -191,6 +191,8 @@ type userArgs struct {
 	PermissionsBoundary *string `pulumi:"permissionsBoundary"`
 	// Key-value mapping of tags for the IAM user. If configured with a provider `defaultTags` configuration block present, tags with matching keys will overwrite those defined at the provider-level.
 	Tags map[string]string `pulumi:"tags"`
+	// A map of tags assigned to the resource, including those inherited from the provider `defaultTags` configuration block.
+	TagsAll map[string]string `pulumi:"tagsAll"`
 }
 
 // The set of arguments for constructing a User resource.
@@ -207,6 +209,8 @@ type UserArgs struct {
 	PermissionsBoundary pulumi.StringPtrInput
 	// Key-value mapping of tags for the IAM user. If configured with a provider `defaultTags` configuration block present, tags with matching keys will overwrite those defined at the provider-level.
 	Tags pulumi.StringMapInput
+	// A map of tags assigned to the resource, including those inherited from the provider `defaultTags` configuration block.
+	TagsAll pulumi.StringMapInput
 }
 
 func (UserArgs) ElementType() reflect.Type {

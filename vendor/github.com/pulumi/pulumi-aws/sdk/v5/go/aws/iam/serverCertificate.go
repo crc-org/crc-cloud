@@ -7,7 +7,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/pkg/errors"
+	"errors"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -31,7 +31,7 @@ import (
 //
 // import (
 //
-//	"io/ioutil"
+//	"os"
 //
 //	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
 //	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -39,7 +39,7 @@ import (
 // )
 //
 //	func readFileOrPanic(path string) pulumi.StringPtrInput {
-//		data, err := ioutil.ReadFile(path)
+//		data, err := os.ReadFile(path)
 //		if err != nil {
 //			panic(err.Error())
 //		}
@@ -68,8 +68,6 @@ import (
 //
 // import (
 //
-//	"fmt"
-//
 //	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
 //	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 //
@@ -78,8 +76,8 @@ import (
 //	func main() {
 //		pulumi.Run(func(ctx *pulumi.Context) error {
 //			_, err := iam.NewServerCertificate(ctx, "testCertAlt", &iam.ServerCertificateArgs{
-//				CertificateBody: pulumi.String(fmt.Sprintf("-----BEGIN CERTIFICATE-----\n[......] # cert contents\n-----END CERTIFICATE-----\n\n")),
-//				PrivateKey:      pulumi.String(fmt.Sprintf("-----BEGIN RSA PRIVATE KEY-----\n[......] # cert contents\n-----END RSA PRIVATE KEY-----\n\n")),
+//				CertificateBody: pulumi.String("-----BEGIN CERTIFICATE-----\n[......] # cert contents\n-----END CERTIFICATE-----\n\n"),
+//				PrivateKey:      pulumi.String("-----BEGIN RSA PRIVATE KEY-----\n[......] # cert contents\n-----END RSA PRIVATE KEY-----\n\n"),
 //			})
 //			if err != nil {
 //				return err
@@ -104,7 +102,7 @@ import (
 //
 // import (
 //
-//	"io/ioutil"
+//	"os"
 //
 //	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/elb"
 //	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam"
@@ -113,7 +111,7 @@ import (
 // )
 //
 //	func readFileOrPanic(path string) pulumi.StringPtrInput {
-//		data, err := ioutil.ReadFile(path)
+//		data, err := os.ReadFile(path)
 //		if err != nil {
 //			panic(err.Error())
 //		}
@@ -184,7 +182,7 @@ type ServerCertificate struct {
 	Name pulumi.StringOutput `pulumi:"name"`
 	// Creates a unique name beginning with the specified
 	// prefix. Conflicts with `name`.
-	NamePrefix pulumi.StringPtrOutput `pulumi:"namePrefix"`
+	NamePrefix pulumi.StringOutput `pulumi:"namePrefix"`
 	// The IAM path for the server certificate.  If it is not
 	// included, it defaults to a slash (/). If this certificate is for use with
 	// AWS CloudFront, the path must be in format `/cloudfront/your_path_here`.
@@ -334,6 +332,8 @@ type serverCertificateArgs struct {
 	PrivateKey string `pulumi:"privateKey"`
 	// Map of resource tags for the server certificate. If configured with a provider `defaultTags` configuration block present, tags with matching keys will overwrite those defined at the provider-level.
 	Tags map[string]string `pulumi:"tags"`
+	// A map of tags assigned to the resource, including those inherited from the provider `defaultTags` configuration block.
+	TagsAll map[string]string `pulumi:"tagsAll"`
 }
 
 // The set of arguments for constructing a ServerCertificate resource.
@@ -360,6 +360,8 @@ type ServerCertificateArgs struct {
 	PrivateKey pulumi.StringInput
 	// Map of resource tags for the server certificate. If configured with a provider `defaultTags` configuration block present, tags with matching keys will overwrite those defined at the provider-level.
 	Tags pulumi.StringMapInput
+	// A map of tags assigned to the resource, including those inherited from the provider `defaultTags` configuration block.
+	TagsAll pulumi.StringMapInput
 }
 
 func (ServerCertificateArgs) ElementType() reflect.Type {
@@ -480,8 +482,8 @@ func (o ServerCertificateOutput) Name() pulumi.StringOutput {
 
 // Creates a unique name beginning with the specified
 // prefix. Conflicts with `name`.
-func (o ServerCertificateOutput) NamePrefix() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v *ServerCertificate) pulumi.StringPtrOutput { return v.NamePrefix }).(pulumi.StringPtrOutput)
+func (o ServerCertificateOutput) NamePrefix() pulumi.StringOutput {
+	return o.ApplyT(func(v *ServerCertificate) pulumi.StringOutput { return v.NamePrefix }).(pulumi.StringOutput)
 }
 
 // The IAM path for the server certificate.  If it is not

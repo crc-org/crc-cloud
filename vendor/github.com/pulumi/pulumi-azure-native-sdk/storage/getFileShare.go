@@ -10,7 +10,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// Properties of the file share, including Id, resource name, resource type, Etag.
+// Gets properties of a specified share.
 // API Version: 2021-02-01.
 func LookupFileShare(ctx *pulumi.Context, args *LookupFileShareArgs, opts ...pulumi.InvokeOption) (*LookupFileShareResult, error) {
 	var rv LookupFileShareResult

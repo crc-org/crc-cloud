@@ -10,7 +10,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// The response from the ListKeys operation.
+// Lists the access keys or Kerberos keys (if active directory enabled) for the specified storage account.
 // API Version: 2021-02-01.
 func ListStorageAccountKeys(ctx *pulumi.Context, args *ListStorageAccountKeysArgs, opts ...pulumi.InvokeOption) (*ListStorageAccountKeysResult, error) {
 	var rv ListStorageAccountKeysResult

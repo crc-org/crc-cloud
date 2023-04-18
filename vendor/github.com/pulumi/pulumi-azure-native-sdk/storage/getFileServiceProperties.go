@@ -10,7 +10,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// The properties of File services in storage account.
+// Gets the properties of file services in storage accounts, including CORS (Cross-Origin Resource Sharing) rules.
 // API Version: 2021-02-01.
 func LookupFileServiceProperties(ctx *pulumi.Context, args *LookupFileServicePropertiesArgs, opts ...pulumi.InvokeOption) (*LookupFileServicePropertiesResult, error) {
 	var rv LookupFileServicePropertiesResult

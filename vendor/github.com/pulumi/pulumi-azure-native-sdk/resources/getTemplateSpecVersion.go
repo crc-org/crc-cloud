@@ -10,7 +10,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// Template Spec Version object.
+// Gets a Template Spec version from a specific Template Spec.
 // API Version: 2022-02-01.
 func LookupTemplateSpecVersion(ctx *pulumi.Context, args *LookupTemplateSpecVersionArgs, opts ...pulumi.InvokeOption) (*LookupTemplateSpecVersionResult, error) {
 	var rv LookupTemplateSpecVersionResult

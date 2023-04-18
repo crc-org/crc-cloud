@@ -10,7 +10,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// The local user associated with the storage accounts.
+// Get the local user of the storage account by username.
 // API Version: 2021-08-01.
 func LookupLocalUser(ctx *pulumi.Context, args *LookupLocalUserArgs, opts ...pulumi.InvokeOption) (*LookupLocalUserResult, error) {
 	var rv LookupLocalUserResult

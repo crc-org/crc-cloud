@@ -10,7 +10,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// The Get Storage Account ManagementPolicies operation response.
+// Gets the managementpolicy associated with the specified storage account.
 // API Version: 2021-02-01.
 func LookupManagementPolicy(ctx *pulumi.Context, args *LookupManagementPolicyArgs, opts ...pulumi.InvokeOption) (*LookupManagementPolicyResult, error) {
 	var rv LookupManagementPolicyResult

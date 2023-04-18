@@ -51,15 +51,15 @@ type langhost struct {
 // NewLanguageRuntime binds to a language's runtime plugin and then creates a gRPC connection to it.  If the
 // plugin could not be found, or an error occurs while creating the child process, an error is returned.
 func NewLanguageRuntime(host Host, ctx *Context, root, pwd, runtime string,
-	options map[string]interface{}) (LanguageRuntime, error) {
-
+	options map[string]interface{},
+) (LanguageRuntime, error) {
 	path, err := workspace.GetPluginPath(
-		workspace.LanguagePlugin, strings.Replace(runtime, tokens.QNameDelimiter, "_", -1), nil, host.GetProjectPlugins())
+		workspace.LanguagePlugin, strings.ReplaceAll(runtime, tokens.QNameDelimiter, "_"), nil, host.GetProjectPlugins())
 	if err != nil {
 		return nil, err
 	}
 
-	contract.Assert(path != "")
+	contract.Assertf(path != "", "unexpected empty path for language plugin %s", runtime)
 
 	args, err := buildArgsForNewPlugin(host, root, options)
 	if err != nil {
@@ -107,7 +107,7 @@ func buildArgsForNewPlugin(host Host, root string, options map[string]interface{
 	if err != nil {
 		return nil, err
 	}
-	var args []string
+	args := make([]string, 0, len(options))
 
 	for k, v := range options {
 		args = append(args, fmt.Sprintf("-%s=%v", k, v))
@@ -155,7 +155,7 @@ func (h *langhost) GetRequiredPlugins(info ProgInfo) ([]workspace.PluginSpec, er
 		return nil, rpcError
 	}
 
-	var results []workspace.PluginSpec
+	results := make([]workspace.PluginSpec, 0, len(resp.GetPlugins()))
 	for _, info := range resp.GetPlugins() {
 		var version *semver.Version
 		if v := info.GetVersion(); v != "" {
@@ -269,7 +269,6 @@ func (h *langhost) InstallDependencies(directory string) error {
 		Directory:  directory,
 		IsTerminal: cmdutil.GetGlobalColorization() != colors.Never,
 	})
-
 	if err != nil {
 		rpcError := rpcerror.Convert(err)
 		logging.V(7).Infof("langhost[%v].InstallDependencies(directory=%s) failed: err=%v",
@@ -308,7 +307,6 @@ func (h *langhost) InstallDependencies(directory string) error {
 	logging.V(7).Infof("langhost[%v].InstallDependencies(directory=%s) success",
 		h.runtime, directory)
 	return nil
-
 }
 
 func (h *langhost) About() (AboutInfo, error) {
@@ -350,7 +348,7 @@ func (h *langhost) GetProgramDependencies(info ProgInfo, transitiveDependencies 
 		return nil, rpcError
 	}
 
-	var results []DependencyInfo
+	results := make([]DependencyInfo, 0, len(resp.GetDependencies()))
 	for _, dep := range resp.GetDependencies() {
 		var version semver.Version
 		if v := dep.Version; v != "" {
@@ -381,7 +379,6 @@ func (h *langhost) RunPlugin(info RunPluginInfo) (io.Reader, io.Reader, context.
 		Args:    info.Args,
 		Env:     info.Env,
 	})
-
 	if err != nil {
 		// If there was an error starting the plugin kill the context for this request to ensure any lingering
 		// connection terminates.
@@ -406,12 +403,12 @@ func (h *langhost) RunPlugin(info RunPluginInfo) (io.Reader, io.Reader, context.
 
 			if value, ok := msg.Output.(*pulumirpc.RunPluginResponse_Stdout); ok {
 				n, err := outw.Write(value.Stdout)
-				contract.AssertNoError(err)
-				contract.Assert(n == len(value.Stdout))
+				contract.AssertNoErrorf(err, "failed to write to stdout pipe: %v", err)
+				contract.Assertf(n == len(value.Stdout), "wrote fewer bytes (%d) than expected (%d)", n, len(value.Stdout))
 			} else if value, ok := msg.Output.(*pulumirpc.RunPluginResponse_Stderr); ok {
 				n, err := errw.Write(value.Stderr)
-				contract.AssertNoError(err)
-				contract.Assert(n == len(value.Stderr))
+				contract.AssertNoErrorf(err, "failed to write to stderr pipe: %v", err)
+				contract.Assertf(n == len(value.Stderr), "wrote fewer bytes (%d) than expected (%d)", n, len(value.Stderr))
 			} else if _, ok := msg.Output.(*pulumirpc.RunPluginResponse_Exitcode); ok {
 				// If stdout and stderr are empty we've flushed and are returning the exit code
 				outw.Close()

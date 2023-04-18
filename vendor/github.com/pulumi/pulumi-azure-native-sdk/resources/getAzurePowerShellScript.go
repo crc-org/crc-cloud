@@ -10,7 +10,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-// Object model for the Azure PowerShell script.
+// Gets a deployment script with a given name.
 // API Version: 2020-10-01.
 func LookupAzurePowerShellScript(ctx *pulumi.Context, args *LookupAzurePowerShellScriptArgs, opts ...pulumi.InvokeOption) (*LookupAzurePowerShellScriptResult, error) {
 	var rv LookupAzurePowerShellScriptResult

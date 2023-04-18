@@ -21,7 +21,7 @@ package main
 import (
   "log"
 
-  "gopkg.in/djherbis/times.v1"
+  "github.com/djherbis/times"
 )
 
 func main() {
@@ -45,12 +45,12 @@ func main() {
 
 Supported Times
 ------------
-|  | windows | linux | solaris | dragonfly | nacl | freebsd | darwin | netbsd | openbsd | plan9 | js |
-|:-----:|:-------:|:-----:|:-------:|:---------:|:------:|:-------:|:----:|:------:|:-------:|:-----:|:-----:|
-| atime | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| mtime | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| ctime | ✓* | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |  | ✓ |
-| btime | ✓ |  |  |  |  | ✓ |  ✓| ✓ |  |
+|  | windows | linux | solaris | dragonfly | nacl | freebsd | darwin | netbsd | openbsd | plan9 | js | aix |
+|:-----:|:-------:|:-----:|:-------:|:---------:|:------:|:-------:|:----:|:------:|:-------:|:-----:|:-----:|:-----:|
+| atime | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| mtime | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| ctime | ✓* | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |  | ✓ | ✓ |
+| btime | ✓ |  |  |  |  | ✓ |  ✓| ✓ |  |  |
 
 * Windows XP does not have ChangeTime so HasChangeTime = false, 
 however Vista onward does have ChangeTime so Timespec.HasChangeTime() will 
@@ -60,5 +60,5 @@ only return false on those platforms when the syscall used to obtain them fails.
 Installation
 ------------
 ```sh
-go get gopkg.in/djherbis/times.v1
+go get -u github.com/djherbis/times
 ```

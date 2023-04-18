@@ -55,6 +55,11 @@ func NewPrivateKey(ctx *pulumi.Context,
 	if args.Algorithm == nil {
 		return nil, errors.New("invalid value for required argument 'Algorithm'")
 	}
+	secrets := pulumi.AdditionalSecretOutputs([]string{
+		"privateKeyOpenssh",
+		"privateKeyPem",
+	})
+	opts = append(opts, secrets)
 	var resource PrivateKey
 	err := ctx.RegisterResource("tls:index/privateKey:PrivateKey", name, args, &resource, opts...)
 	if err != nil {

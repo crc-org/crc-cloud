@@ -69,4 +69,11 @@ fail without a --force parameter.`)
 var DebugGRPC = env.String("DEBUG_GRPC", `Enables debug tracing of Pulumi gRPC internals.
 The variable should be set to the log file to which gRPC debug traces will be sent.`)
 
-var PrettyPrintPCL = env.Bool("PRETTY_PRINT_PCL", "Print PCL type errors across multiple lines")
+// Environment variables that affect the self-managed backend.
+var (
+	SelfManagedStateNoLegacyWarning = env.Bool("SELF_MANAGED_STATE_NO_LEGACY_WARNING",
+		"Disables the warning about legacy stack files mixed with project-scoped stack files.")
+
+	SelfManagedStateLegacyLayout = env.Bool("SELF_MANAGED_STATE_LEGACY_LAYOUT",
+		"Uses the legacy layout for new buckets, which currently default to project-scoped stacks.")
+)

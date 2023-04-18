@@ -17,6 +17,7 @@ package workspace
 import (
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -26,7 +27,6 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/pkg/errors"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/encoding"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource/config"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/tokens"
@@ -258,7 +258,6 @@ func RewriteShorthandConfigValues(project map[string]interface{}) map[string]int
 	}
 
 	for key, value := range config {
-
 		if isPrimitiveValue(value) || isArray(value) {
 			configTypeDefinition := make(map[string]interface{})
 			if configKeyIsNamespacedByProject(projectName, key) {
@@ -328,7 +327,6 @@ func SimplifyMarshalledProject(raw interface{}) (map[string]interface{}, error) 
 }
 
 func ValidateProject(raw interface{}) error {
-
 	project, err := SimplifyMarshalledProject(raw)
 	if err != nil {
 		return err
@@ -360,7 +358,7 @@ func ValidateProject(raw interface{}) error {
 	appendError = func(err *jsonschema.ValidationError) {
 		if err.InstanceLocation != "" && err.Message != "" {
 			errorf := func(path, message string, args ...interface{}) error {
-				contract.Require(path != "", "path")
+				contract.Requiref(path != "", "path", "path must not be empty")
 				return fmt.Errorf("%s: %s", path, fmt.Sprintf(message, args...))
 			}
 
@@ -387,7 +385,6 @@ func InferFullTypeName(typeName string, itemsType *ProjectConfigItemsType) strin
 // We use this to validate the default config values alongside their type definition but
 // also to validate config values coming from individual stacks.
 func ValidateConfigValue(typeName string, itemsType *ProjectConfigItemsType, value interface{}) bool {
-
 	if typeName == stringTypeName {
 		_, ok := value.(string)
 		return ok
@@ -458,7 +455,7 @@ func (proj *Project) Validate() error {
 	projectName := proj.Name.String()
 	for configKey, configType := range proj.Config {
 		if configType.Default != nil && configType.Value != nil {
-			return errors.Errorf("project config '%v' cannot have both a 'default' and 'value' attribute", configKey)
+			return fmt.Errorf("project config '%v' cannot have both a 'default' and 'value' attribute", configKey)
 		}
 
 		configTypeName := configType.TypeName()
@@ -466,7 +463,7 @@ func (proj *Project) Validate() error {
 		if configKeyIsNamespacedByProject(projectName, configKey) {
 			// namespaced by project
 			if configType.IsExplicitlyTyped() && configType.TypeName() == arrayTypeName && configType.Items == nil {
-				return errors.Errorf("The configuration key '%v' declares an array "+
+				return fmt.Errorf("The configuration key '%v' declares an array "+
 					"but does not specify the underlying type via the 'items' attribute", configKey)
 			}
 
@@ -474,7 +471,7 @@ func (proj *Project) Validate() error {
 			if configType.IsExplicitlyTyped() && configType.Default != nil {
 				if !ValidateConfigValue(configTypeName, configType.Items, configType.Default) {
 					inferredTypeName := InferFullTypeName(configTypeName, configType.Items)
-					return errors.Errorf("The default value specified for configuration key '%v' is not of the expected type '%v'",
+					return fmt.Errorf("The default value specified for configuration key '%v' is not of the expected type '%v'",
 						configKey,
 						inferredTypeName)
 				}
@@ -483,21 +480,21 @@ func (proj *Project) Validate() error {
 		} else {
 			// when not namespaced by project, there shouldn't be a type, only a value
 			if configType.IsExplicitlyTyped() {
-				return errors.Errorf("Configuration key '%v' is not namespaced by the project and should not define a type",
+				return fmt.Errorf("Configuration key '%v' is not namespaced by the project and should not define a type",
 					configKey)
 			}
 
 			// default values are part of a type schema
 			// when not namespaced by project, there is no type schema, only a value
 			if configType.Default != nil {
-				return errors.Errorf("Configuration key '%v' is not namespaced by the project and "+
+				return fmt.Errorf("Configuration key '%v' is not namespaced by the project and "+
 					"should not define a default value. "+
 					"Did you mean to use the 'value' attribute instead of 'default'?", configKey)
 			}
 
 			// when not namespaced by project, there should be a value
 			if configType.Value == nil {
-				return errors.Errorf("Configuration key '%v' is namespaced and must provide an attribute 'value'", configKey)
+				return fmt.Errorf("Configuration key '%v' is namespaced and must provide an attribute 'value'", configKey)
 			}
 		}
 	}
@@ -514,8 +511,8 @@ func (proj *Project) TrustResourceDependencies() bool {
 
 // Save writes a project definition to a file.
 func (proj *Project) Save(path string) error {
-	contract.Require(path != "", "path")
-	contract.Require(proj != nil, "proj")
+	contract.Requiref(path != "", "path", "must not be empty")
+	contract.Requiref(proj != nil, "proj", "must not be nil")
 	contract.Requiref(proj.Validate() == nil, "proj", "Validate()")
 	return save(path, proj, false /*mkDirAll*/)
 }
@@ -557,8 +554,8 @@ func (proj *PolicyPackProject) Validate() error {
 
 // Save writes a project definition to a file.
 func (proj *PolicyPackProject) Save(path string) error {
-	contract.Require(path != "", "path")
-	contract.Require(proj != nil, "proj")
+	contract.Requiref(path != "", "path", "must not be empty")
+	contract.Requiref(proj != nil, "proj", "must not be nil")
 	contract.Requiref(proj.Validate() == nil, "proj", "Validate()")
 	return save(path, proj, false /*mkDirAll*/)
 }
@@ -599,8 +596,8 @@ func (ps ProjectStack) RawValue() []byte {
 
 // Save writes a project definition to a file.
 func (ps *ProjectStack) Save(path string) error {
-	contract.Require(path != "", "path")
-	contract.Require(ps != nil, "ps")
+	contract.Requiref(path != "", "path", "must not be empty")
+	contract.Requiref(ps != nil, "ps", "must not be nil")
 	return save(path, ps, true /*mkDirAll*/)
 }
 
@@ -695,15 +692,15 @@ func marshallerForPath(path string) (encoding.Marshaler, error) {
 	ext := filepath.Ext(path)
 	m, has := encoding.Marshalers[ext]
 	if !has {
-		return nil, errors.Errorf("no marshaler found for file format '%v'", ext)
+		return nil, fmt.Errorf("no marshaler found for file format '%v'", ext)
 	}
 
 	return m, nil
 }
 
 func save(path string, value interface{}, mkDirAll bool) error {
-	contract.Require(path != "", "path")
-	contract.Require(value != nil, "value")
+	contract.Requiref(path != "", "path", "must not be empty")
+	contract.Requiref(value != nil, "value", "must not be nil")
 
 	m, err := marshallerForPath(path)
 	if err != nil {
@@ -716,11 +713,11 @@ func save(path string, value interface{}, mkDirAll bool) error {
 	}
 
 	if mkDirAll {
-		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			return err
 		}
 	}
 
 	//nolint:gosec
-	return os.WriteFile(path, b, 0644)
+	return os.WriteFile(path, b, 0o644)
 }

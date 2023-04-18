@@ -139,24 +139,24 @@ func dialPlugin(portNum int, bin, prefix string, dialOptions []grpc.DialOption) 
 				err = grpc.Invoke(timeout, "", nil, nil, conn)
 				if err == nil {
 					break // successful connect
-				} else {
-					// We have an error; see if it's a known status and, if so, react appropriately.
-					status, ok := status.FromError(err)
-					if ok {
-						switch status.Code() {
-						case codes.Unavailable:
-							// The server is unavailable.  This is the Linux bug.  Wait a little and retry.
-							time.Sleep(time.Millisecond * 10)
-							continue // keep retrying
-						default:
-							// Since we sent "" as the method above, this is the expected response.  Ready to go.
-							break outer
-						}
-					}
-
-					// Unexpected error; get outta dodge.
-					return nil, errors.Wrapf(err, "%v plugin [%v] did not come alive", prefix, bin)
 				}
+
+				// We have an error; see if it's a known status and, if so, react appropriately.
+				status, ok := status.FromError(err)
+				if ok {
+					switch status.Code() {
+					case codes.Unavailable:
+						// The server is unavailable.  This is the Linux bug.  Wait a little and retry.
+						time.Sleep(time.Millisecond * 10)
+						continue // keep retrying
+					default:
+						// Since we sent "" as the method above, this is the expected response.  Ready to go.
+						break outer
+					}
+				}
+
+				// Unexpected error; get outta dodge.
+				return nil, errors.Wrapf(err, "%v plugin [%v] did not come alive", prefix, bin)
 			}
 			break
 		}
@@ -170,7 +170,8 @@ func dialPlugin(portNum int, bin, prefix string, dialOptions []grpc.DialOption) 
 }
 
 func newPlugin(ctx *Context, pwd, bin, prefix string, kind workspace.PluginKind,
-	args, env []string, dialOptions []grpc.DialOption) (*plugin, error) {
+	args, env []string, dialOptions []grpc.DialOption,
+) (*plugin, error) {
 	if logging.V(9) {
 		var argstr string
 		for i, arg := range args {
@@ -187,7 +188,7 @@ func newPlugin(ctx *Context, pwd, bin, prefix string, kind workspace.PluginKind,
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to load plugin %s", bin)
 	}
-	contract.Assert(plug != nil)
+	contract.Assertf(plug != nil, "plugin %v canot be nil", bin)
 
 	// If we did not successfully launch the plugin, we still need to wait for stderr and stdout to drain.
 	defer func() {
@@ -267,6 +268,9 @@ func newPlugin(ctx *Context, pwd, bin, prefix string, kind workspace.PluginKind,
 		}
 		portString += string(b[:n])
 	}
+	// Trim any whitespace from the first line (this is to handle things like windows that will write
+	// "1234\r\n", or slightly odd providers that might add whitespace like "1234 ")
+	portString = strings.TrimSpace(portString)
 
 	// Parse the output line (minus the '\n') to ensure it's a numeric port.
 	var port int
@@ -294,11 +298,11 @@ func newPlugin(ctx *Context, pwd, bin, prefix string, kind workspace.PluginKind,
 
 // execPlugin starts the plugin executable.
 func execPlugin(ctx *Context, bin, prefix string, kind workspace.PluginKind,
-	pluginArgs []string, pwd string, env []string) (*plugin, error) {
+	pluginArgs []string, pwd string, env []string,
+) (*plugin, error) {
 	args := buildPluginArguments(pluginArgumentOptions{
 		pluginArgs:      pluginArgs,
 		tracingEndpoint: cmdutil.TracingEndpoint,
-		tracingToFile:   cmdutil.TracingToFile,
 		logFlow:         logging.LogFlow,
 		logToStderr:     logging.LogToStderr,
 		verbose:         logging.Verbose,
@@ -310,7 +314,7 @@ func execPlugin(ctx *Context, bin, prefix string, kind workspace.PluginKind,
 		pluginDir := filepath.Dir(bin)
 
 		var runtimeInfo workspace.ProjectRuntimeInfo
-		if kind == workspace.ResourcePlugin {
+		if kind == workspace.ResourcePlugin || kind == workspace.ConverterPlugin {
 			proj, err := workspace.LoadPluginProject(filepath.Join(pluginDir, "PulumiPlugin.yaml"))
 			if err != nil {
 				return nil, fmt.Errorf("loading PulumiPlugin.yaml: %w", err)
@@ -339,7 +343,6 @@ func execPlugin(ctx *Context, bin, prefix string, kind workspace.PluginKind,
 			Args:    pluginArgs,
 			Env:     env,
 		})
-
 		if err != nil {
 			return nil, err
 		}
@@ -411,10 +414,10 @@ func execPlugin(ctx *Context, bin, prefix string, kind workspace.PluginKind,
 }
 
 type pluginArgumentOptions struct {
-	pluginArgs                          []string
-	tracingEndpoint                     string
-	tracingToFile, logFlow, logToStderr bool
-	verbose                             int
+	pluginArgs           []string
+	tracingEndpoint      string
+	logFlow, logToStderr bool
+	verbose              int
 }
 
 func buildPluginArguments(opts pluginArgumentOptions) []string {

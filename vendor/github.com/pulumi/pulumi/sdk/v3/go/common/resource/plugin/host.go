@@ -96,7 +96,8 @@ type Host interface {
 
 // NewDefaultHost implements the standard plugin logic, using the standard installation root to find them.
 func NewDefaultHost(ctx *Context, runtimeOptions map[string]interface{},
-	disableProviderPreview bool, plugins *workspace.Plugins) (Host, error) {
+	disableProviderPreview bool, plugins *workspace.Plugins, config map[config.Key]string,
+) (Host, error) {
 	// Create plugin info from providers
 	projectPlugins := make([]workspace.ProjectPlugin, 0)
 	if plugins != nil {
@@ -133,6 +134,7 @@ func NewDefaultHost(ctx *Context, runtimeOptions map[string]interface{},
 		languageLoadRequests:    make(chan pluginLoadRequest),
 		loadRequests:            make(chan pluginLoadRequest),
 		disableProviderPreview:  disableProviderPreview,
+		config:                  config,
 		closer:                  new(sync.Once),
 		projectPlugins:          projectPlugins,
 	}
@@ -164,6 +166,13 @@ func NewDefaultHost(ctx *Context, runtimeOptions map[string]interface{},
 }
 
 func parsePluginOpts(providerOpts workspace.PluginOptions, k workspace.PluginKind) (workspace.ProjectPlugin, error) {
+	handleErr := func(msg string, a ...interface{}) (workspace.ProjectPlugin, error) {
+		return workspace.ProjectPlugin{},
+			fmt.Errorf("parsing plugin options for '%s': %w", providerOpts.Name, fmt.Errorf(msg, a...))
+	}
+	if providerOpts.Name == "" {
+		return handleErr("name must not be empty")
+	}
 	var v *semver.Version
 	if providerOpts.Version != "" {
 		ver, err := semver.Parse(providerOpts.Version)
@@ -173,9 +182,13 @@ func parsePluginOpts(providerOpts workspace.PluginOptions, k workspace.PluginKin
 		v = &ver
 	}
 
-	_, err := os.Stat(providerOpts.Path)
-	if err != nil {
-		return workspace.ProjectPlugin{}, fmt.Errorf("could not find provider folder at path %s", providerOpts.Path)
+	stat, err := os.Stat(providerOpts.Path)
+	if os.IsNotExist(err) {
+		return handleErr("no folder at path '%s'", providerOpts.Path)
+	} else if err != nil {
+		return handleErr("checking provider folder: %w", err)
+	} else if !stat.IsDir() {
+		return handleErr("provider folder '%s' is not a directory", providerOpts.Path)
 	}
 
 	pluginInfo := workspace.ProjectPlugin{
@@ -214,6 +227,7 @@ type defaultHost struct {
 	loadRequests            chan pluginLoadRequest           // a channel used to satisfy plugin load requests.
 	server                  *hostServer                      // the server's RPC machinery.
 	disableProviderPreview  bool                             // true if provider plugins should disable provider preview
+	config                  map[config.Key]string            // the configuration map for the stack, if any.
 
 	closer         *sync.Once
 	projectPlugins []workspace.ProjectPlugin
@@ -268,7 +282,7 @@ func (host *defaultHost) Analyzer(name tokens.QName) (Analyzer, error) {
 	plugin, err := loadPlugin(host.loadRequests, func() (interface{}, error) {
 		// First see if we already loaded this plugin.
 		if plug, has := host.analyzerPlugins[name]; has {
-			contract.Assert(plug != nil)
+			contract.Assertf(plug != nil, "analyzer plugin %v was loaded but is nil", name)
 			return plug.Plugin, nil
 		}
 
@@ -296,7 +310,7 @@ func (host *defaultHost) PolicyAnalyzer(name tokens.QName, path string, opts *Po
 	plugin, err := loadPlugin(host.loadRequests, func() (interface{}, error) {
 		// First see if we already loaded this plugin.
 		if plug, has := host.analyzerPlugins[name]; has {
-			contract.Assert(plug != nil)
+			contract.Assertf(plug != nil, "analyzer plugin %v was loaded but is nil", name)
 			return plug.Plugin, nil
 		}
 
@@ -331,7 +345,22 @@ func (host *defaultHost) ListAnalyzers() []Analyzer {
 func (host *defaultHost) Provider(pkg tokens.Package, version *semver.Version) (Provider, error) {
 	plugin, err := loadPlugin(host.loadRequests, func() (interface{}, error) {
 		// Try to load and bind to a plugin.
-		plug, err := NewProvider(host, host.ctx, pkg, version, host.runtimeOptions, host.disableProviderPreview)
+
+		result := make(map[string]string)
+		for k, v := range host.config {
+			if tokens.Package(k.Namespace()) != pkg {
+				continue
+			}
+			result[k.Name()] = v
+		}
+		jsonConfig, err := json.Marshal(result)
+		if err != nil {
+			return nil, fmt.Errorf("Could not marshal config to JSON: %w", err)
+		}
+
+		plug, err := NewProvider(
+			host, host.ctx, pkg, version,
+			host.runtimeOptions, host.disableProviderPreview, string(jsonConfig))
 		if err == nil && plug != nil {
 			info, infoerr := plug.GetPluginInfo()
 			if infoerr != nil {
@@ -375,10 +404,10 @@ func (host *defaultHost) Provider(pkg tokens.Package, version *semver.Version) (
 }
 
 func (host *defaultHost) LanguageRuntime(root, pwd, runtime string,
-	options map[string]interface{}) (LanguageRuntime, error) {
+	options map[string]interface{},
+) (LanguageRuntime, error) {
 	// Language runtimes use their own loading channel not the main one
 	plugin, err := loadPlugin(host.languageLoadRequests, func() (interface{}, error) {
-
 		// Key our cached runtime plugins by the runtime name and the options
 		jsonOptions, err := json.Marshal(options)
 		if err != nil {
@@ -389,7 +418,7 @@ func (host *defaultHost) LanguageRuntime(root, pwd, runtime string,
 
 		// First see if we already loaded this plugin.
 		if plug, has := host.languagePlugins[key]; has {
-			contract.Assert(plug != nil)
+			contract.Assertf(plug != nil, "language plugin %v was loaded but is nil", key)
 			return plug.Plugin, nil
 		}
 
@@ -467,7 +496,7 @@ func (host *defaultHost) InstallPlugin(pkgPlugin workspace.PluginSpec) error {
 		if err != nil {
 			return fmt.Errorf("failed to download plugin: %s: %w", pkgPlugin, err)
 		}
-		defer os.Remove(tarball.Name())
+		defer func() { contract.IgnoreError(os.Remove(tarball.Name())) }()
 		if err := pkgPlugin.InstallWithContext(host.ctx.baseContext, workspace.TarPlugin(tarball), false); err != nil {
 			return fmt.Errorf("failed to install plugin %s: %w", pkgPlugin, err)
 		}
@@ -477,7 +506,8 @@ func (host *defaultHost) InstallPlugin(pkgPlugin workspace.PluginSpec) error {
 }
 
 func (host *defaultHost) ResolvePlugin(
-	kind workspace.PluginKind, name string, version *semver.Version) (*workspace.PluginInfo, error) {
+	kind workspace.PluginKind, name string, version *semver.Version,
+) (*workspace.PluginInfo, error) {
 	return workspace.GetPluginInfo(kind, name, version, host.GetProjectPlugins())
 }
 

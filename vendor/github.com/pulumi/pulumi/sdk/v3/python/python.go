@@ -74,7 +74,6 @@ func CommandPath() (string /*pythonPath*/, string /*pythonCmd*/, error) {
 		}
 	}
 	return pythonPath, pythonCmd, nil
-
 }
 
 // Command returns an *exec.Cmd for running `python`. Uses `ComandPath`
@@ -197,7 +196,7 @@ func ActivateVirtualEnv(environ []string, virtualEnvDir string) []string {
 	var result []string
 	for _, env := range environ {
 		split := strings.SplitN(env, "=", 2)
-		contract.Assert(len(split) == 2)
+		contract.Assertf(len(split) == 2, "unexpected environment variable: %q", env)
 		key, value := split[0], split[1]
 
 		// Case-insensitive compare, as Windows will normally be "Path", not "PATH".
@@ -226,14 +225,15 @@ func InstallDependencies(ctx context.Context, root, venvDir string, showOutput b
 }
 
 func InstallDependenciesWithWriters(ctx context.Context,
-	root, venvDir string, showOutput bool, infoWriter, errorWriter io.Writer) error {
-	print := func(message string) {
+	root, venvDir string, showOutput bool, infoWriter, errorWriter io.Writer,
+) error {
+	printmsg := func(message string) {
 		if showOutput {
 			fmt.Fprintf(infoWriter, "%s\n", message)
 		}
 	}
 
-	print("Creating virtual environment...")
+	printmsg("Creating virtual environment...")
 
 	// Create the virtual environment by running `python -m venv <venvDir>`.
 	if !filepath.IsAbs(venvDir) {
@@ -251,7 +251,7 @@ func InstallDependenciesWithWriters(ctx context.Context,
 		return fmt.Errorf("creating virtual environment at %s: %w", venvDir, err)
 	}
 
-	print("Finished creating virtual environment")
+	printmsg("Finished creating virtual environment")
 
 	runPipInstall := func(errorMsg string, arg ...string) error {
 		pipCmd := VirtualEnvCommand(venvDir, "python", append([]string{"-m", "pip", "install"}, arg...)...)
@@ -281,14 +281,14 @@ func InstallDependenciesWithWriters(ctx context.Context,
 		return nil
 	}
 
-	print("Updating pip, setuptools, and wheel in virtual environment...")
+	printmsg("Updating pip, setuptools, and wheel in virtual environment...")
 
 	err = runPipInstall("updating pip, setuptools, and wheel", "--upgrade", "pip", "setuptools", "wheel")
 	if err != nil {
 		return err
 	}
 
-	print("Finished updating")
+	printmsg("Finished updating")
 
 	// If `requirements.txt` doesn't exist, exit early.
 	requirementsPath := filepath.Join(root, "requirements.txt")
@@ -296,14 +296,14 @@ func InstallDependenciesWithWriters(ctx context.Context,
 		return nil
 	}
 
-	print("Installing dependencies in virtual environment...")
+	printmsg("Installing dependencies in virtual environment...")
 
 	err = runPipInstall("installing dependencies", "-r", "requirements.txt")
 	if err != nil {
 		return err
 	}
 
-	print("Finished installing dependencies")
+	printmsg("Finished installing dependencies")
 
 	return nil
 }

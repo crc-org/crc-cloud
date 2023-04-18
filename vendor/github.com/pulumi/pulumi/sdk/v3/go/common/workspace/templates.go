@@ -15,6 +15,7 @@
 package workspace
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -25,7 +26,6 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/pkg/errors"
 	"github.com/texttheater/golang-levenshtein/levenshtein"
 
 	"github.com/pulumi/pulumi/sdk/v3/go/common/util/contract"
@@ -281,7 +281,8 @@ func isTemplateFileOrDirectory(templateNamePathOrURL string) bool {
 
 // RetrieveTemplates retrieves a "template repository" based on the specified name, path, or URL.
 func RetrieveTemplates(templateNamePathOrURL string, offline bool,
-	templateKind TemplateKind) (TemplateRepository, error) {
+	templateKind TemplateKind,
+) (TemplateRepository, error) {
 	if IsTemplateURL(templateNamePathOrURL) {
 		return retrieveURLTemplates(templateNamePathOrURL, offline, templateKind)
 	}
@@ -294,7 +295,7 @@ func RetrieveTemplates(templateNamePathOrURL string, offline bool,
 // retrieveURLTemplates retrieves the "template repository" at the specified URL.
 func retrieveURLTemplates(rawurl string, offline bool, templateKind TemplateKind) (TemplateRepository, error) {
 	if offline {
-		return TemplateRepository{}, errors.Errorf("cannot use %s offline", rawurl)
+		return TemplateRepository{}, fmt.Errorf("cannot use %s offline", rawurl)
 	}
 
 	var err error
@@ -344,7 +345,7 @@ func retrievePulumiTemplates(templateName string, offline bool, templateKind Tem
 	}
 
 	// Ensure the template directory exists.
-	if err := os.MkdirAll(templateDir, 0700); err != nil {
+	if err := os.MkdirAll(templateDir, 0o700); err != nil {
 		return TemplateRepository{}, err
 	}
 
@@ -435,7 +436,7 @@ func RetrieveGitFolder(rawurl string, path string) (string, error) {
 		return "", err
 	}
 	if !info.IsDir() {
-		return "", errors.Errorf("%s is not a directory", fullPath)
+		return "", fmt.Errorf("%s is not a directory", fullPath)
 	}
 
 	return fullPath, nil
@@ -448,7 +449,7 @@ func LoadTemplate(path string) (Template, error) {
 		return Template{}, err
 	}
 	if !info.IsDir() {
-		return Template{}, errors.Errorf("%s is not a directory", path)
+		return Template{}, fmt.Errorf("%s is not a directory", path)
 	}
 
 	// TODO handle other extensions like Pulumi.yml and Pulumi.json?
@@ -498,13 +499,13 @@ func CopyTemplateFilesDryRun(sourceDir, destDir, projectName string) error {
 
 // CopyTemplateFiles does the actual copy operation to a destination directory.
 func CopyTemplateFiles(
-	sourceDir, destDir string, force bool, projectName string, projectDescription string) error {
-
+	sourceDir, destDir string, force bool, projectName string, projectDescription string,
+) error {
 	return walkFiles(sourceDir, destDir, projectName,
 		func(entry os.DirEntry, source string, dest string) error {
 			if entry.IsDir() {
 				// Create the destination directory.
-				return os.Mkdir(dest, 0700)
+				return os.Mkdir(dest, 0o700)
 			}
 
 			// Read the source file.
@@ -530,7 +531,7 @@ func CopyTemplateFiles(
 			if err != nil {
 				return err
 			}
-			mode = sourceStat.Mode().Perm() | 0600
+			mode = sourceStat.Mode().Perm() | 0o600
 
 			// Write to the destination file.
 			err = writeAllBytes(dest, result, force, mode)
@@ -551,7 +552,7 @@ func LoadPolicyPackTemplate(path string) (PolicyPackTemplate, error) {
 		return PolicyPackTemplate{}, err
 	}
 	if !info.IsDir() {
-		return PolicyPackTemplate{}, errors.Errorf("%s is not a directory", path)
+		return PolicyPackTemplate{}, fmt.Errorf("%s is not a directory", path)
 	}
 
 	pack, err := LoadPolicyPack(filepath.Join(path, "PulumiPolicy.yaml"))
@@ -652,8 +653,8 @@ func ValueOrSanitizedDefaultProjectName(name string, projectName string, default
 
 // ValueOrDefaultProjectDescription returns the value or defaultDescription.
 func ValueOrDefaultProjectDescription(
-	description string, projectDescription string, defaultDescription string) string {
-
+	description string, projectDescription string, defaultDescription string,
+) string {
 	// If we have a description, use it.
 	if description != "" {
 		return description
@@ -695,11 +696,11 @@ func getValidProjectName(name string) string {
 // walkFiles is a helper that walks the directories/files in a source directory
 // and performs an action for each item.
 func walkFiles(sourceDir string, destDir string, projectName string,
-	actionFn func(entry os.DirEntry, source string, dest string) error) error {
-
-	contract.Require(sourceDir != "", "sourceDir")
-	contract.Require(destDir != "", "destDir")
-	contract.Require(actionFn != nil, "actionFn")
+	actionFn func(entry os.DirEntry, source string, dest string) error,
+) error {
+	contract.Requiref(sourceDir != "", "sourceDir", "must not be empty")
+	contract.Requiref(destDir != "", "destDir", "must not be empty")
+	contract.Requiref(actionFn != nil, "actionFn", "must not be nil")
 
 	entries, err := os.ReadDir(sourceDir)
 	if err != nil {
@@ -744,7 +745,7 @@ func walkFiles(sourceDir string, destDir string, projectName string,
 // newExistingFilesError returns a new error from a list of existing file names
 // that would be overwritten.
 func newExistingFilesError(existing []string) error {
-	contract.Assert(len(existing) > 0)
+	contract.Assertf(len(existing) > 0, "called with no existing files")
 	message := "creating this template will make changes to existing files:\n"
 	for _, file := range existing {
 		message = message + fmt.Sprintf("  overwrite   %s\n", file)
@@ -792,10 +793,10 @@ func newTemplateNotFoundError(templateDir string, templateName string) error {
 func transform(content string, projectName string, projectDescription string) string {
 	// On Windows, we need to replace \n with \r\n because go-git does not currently handle it.
 	if runtime.GOOS == "windows" {
-		content = strings.Replace(content, "\n", "\r\n", -1)
+		content = strings.ReplaceAll(content, "\n", "\r\n")
 	}
-	content = strings.Replace(content, "${PROJECT}", projectName, -1)
-	content = strings.Replace(content, "${DESCRIPTION}", projectDescription, -1)
+	content = strings.ReplaceAll(content, "${PROJECT}", projectName)
+	content = strings.ReplaceAll(content, "${DESCRIPTION}", projectDescription)
 	return content
 }
 
