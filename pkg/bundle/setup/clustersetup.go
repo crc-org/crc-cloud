@@ -48,7 +48,8 @@ func SwapKeys(ctx *pulumi.Context, publicIP *pulumi.StringOutput,
 				Connection: c,
 				LocalPath:  pubKeyFilename,
 				RemotePath: pulumi.String("id_rsa.pub"),
-			})
+			},
+			pulumi.IgnoreChanges([]string{"localPath"}))
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +94,8 @@ func Setup(ctx *pulumi.Context,
 				Connection: c,
 				LocalPath:  pulumi.String(clusterSetupfileName),
 				RemotePath: pulumi.String("/var/home/core/cluster_setup.sh"),
-			})
+			},
+			pulumi.IgnoreChanges([]string{"localPath"}))
 	if err != nil {
 		return nil, err
 	}
@@ -144,6 +146,7 @@ func Setup(ctx *pulumi.Context,
 				// https://github.com/pulumi/pulumi-command/issues/48
 				// Environment: pulumi.ToStringMap(execScriptENVS),
 			},
+			pulumi.IgnoreChanges([]string{"create"}),
 			pulumi.DependsOn([]pulumi.Resource{scriptXRightsCommandResource}))
 	if err != nil {
 		execClusterSetup.Stderr.ApplyT(func(err string) error {
