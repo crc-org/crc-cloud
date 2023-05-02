@@ -18,13 +18,12 @@ jobs:
           - 1.18
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.5.2
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v4.0.0
         with:
           go-version: ${{ matrix.go }}
       - name: Run lint checks
         run: make lint
       - name: Run fmt checks
         run: make fmt
-
