@@ -9,5 +9,6 @@
   "rangeStrategy": "bump",
   "schedule": [
       "every weekend"
-  ]
+  ],
+  "ignoreDeps": ["go"]
 }
