@@ -686,6 +686,8 @@ type ProviderEndpoint struct {
 	Chimesdkmediapipelines               *string `pulumi:"chimesdkmediapipelines"`
 	Chimesdkmeetings                     *string `pulumi:"chimesdkmeetings"`
 	Chimesdkmessaging                    *string `pulumi:"chimesdkmessaging"`
+	Chimesdkvoice                        *string `pulumi:"chimesdkvoice"`
+	Cleanrooms                           *string `pulumi:"cleanrooms"`
 	Cloud9                               *string `pulumi:"cloud9"`
 	Cloudcontrol                         *string `pulumi:"cloudcontrol"`
 	Cloudcontrolapi                      *string `pulumi:"cloudcontrolapi"`
@@ -749,6 +751,7 @@ type ProviderEndpoint struct {
 	Dlm                                  *string `pulumi:"dlm"`
 	Dms                                  *string `pulumi:"dms"`
 	Docdb                                *string `pulumi:"docdb"`
+	Docdbelastic                         *string `pulumi:"docdbelastic"`
 	Drs                                  *string `pulumi:"drs"`
 	Ds                                   *string `pulumi:"ds"`
 	Dynamodb                             *string `pulumi:"dynamodb"`
@@ -808,6 +811,7 @@ type ProviderEndpoint struct {
 	Inspector                            *string `pulumi:"inspector"`
 	Inspector2                           *string `pulumi:"inspector2"`
 	Inspectorv2                          *string `pulumi:"inspectorv2"`
+	Internetmonitor                      *string `pulumi:"internetmonitor"`
 	Iot                                  *string `pulumi:"iot"`
 	Iot1clickdevices                     *string `pulumi:"iot1clickdevices"`
 	Iot1clickdevicesservice              *string `pulumi:"iot1clickdevicesservice"`
@@ -1080,6 +1084,8 @@ type ProviderEndpointArgs struct {
 	Chimesdkmediapipelines               pulumi.StringPtrInput `pulumi:"chimesdkmediapipelines"`
 	Chimesdkmeetings                     pulumi.StringPtrInput `pulumi:"chimesdkmeetings"`
 	Chimesdkmessaging                    pulumi.StringPtrInput `pulumi:"chimesdkmessaging"`
+	Chimesdkvoice                        pulumi.StringPtrInput `pulumi:"chimesdkvoice"`
+	Cleanrooms                           pulumi.StringPtrInput `pulumi:"cleanrooms"`
 	Cloud9                               pulumi.StringPtrInput `pulumi:"cloud9"`
 	Cloudcontrol                         pulumi.StringPtrInput `pulumi:"cloudcontrol"`
 	Cloudcontrolapi                      pulumi.StringPtrInput `pulumi:"cloudcontrolapi"`
@@ -1143,6 +1149,7 @@ type ProviderEndpointArgs struct {
 	Dlm                                  pulumi.StringPtrInput `pulumi:"dlm"`
 	Dms                                  pulumi.StringPtrInput `pulumi:"dms"`
 	Docdb                                pulumi.StringPtrInput `pulumi:"docdb"`
+	Docdbelastic                         pulumi.StringPtrInput `pulumi:"docdbelastic"`
 	Drs                                  pulumi.StringPtrInput `pulumi:"drs"`
 	Ds                                   pulumi.StringPtrInput `pulumi:"ds"`
 	Dynamodb                             pulumi.StringPtrInput `pulumi:"dynamodb"`
@@ -1202,6 +1209,7 @@ type ProviderEndpointArgs struct {
 	Inspector                            pulumi.StringPtrInput `pulumi:"inspector"`
 	Inspector2                           pulumi.StringPtrInput `pulumi:"inspector2"`
 	Inspectorv2                          pulumi.StringPtrInput `pulumi:"inspectorv2"`
+	Internetmonitor                      pulumi.StringPtrInput `pulumi:"internetmonitor"`
 	Iot                                  pulumi.StringPtrInput `pulumi:"iot"`
 	Iot1clickdevices                     pulumi.StringPtrInput `pulumi:"iot1clickdevices"`
 	Iot1clickdevicesservice              pulumi.StringPtrInput `pulumi:"iot1clickdevicesservice"`
@@ -1654,6 +1662,14 @@ func (o ProviderEndpointOutput) Chimesdkmessaging() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v ProviderEndpoint) *string { return v.Chimesdkmessaging }).(pulumi.StringPtrOutput)
 }
 
+func (o ProviderEndpointOutput) Chimesdkvoice() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v ProviderEndpoint) *string { return v.Chimesdkvoice }).(pulumi.StringPtrOutput)
+}
+
+func (o ProviderEndpointOutput) Cleanrooms() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v ProviderEndpoint) *string { return v.Cleanrooms }).(pulumi.StringPtrOutput)
+}
+
 func (o ProviderEndpointOutput) Cloud9() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v ProviderEndpoint) *string { return v.Cloud9 }).(pulumi.StringPtrOutput)
 }
@@ -1906,6 +1922,10 @@ func (o ProviderEndpointOutput) Docdb() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v ProviderEndpoint) *string { return v.Docdb }).(pulumi.StringPtrOutput)
 }
 
+func (o ProviderEndpointOutput) Docdbelastic() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v ProviderEndpoint) *string { return v.Docdbelastic }).(pulumi.StringPtrOutput)
+}
+
 func (o ProviderEndpointOutput) Drs() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v ProviderEndpoint) *string { return v.Drs }).(pulumi.StringPtrOutput)
 }
@@ -2140,6 +2160,10 @@ func (o ProviderEndpointOutput) Inspector2() pulumi.StringPtrOutput {
 
 func (o ProviderEndpointOutput) Inspectorv2() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v ProviderEndpoint) *string { return v.Inspectorv2 }).(pulumi.StringPtrOutput)
+}
+
+func (o ProviderEndpointOutput) Internetmonitor() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v ProviderEndpoint) *string { return v.Internetmonitor }).(pulumi.StringPtrOutput)
 }
 
 func (o ProviderEndpointOutput) Iot() pulumi.StringPtrOutput {
