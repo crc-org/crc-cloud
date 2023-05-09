@@ -5,12 +5,12 @@ WORKDIR /workspace
 COPY . .
 
 # renovate: datasource=github-releases packageName=pulumi/pulumi
-ENV PULUMI_VERSION 3.54.0
-ENV PULUMI_URL https://github.com/pulumi/pulumi/releases/download/v${PULUMI_VERSION}/pulumi-v${PULUMI_VERSION}-linux-x64.tar.gz
+ENV PULUMI_VERSION=v3.54.0
+ENV PULUMI_URL https://github.com/pulumi/pulumi/releases/download/${PULUMI_VERSION}/pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
 RUN make build \
     && curl -LO ${PULUMI_URL} \
-    && tar -xzvf pulumi-v${PULUMI_VERSION}-linux-x64.tar.gz
+    && tar -xzvf pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
 FROM registry.access.redhat.com/ubi9-minimal:9.1.0-1829
 
