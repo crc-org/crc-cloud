@@ -3,12 +3,10 @@
   "extends": [
       "config:base",
       ":enablePreCommit",
-      "group:allNonMajor"
+      "group:allNonMajor",
+      "regexManagers:dockerfileVersions"
   ],
   "automerge": false,
   "rangeStrategy": "bump",
-  "schedule": [
-      "every weekend"
-  ],
   "ignoreDeps": ["go"]
 }
