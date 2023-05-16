@@ -6,17 +6,22 @@ require (
 	github.com/pulumi/pulumi-azure-native-sdk/resources v1.102.0
 	github.com/pulumi/pulumi-azure-native-sdk/storage v1.102.0
 	github.com/pulumi/pulumi-tls/sdk/v4 v4.10.0
-	github.com/pulumi/pulumi/sdk/v3 v3.66.0
+	github.com/pulumi/pulumi/sdk/v3 v3.67.1
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.15.0
 )
 
 require (
-	github.com/cloudflare/circl v1.1.0 // indirect
+	github.com/agext/levenshtein v1.2.1 // indirect
+	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
+	github.com/cloudflare/circl v1.3.3 // indirect
+	github.com/hashicorp/hcl/v2 v2.16.1 // indirect
+	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pulumi/pulumi-azure-native-sdk v1.102.0 // indirect
 	github.com/skeema/knownhosts v1.1.0 // indirect
+	github.com/zclconf/go-cty v1.12.1 // indirect
 )
 
 require (
@@ -56,7 +61,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pkg/term v1.1.0 // indirect
-	github.com/pulumi/pulumi-aws/sdk/v5 v5.40.0
+	github.com/pulumi/pulumi-aws/sdk/v5 v5.41.0
 	github.com/pulumi/pulumi-command/sdk v0.7.2
 	github.com/pulumi/pulumi-random/sdk/v4 v4.13.0
 	github.com/rivo/uniseg v0.2.0 // indirect
