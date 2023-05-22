@@ -25,7 +25,10 @@ COPY requirements.txt ./
 USER root
 
 RUN microdnf install -y python3 python3-pip zstd && \
-    pip install -r requirements.txt && \
-    pulumi plugin install resource command v0.7.2
+    pip install -r requirements.txt
+
+# renovate: datasource=github-releases depName=pulumi/pulumi-command
+ARG PULUMI_COMMAND_VERSION=v0.7.2
+RUN pulumi plugin install resource command ${PULUMI_COMMAND_VERSION}
 
 ENTRYPOINT [ "crc-cloud" ]
