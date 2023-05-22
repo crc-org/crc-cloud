@@ -1,10 +1,10 @@
 name: Run 'make check'
 on:
-  push:
-    branches:
-      - "main"
-      - "bash"
-  pull_request: {}
+
+  pull_request:
+    branches: 
+    - main
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -15,7 +15,7 @@ jobs:
           - macOS-latest
           - ubuntu-latest
         go:
-          - 1.18
+          - 1.19
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3.5.2
