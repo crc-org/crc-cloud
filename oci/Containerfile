@@ -24,11 +24,27 @@ COPY requirements.txt ./
 
 USER root
 
-RUN microdnf install -y python3 python3-pip zstd && \
-    pip install -r requirements.txt
-
 # renovate: datasource=github-releases depName=pulumi/pulumi-command
 ARG PULUMI_COMMAND_VERSION=v0.7.2
-RUN pulumi plugin install resource command ${PULUMI_COMMAND_VERSION}
+
+# renovate: datasource=github-releases depName=pulumi/pulumi-tls
+ARG PULUMI_TLS_VERSION=v4.10.0
+
+# renovate: datasource=github-releases depName=pulumi/pulumi-random
+ARG PULUMI_RANDOM_VERSION=v4.13.1
+
+# renovate: datasource=github-releases depName=pulumi/pulumi-aws
+ARG PULUMI_AWS_VERSION=v5.41.0
+
+# renovate: datasource=github-releases depName=pulumi/pulumi-azure-native
+ARG PULUMI_AZURE_NATIVE_VERSION=v1.102.0
+
+RUN microdnf install -y python3 python3-pip zstd && \
+    pip install -r requirements.txt && \
+    pulumi plugin install resource command ${PULUMI_COMMAND_VERSION} && \
+    pulumi plugin install resource tls ${PULUMI_TLS_VERSION} && \
+    pulumi plugin install resource random ${PULUMI_RANDOM_VERSION} && \
+    pulumi plugin install resource aws ${PULUMI_AWS_VERSION} && \
+    pulumi plugin install resource azure-native ${PULUMI_AZURE_NATIVE_VERSION}
 
 ENTRYPOINT [ "crc-cloud" ]
