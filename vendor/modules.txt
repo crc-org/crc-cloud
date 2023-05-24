@@ -258,7 +258,7 @@ github.com/pulumi/pulumi-azure-native-sdk/storage
 github.com/pulumi/pulumi-command/sdk/go/command
 github.com/pulumi/pulumi-command/sdk/go/command/local
 github.com/pulumi/pulumi-command/sdk/go/command/remote
-# github.com/pulumi/pulumi-random/sdk/v4 v4.13.1
+# github.com/pulumi/pulumi-random/sdk/v4 v4.13.2
 ## explicit; go 1.19
 github.com/pulumi/pulumi-random/sdk/v4/go/random
 # github.com/pulumi/pulumi-tls/sdk/v4 v4.10.0

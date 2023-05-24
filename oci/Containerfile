@@ -31,7 +31,7 @@ ARG PULUMI_COMMAND_VERSION=v0.7.2
 ARG PULUMI_TLS_VERSION=v4.10.0
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-random
-ARG PULUMI_RANDOM_VERSION=v4.13.1
+ARG PULUMI_RANDOM_VERSION=v4.13.2
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-aws
 ARG PULUMI_AWS_VERSION=v5.41.0
