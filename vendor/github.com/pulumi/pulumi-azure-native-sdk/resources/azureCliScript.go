@@ -7,7 +7,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/pkg/errors"
+	"errors"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -82,11 +82,11 @@ func NewAzureCliScript(ctx *pulumi.Context,
 	if args.RetentionInterval == nil {
 		return nil, errors.New("invalid value for required argument 'RetentionInterval'")
 	}
-	if isZero(args.CleanupPreference) {
+	if args.CleanupPreference == nil {
 		args.CleanupPreference = pulumi.StringPtr("Always")
 	}
 	args.Kind = pulumi.String("AzureCLI")
-	if isZero(args.Timeout) {
+	if args.Timeout == nil {
 		args.Timeout = pulumi.StringPtr("P1D")
 	}
 	aliases := pulumi.Aliases([]pulumi.Alias{

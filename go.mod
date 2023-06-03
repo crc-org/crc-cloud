@@ -3,10 +3,10 @@ module github.com/crc/crc-cloud
 go 1.19
 
 require (
-	github.com/pulumi/pulumi-azure-native-sdk/resources v1.102.0
-	github.com/pulumi/pulumi-azure-native-sdk/storage v1.102.0
+	github.com/pulumi/pulumi-azure-native-sdk/resources v1.103.0
+	github.com/pulumi/pulumi-azure-native-sdk/storage v1.103.0
 	github.com/pulumi/pulumi-tls/sdk/v4 v4.10.0
-	github.com/pulumi/pulumi/sdk/v3 v3.68.0
+	github.com/pulumi/pulumi/sdk/v3 v3.69.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.16.0
@@ -19,7 +19,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.16.1 // indirect
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
-	github.com/pulumi/pulumi-azure-native-sdk v1.102.0 // indirect
+	github.com/pulumi/pulumi-azure-native-sdk v1.103.0 // indirect
 	github.com/skeema/knownhosts v1.1.0 // indirect
 	github.com/zclconf/go-cty v1.12.1 // indirect
 )
@@ -64,7 +64,7 @@ require (
 	github.com/pulumi/pulumi-aws/sdk/v5 v5.41.0
 	github.com/pulumi/pulumi-command/sdk v0.7.2
 	github.com/pulumi/pulumi-random/sdk/v4 v4.13.2
-	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06 // indirect
 	github.com/santhosh-tekuri/jsonschema/v5 v5.0.0 // indirect
