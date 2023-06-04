@@ -85,11 +85,11 @@ func (val *LookupAzureCliScriptResult) Defaults() *LookupAzureCliScriptResult {
 		return nil
 	}
 	tmp := *val
-	if isZero(tmp.CleanupPreference) {
+	if tmp.CleanupPreference == nil {
 		cleanupPreference_ := "Always"
 		tmp.CleanupPreference = &cleanupPreference_
 	}
-	if isZero(tmp.Timeout) {
+	if tmp.Timeout == nil {
 		timeout_ := "P1D"
 		tmp.Timeout = &timeout_
 	}
