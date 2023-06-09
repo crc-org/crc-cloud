@@ -5,7 +5,7 @@ WORKDIR /workspace
 COPY . .
 
 # renovate: datasource=github-releases depName=pulumi/pulumi
-ENV PULUMI_VERSION=v3.69.0
+ENV PULUMI_VERSION=v3.70.0
 ENV PULUMI_URL https://github.com/pulumi/pulumi/releases/download/${PULUMI_VERSION}/pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
 RUN make build \
