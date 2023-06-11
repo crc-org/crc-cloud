@@ -6,7 +6,7 @@ require (
 	github.com/pulumi/pulumi-azure-native-sdk/resources v1.103.0
 	github.com/pulumi/pulumi-azure-native-sdk/storage v1.103.0
 	github.com/pulumi/pulumi-tls/sdk/v4 v4.10.0
-	github.com/pulumi/pulumi/sdk/v3 v3.69.0
+	github.com/pulumi/pulumi/sdk/v3 v3.70.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.16.0

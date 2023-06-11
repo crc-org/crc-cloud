@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.3
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2.2.0
@@ -39,7 +39,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push Docker image (post merge)
-        uses: docker/build-push-action@v4.0.0
+        uses: docker/build-push-action@v4.1.0
         with:
           context: .
           file: ./oci/Containerfile
