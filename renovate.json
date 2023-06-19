@@ -4,9 +4,10 @@
       "config:base",
       ":enablePreCommit",
       "group:allNonMajor",
-      "regexManagers:dockerfileVersions"
+      "regexManagers:dockerfileVersions",
+      "schedule:weekly",
+      "docker:pinDigests"
   ],
-  "automerge": false,
   "rangeStrategy": "bump",
   "ignoreDeps": ["go"]
 }
