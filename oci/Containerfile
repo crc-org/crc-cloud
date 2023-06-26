@@ -1,18 +1,18 @@
-FROM registry.access.redhat.com/ubi9/go-toolset:1.19.9-3 as builder
+FROM registry.access.redhat.com/ubi9/go-toolset:1.19.9-7@sha256:d964fe59231080170e11abdd16715818b322def041b736a9b24b2d1cf9bf6d6b as builder
 
 USER root
 WORKDIR /workspace
 COPY . .
 
 # renovate: datasource=github-releases depName=pulumi/pulumi
-ENV PULUMI_VERSION=v3.72.2
+ENV PULUMI_VERSION=v3.73.0
 ENV PULUMI_URL https://github.com/pulumi/pulumi/releases/download/${PULUMI_VERSION}/pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
 RUN make build \
     && curl -LO ${PULUMI_URL} \
     && tar -xzvf pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
-FROM registry.access.redhat.com/ubi9-minimal:9.2-484
+FROM registry.access.redhat.com/ubi9-minimal:9.2-691@sha256:8bf03cbc3aedde6e949090290c1e336613ac423d3451b7b1bcb704f0cf8fac88
 
 LABEL MAINTAINER "CRC <devtools-cdk@redhat.com>"
 
