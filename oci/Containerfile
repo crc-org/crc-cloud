@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/go-toolset:1.19.9-3 as builder
+FROM registry.access.redhat.com/ubi9/go-toolset:1.19.9-3@sha256:113e69fdfa23b41ea82e5da2e4a5b13bca44713fe597ff862ef977a4a2fedda5 as builder
 
 USER root
 WORKDIR /workspace
@@ -12,7 +12,7 @@ RUN make build \
     && curl -LO ${PULUMI_URL} \
     && tar -xzvf pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
-FROM registry.access.redhat.com/ubi9-minimal:9.2-484
+FROM registry.access.redhat.com/ubi9-minimal:9.2-484@sha256:b00f7556d64a698aad6cb63bb75b2692f1538926c6f619d6123cbc20a74239ec
 
 LABEL MAINTAINER "CRC <devtools-cdk@redhat.com>"
 
