@@ -1,11 +1,11 @@
-FROM registry.access.redhat.com/ubi9/go-toolset:1.19.9-7@sha256:d964fe59231080170e11abdd16715818b322def041b736a9b24b2d1cf9bf6d6b as builder
+FROM registry.access.redhat.com/ubi9/go-toolset:1.19.10-4@sha256:886d1c92a95d63322f6e5cd4d6dc9b0dc9a7226fd22c82e29ceb8383e3221c43 as builder
 
 USER root
 WORKDIR /workspace
 COPY . .
 
 # renovate: datasource=github-releases depName=pulumi/pulumi
-ENV PULUMI_VERSION=v3.73.0
+ENV PULUMI_VERSION=v3.74.0
 ENV PULUMI_URL https://github.com/pulumi/pulumi/releases/download/${PULUMI_VERSION}/pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
 RUN make build \
