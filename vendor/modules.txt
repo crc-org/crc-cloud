@@ -245,13 +245,13 @@ github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ebs
 github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ec2
 github.com/pulumi/pulumi-aws/sdk/v5/go/aws/iam
 github.com/pulumi/pulumi-aws/sdk/v5/go/aws/s3
-# github.com/pulumi/pulumi-azure-native-sdk v1.103.0
+# github.com/pulumi/pulumi-azure-native-sdk v1.104.0
 ## explicit; go 1.17
 github.com/pulumi/pulumi-azure-native-sdk
-# github.com/pulumi/pulumi-azure-native-sdk/resources v1.103.0
+# github.com/pulumi/pulumi-azure-native-sdk/resources v1.104.0
 ## explicit; go 1.17
 github.com/pulumi/pulumi-azure-native-sdk/resources
-# github.com/pulumi/pulumi-azure-native-sdk/storage v1.103.0
+# github.com/pulumi/pulumi-azure-native-sdk/storage v1.104.0
 ## explicit; go 1.17
 github.com/pulumi/pulumi-azure-native-sdk/storage
 # github.com/pulumi/pulumi-command/sdk v0.7.2

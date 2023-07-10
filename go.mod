@@ -3,8 +3,8 @@ module github.com/crc/crc-cloud
 go 1.19
 
 require (
-	github.com/pulumi/pulumi-azure-native-sdk/resources v1.103.0
-	github.com/pulumi/pulumi-azure-native-sdk/storage v1.103.0
+	github.com/pulumi/pulumi-azure-native-sdk/resources v1.104.0
+	github.com/pulumi/pulumi-azure-native-sdk/storage v1.104.0
 	github.com/pulumi/pulumi-tls/sdk/v4 v4.10.0
 	github.com/pulumi/pulumi/sdk/v3 v3.74.0
 	github.com/spf13/cobra v1.7.0
@@ -19,7 +19,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.16.1 // indirect
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
-	github.com/pulumi/pulumi-azure-native-sdk v1.103.0 // indirect
+	github.com/pulumi/pulumi-azure-native-sdk v1.104.0 // indirect
 	github.com/skeema/knownhosts v1.1.0 // indirect
 	github.com/zclconf/go-cty v1.12.1 // indirect
 )
