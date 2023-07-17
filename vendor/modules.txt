@@ -238,7 +238,7 @@ github.com/pkg/errors
 # github.com/pkg/term v1.1.0
 ## explicit; go 1.14
 github.com/pkg/term/termios
-# github.com/pulumi/pulumi-aws/sdk/v5 v5.41.0
+# github.com/pulumi/pulumi-aws/sdk/v5 v5.42.0
 ## explicit; go 1.17
 github.com/pulumi/pulumi-aws/sdk/v5/go/aws
 github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ebs
@@ -265,7 +265,7 @@ github.com/pulumi/pulumi-random/sdk/v4/go/random
 # github.com/pulumi/pulumi-tls/sdk/v4 v4.10.0
 ## explicit; go 1.17
 github.com/pulumi/pulumi-tls/sdk/v4/go/tls
-# github.com/pulumi/pulumi/sdk/v3 v3.74.0
+# github.com/pulumi/pulumi/sdk/v3 v3.75.0
 ## explicit; go 1.18
 github.com/pulumi/pulumi/sdk/v3/go/auto
 github.com/pulumi/pulumi/sdk/v3/go/auto/debug
@@ -452,7 +452,7 @@ golang.org/x/text/unicode/norm
 # google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.55.0
+# google.golang.org/grpc v1.56.1
 ## explicit; go 1.17
 google.golang.org/grpc
 google.golang.org/grpc/attributes
