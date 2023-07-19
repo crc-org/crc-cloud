@@ -27,7 +27,9 @@ func (a *Provider) ImportImageRunFunc(projectName, bundleDownloadURL, shasumfile
 
 func (a *Provider) CreateParams() map[string]string {
 	return map[string]string{
-		amiID: amiIDDesc,
+		amiID:        amiIDDesc,
+		instanceType: instanceTypeDesc,
+		diskSize:     diskSizeDesc,
 	}
 }
 

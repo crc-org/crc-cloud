@@ -2,6 +2,7 @@ package aws
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/crc/crc-cloud/pkg/bundle"
 	"github.com/crc/crc-cloud/pkg/bundle/setup"
@@ -17,6 +18,8 @@ import (
 type createRequest struct {
 	projectName               string
 	amiID                     string
+	instanceType              string
+	diskSize                  int
 	bootingPrivateKeyFilePath string
 	ocpPullSecretFilePath     string
 }
@@ -27,9 +30,23 @@ func fillCreateRequest(projectName, bootingPrivateKeyFilePath, ocpPullSecretFile
 	if !ok {
 		return nil, fmt.Errorf("amiID not found")
 	}
+	it := ocpInstanceType
+	if customInstanceType, ok := args[instanceType]; ok {
+		it = customInstanceType
+	}
+	ds := ocpDefaultRootBlockDeviceSize
+	if customDiskSizeAsString, ok := args[diskSize]; ok {
+		customDiskSize, err := strconv.Atoi(customDiskSizeAsString)
+		if err != nil {
+			return nil, fmt.Errorf("error creating request for cluster machine: %v", err)
+		}
+		ds = customDiskSize
+	}
 	return &createRequest{
 		projectName:               projectName,
 		amiID:                     amiIDValue,
+		instanceType:              it,
+		diskSize:                  ds,
 		bootingPrivateKeyFilePath: bootingPrivateKeyFilePath,
 		ocpPullSecretFilePath:     ocpPullSecretFilePath}, nil
 }
@@ -45,12 +62,12 @@ func (r createRequest) runFunc(ctx *pulumi.Context) error {
 	}
 	args := ec2.InstanceArgs{
 		Ami:                      pulumi.String(r.amiID),
-		InstanceType:             pulumi.String(ocpInstanceType),
+		InstanceType:             pulumi.String(r.instanceType),
 		KeyName:                  awsKeyPair.KeyName,
 		AssociatePublicIpAddress: pulumi.Bool(true),
 		VpcSecurityGroupIds:      securityGroupsIds,
 		RootBlockDevice: ec2.InstanceRootBlockDeviceArgs{
-			VolumeSize: pulumi.Int(ocpDefaultRootBlockDeviceSize),
+			VolumeSize: pulumi.Int(r.diskSize),
 		},
 		Tags: context.GetTags(),
 	}
