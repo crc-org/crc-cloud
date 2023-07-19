@@ -107,8 +107,10 @@ Usage:
   crc-cloud create aws [flags]
 
 Flags:
-      --aws-ami-id string   AMI identifier
-  -h, --help                help for aws
+      --aws-ami-id string           AMI identifier
+      --aws-disk-size string        Disk size in GB for the machine running the cluster. Default is 100.
+      --aws-instance-type string    Instance type for the machine running the cluster. Default is c6a.2xlarge.
+  -h, --help                        help for aws
 
 Global Flags:
       --backed-url string            backed for stack state. Can be a local path with format file:///path/subpath or s3 s3://existing-bucket
@@ -140,6 +142,8 @@ podman run -d --rm \
         --output "/workspace" \
         --tags account=qe-pt,profile=builder \
         --aws-ami-id "ami-xxxx" \
+        --aws-instance-type "c6i.4xlarge" \
+        --aws-disk-size "200" \
         --pullsecret-filepath "/workspace/pullsecret" \
         --key-filepath "/workspace/id_ecdsa"
 ```
