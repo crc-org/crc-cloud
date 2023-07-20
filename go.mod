@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/pulumi/pulumi-azure-native-sdk/resources v1.104.0
-	github.com/pulumi/pulumi-azure-native-sdk/storage v1.104.0
+	github.com/pulumi/pulumi-azure-native-sdk/storage v2.1.1
 	github.com/pulumi/pulumi-tls/sdk/v4 v4.10.0
 	github.com/pulumi/pulumi/sdk/v3 v3.75.0
 	github.com/spf13/cobra v1.7.0
