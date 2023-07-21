@@ -1,6 +1,7 @@
 package api
 
 const (
+	Kubeconfig     string = "kubeconfig"
 	OutputKey      string = "private-key"
 	OutputHost     string = "host"
 	OutputUsername string = "username"

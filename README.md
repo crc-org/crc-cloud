@@ -121,6 +121,7 @@ Global Flags:
 
 Outputs:
 
+- `kubeconfig` file with the kube config to connect withint the cluster  
 - `host` file containing host address running the cluster
 - `username` file containing the username to connect the remote host
 - `id_rsa` key to connect the remote host
