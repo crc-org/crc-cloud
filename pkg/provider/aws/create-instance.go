@@ -85,7 +85,7 @@ func (r createRequest) runFunc(ctx *pulumi.Context) error {
 	if err != nil {
 		return err
 	}
-	_, err = setup.Setup(ctx,
+	kubeconfig, _, err := setup.Setup(ctx,
 		&instance.PublicIp, &privateKey.PrivateKeyOpenssh,
 		setup.Data{
 			PrivateIP:             &instance.PrivateIp,
@@ -96,6 +96,7 @@ func (r createRequest) runFunc(ctx *pulumi.Context) error {
 	if err != nil {
 		return err
 	}
+	ctx.Export(providerAPI.Kubeconfig, kubeconfig)
 	ctx.Export(providerAPI.OutputKey, privateKey.PrivateKeyPem)
 	ctx.Export(providerAPI.OutputHost, instance.PublicIp)
 	ctx.Export(providerAPI.OutputUsername, pulumi.String(bundle.ImageUsername))

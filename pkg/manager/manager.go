@@ -123,6 +123,7 @@ func Destroy(projectName, backedURL string, provider Provider) error {
 
 func manageCreateResults(stackResult auto.UpResult, destinationFolder string) error {
 	if err := writeOutputs(stackResult, destinationFolder, map[string]string{
+		providerAPI.Kubeconfig:     "kubeconfig",
 		providerAPI.OutputKey:      "id_rsa",
 		providerAPI.OutputHost:     "host",
 		providerAPI.OutputUsername: "username",
