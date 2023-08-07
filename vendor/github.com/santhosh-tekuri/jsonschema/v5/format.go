@@ -21,6 +21,7 @@ var Formats = map[string]func(interface{}) bool{
 	"date":                  isDate,
 	"time":                  isTime,
 	"duration":              isDuration,
+	"period":                isPeriod,
 	"hostname":              isHostname,
 	"email":                 isEmail,
 	"ip-address":            isIPV4,
@@ -234,6 +235,26 @@ func isDuration(v interface{}) bool {
 	return ok && len(s) == 0 && len(units) > 0 && strings.Index("HMS", units) != -1
 }
 
+// isPeriod tells whether given string is a valid period format
+// from the ISO 8601 ABNF as given in Appendix A of RFC 3339.
+//
+// see https://datatracker.ietf.org/doc/html/rfc3339#appendix-A, for details
+func isPeriod(v interface{}) bool {
+	s, ok := v.(string)
+	if !ok {
+		return true
+	}
+	slash := strings.IndexByte(s, '/')
+	if slash == -1 {
+		return false
+	}
+	start, end := s[:slash], s[slash+1:]
+	if isDateTime(start) {
+		return isDateTime(end) || isDuration(end)
+	}
+	return isDuration(start) && isDateTime(end)
+}
+
 // isHostname tells whether given string is a valid representation
 // for an Internet host name, as defined by RFC 1034 section 3.1 and
 // RFC 1123 section 2.1.
@@ -306,6 +327,15 @@ func isEmail(v interface{}) bool {
 	// local part may be up to 64 characters long
 	if len(local) > 64 {
 		return false
+	}
+
+	// domain if enclosed in brackets, must match an IP address
+	if len(domain) >= 2 && domain[0] == '[' && domain[len(domain)-1] == ']' {
+		ip := domain[1 : len(domain)-1]
+		if strings.HasPrefix(ip, "IPv6:") {
+			return isIPV6(strings.TrimPrefix(ip, "IPv6:"))
+		}
+		return isIPV4(ip)
 	}
 
 	// domain must match the requirements for a hostname
@@ -463,7 +493,7 @@ func isJSONPointer(v interface{}) bool {
 					return false
 				}
 				switch item[i+1] {
-				case '~', '0', '1':
+				case '0', '1':
 					// valid
 				default:
 					return false
@@ -526,12 +556,12 @@ func isUUID(v interface{}) bool {
 			return false
 		}
 		if i == len(groups)-1 {
-			return len(s) == 0
+			break
 		}
 		if len(s) == 0 || s[0] != '-' {
 			return false
 		}
 		s = s[1:]
 	}
-	return true
+	return len(s) == 0
 }
