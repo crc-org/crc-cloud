@@ -24,9 +24,9 @@ require (
 	github.com/pulumi/pulumi-azure-native-sdk v1.104.0 // indirect
 	github.com/skeema/knownhosts v1.2.0 // indirect
 	github.com/zclconf/go-cty v1.13.2 // indirect
-	golang.org/x/mod v0.11.0 // indirect
-	golang.org/x/tools v0.6.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230803162519-f966b187b2e5 // indirect
+	golang.org/x/mod v0.12.0 // indirect
+	golang.org/x/tools v0.12.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230807174057-1744710a1577 // indirect
 )
 
 require (
