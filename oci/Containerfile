@@ -1,18 +1,18 @@
-FROM registry.access.redhat.com/ubi9/go-toolset:1.19.10-4@sha256:886d1c92a95d63322f6e5cd4d6dc9b0dc9a7226fd22c82e29ceb8383e3221c43 as builder
+FROM registry.access.redhat.com/ubi9/go-toolset:1.19.10-9.1690899882@sha256:6b2836c0baf58f601c01549b2f7ea5c4ea71102430d97c93bfcdbc4cb8aa9fa9 as builder
 
 USER root
 WORKDIR /workspace
 COPY . .
 
 # renovate: datasource=github-releases depName=pulumi/pulumi
-ENV PULUMI_VERSION=v3.76.0
+ENV PULUMI_VERSION=v3.78.0
 ENV PULUMI_URL https://github.com/pulumi/pulumi/releases/download/${PULUMI_VERSION}/pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
 RUN make build \
     && curl -LO ${PULUMI_URL} \
     && tar -xzvf pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
-FROM registry.access.redhat.com/ubi9-minimal:9.2-691@sha256:8bf03cbc3aedde6e949090290c1e336613ac423d3451b7b1bcb704f0cf8fac88
+FROM registry.access.redhat.com/ubi9-minimal:9.2-717@sha256:35c99977ee5baa359bdc80f9ccc360644d2dbccb7462ca0fd97a23170a00cfd1
 
 LABEL MAINTAINER "CRC <devtools-cdk@redhat.com>"
 
@@ -25,7 +25,7 @@ COPY requirements.txt ./
 USER root
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-command
-ARG PULUMI_COMMAND_VERSION=v0.7.2
+ARG PULUMI_COMMAND_VERSION=v0.8.1
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-tls
 ARG PULUMI_TLS_VERSION=v4.10.0
@@ -37,7 +37,7 @@ ARG PULUMI_RANDOM_VERSION=v4.13.2
 ARG PULUMI_AWS_VERSION=v5.42.0
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-azure-native
-ARG PULUMI_AZURE_NATIVE_VERSION=v2.1.1
+ARG PULUMI_AZURE_NATIVE_VERSION=v2.2.0
 
 RUN microdnf install -y python3 python3-pip zstd && \
     pip install -r requirements.txt && \

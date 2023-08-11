@@ -55,7 +55,7 @@ type langhost struct {
 func NewLanguageRuntime(host Host, ctx *Context, root, pwd, runtime string,
 	options map[string]interface{},
 ) (LanguageRuntime, error) {
-	path, err := workspace.GetPluginPath(
+	path, err := workspace.GetPluginPath(ctx.Diag,
 		workspace.LanguagePlugin, strings.ReplaceAll(runtime, tokens.QNameDelimiter, "_"), nil, host.GetProjectPlugins())
 	if err != nil {
 		return nil, err
@@ -423,13 +423,16 @@ func (h *langhost) RunPlugin(info RunPluginInfo) (io.Reader, io.Reader, context.
 
 func (h *langhost) GenerateProject(
 	sourceDirectory, targetDirectory, project string, strict bool,
+	loaderTarget string, localDependencies map[string]string,
 ) (hcl.Diagnostics, error) {
 	logging.V(7).Infof("langhost[%v].GenerateProject() executing", h.runtime)
 	resp, err := h.client.GenerateProject(h.ctx.Request(), &pulumirpc.GenerateProjectRequest{
-		SourceDirectory: sourceDirectory,
-		TargetDirectory: targetDirectory,
-		Project:         project,
-		Strict:          strict,
+		SourceDirectory:   sourceDirectory,
+		TargetDirectory:   targetDirectory,
+		Project:           project,
+		Strict:            strict,
+		LoaderTarget:      loaderTarget,
+		LocalDependencies: localDependencies,
 	})
 	if err != nil {
 		rpcError := rpcerror.Convert(err)
@@ -448,13 +451,14 @@ func (h *langhost) GenerateProject(
 }
 
 func (h *langhost) GeneratePackage(
-	directory string, schema string, extraFiles map[string][]byte,
+	directory string, schema string, extraFiles map[string][]byte, loaderTarget string,
 ) error {
 	logging.V(7).Infof("langhost[%v].GeneratePackage() executing", h.runtime)
 	_, err := h.client.GeneratePackage(h.ctx.Request(), &pulumirpc.GeneratePackageRequest{
-		Directory:  directory,
-		Schema:     schema,
-		ExtraFiles: extraFiles,
+		Directory:    directory,
+		Schema:       schema,
+		ExtraFiles:   extraFiles,
+		LoaderTarget: loaderTarget,
 	})
 	if err != nil {
 		rpcError := rpcerror.Convert(err)
@@ -466,10 +470,12 @@ func (h *langhost) GeneratePackage(
 	return nil
 }
 
-func (h *langhost) GenerateProgram(program map[string]string) (map[string][]byte, hcl.Diagnostics, error) {
+func (h *langhost) GenerateProgram(program map[string]string, loaderTarget string,
+) (map[string][]byte, hcl.Diagnostics, error) {
 	logging.V(7).Infof("langhost[%v].GenerateProgram() executing", h.runtime)
 	resp, err := h.client.GenerateProgram(h.ctx.Request(), &pulumirpc.GenerateProgramRequest{
-		Source: program,
+		Source:       program,
+		LoaderTarget: loaderTarget,
 	})
 	if err != nil {
 		rpcError := rpcerror.Convert(err)
@@ -485,4 +491,35 @@ func (h *langhost) GenerateProgram(program map[string]string) (map[string][]byte
 
 	logging.V(7).Infof("langhost[%v].GenerateProgram() success", h.runtime)
 	return resp.Source, diags, nil
+}
+
+func (h *langhost) Pack(
+	packageDirectory string, version semver.Version, destinationDirectory string,
+) (string, error) {
+	label := fmt.Sprintf("langhost[%v].Pack(%s, %s, %s)", h.runtime, packageDirectory, version, destinationDirectory)
+	logging.V(7).Infof("%s executing", label)
+
+	// Always send absolute paths to the plugin, as it may be running in a different working directory.
+	packageDirectory, err := filepath.Abs(packageDirectory)
+	if err != nil {
+		return "", err
+	}
+	destinationDirectory, err = filepath.Abs(destinationDirectory)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := h.client.Pack(h.ctx.Request(), &pulumirpc.PackRequest{
+		PackageDirectory:     packageDirectory,
+		Version:              version.String(),
+		DestinationDirectory: destinationDirectory,
+	})
+	if err != nil {
+		rpcError := rpcerror.Convert(err)
+		logging.V(7).Infof("%s failed: err=%v", label, rpcError)
+		return "", rpcError
+	}
+
+	logging.V(7).Infof("%s success: artifactPath=%s", label, req.ArtifactPath)
+	return req.ArtifactPath, nil
 }
