@@ -44,7 +44,7 @@ func NewConverter(ctx *Context, name string, version *semver.Version) (Converter
 	prefix := fmt.Sprintf("%v (converter)", name)
 
 	// Load the plugin's path by using the standard workspace logic.
-	path, err := workspace.GetPluginPath(workspace.ConverterPlugin, name, version, ctx.Host.GetProjectPlugins())
+	path, err := workspace.GetPluginPath(ctx.Diag, workspace.ConverterPlugin, name, version, ctx.Host.GetProjectPlugins())
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (c *converter) ConvertState(ctx context.Context, req *ConvertStateRequest) 
 	logging.V(7).Infof("%s executing", label)
 
 	resp, err := c.clientRaw.ConvertState(ctx, &pulumirpc.ConvertStateRequest{
-		MapperTarget: req.MapperAddress,
+		MapperTarget: req.MapperTarget,
 	})
 	if err != nil {
 		rpcError := rpcerror.Convert(err)
@@ -139,7 +139,7 @@ func (c *converter) ConvertProgram(ctx context.Context, req *ConvertProgramReque
 	resp, err := c.clientRaw.ConvertProgram(ctx, &pulumirpc.ConvertProgramRequest{
 		SourceDirectory: req.SourceDirectory,
 		TargetDirectory: req.TargetDirectory,
-		MapperTarget:    req.MapperAddress,
+		MapperTarget:    req.MapperTarget,
 	})
 	if err != nil {
 		rpcError := rpcerror.Convert(err)
