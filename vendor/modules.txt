@@ -266,7 +266,7 @@ github.com/pulumi/pulumi-random/sdk/v4/go/random
 # github.com/pulumi/pulumi-tls/sdk/v4 v4.10.0
 ## explicit; go 1.17
 github.com/pulumi/pulumi-tls/sdk/v4/go/tls
-# github.com/pulumi/pulumi/sdk/v3 v3.78.0
+# github.com/pulumi/pulumi/sdk/v3 v3.78.1
 ## explicit; go 1.18
 github.com/pulumi/pulumi/sdk/v3/go/auto
 github.com/pulumi/pulumi/sdk/v3/go/auto/debug
@@ -423,7 +423,7 @@ golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/knownhosts
-# golang.org/x/exp v0.0.0-20230810033253-352e893a4cad
+# golang.org/x/exp v0.0.0-20230811145659-89c5cff77bcb
 ## explicit; go 1.20
 golang.org/x/exp/maps
 # golang.org/x/mod v0.12.0
