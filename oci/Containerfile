@@ -37,7 +37,7 @@ ARG PULUMI_RANDOM_VERSION=v4.13.2
 ARG PULUMI_AWS_VERSION=v5.42.0
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-azure-native
-ARG PULUMI_AZURE_NATIVE_VERSION=v2.2.0
+ARG PULUMI_AZURE_NATIVE_VERSION=v2.3.0
 
 RUN microdnf install -y python3 python3-pip zstd && \
     pip install -r requirements.txt && \
