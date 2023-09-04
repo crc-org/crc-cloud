@@ -4,9 +4,7 @@ go 1.19
 
 require (
 	github.com/pulumi/pulumi-aws/sdk/v6 v6.0.4
-	github.com/pulumi/pulumi-azure-native-sdk/resources v2.5.0
 	github.com/pulumi/pulumi-azure-native-sdk/resources/v2 v2.5.0
-	github.com/pulumi/pulumi-azure-native-sdk/storage v2.5.0
 	github.com/pulumi/pulumi-azure-native-sdk/storage/v2 v2.5.0
 	github.com/pulumi/pulumi-tls/sdk/v4 v4.10.0
 	github.com/pulumi/pulumi/sdk/v3 v3.80.0
@@ -27,7 +25,7 @@ require (
 	github.com/cloudflare/circl v1.3.3 // indirect
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/hashicorp/hcl/v2 v2.18.0 // indirect
+	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.18.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
@@ -38,7 +36,7 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.1 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
-	github.com/pulumi/pulumi-azure-native-sdk/v2 v2.5.0 // indirect
+	github.com/pulumi/pulumi-azure-native-sdk v1.104.0 // indirect
 	github.com/pulumi/pulumi-azure-native-sdk/v2 v2.5.0 // indirect
 	github.com/skeema/knownhosts v1.2.0 // indirect
 	github.com/zclconf/go-cty v1.14.0 // indirect
