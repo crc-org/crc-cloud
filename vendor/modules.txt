@@ -37,8 +37,6 @@ github.com/aead/chacha20/chacha
 # github.com/agext/levenshtein v1.2.3
 ## explicit
 github.com/agext/levenshtein
-# github.com/apparentlymart/go-textseg/v13 v13.0.0
-## explicit; go 1.16
 # github.com/apparentlymart/go-textseg/v15 v15.0.0
 ## explicit; go 1.16
 github.com/apparentlymart/go-textseg/v15/textseg
@@ -300,9 +298,15 @@ github.com/pulumi/pulumi-azure-native-sdk
 # github.com/pulumi/pulumi-azure-native-sdk/resources v1.104.0
 ## explicit; go 1.17
 github.com/pulumi/pulumi-azure-native-sdk/resources
+# github.com/pulumi/pulumi-azure-native-sdk/resources/v2 v2.5.0
+## explicit; go 1.17
 # github.com/pulumi/pulumi-azure-native-sdk/storage v1.104.0
 ## explicit; go 1.17
 github.com/pulumi/pulumi-azure-native-sdk/storage
+# github.com/pulumi/pulumi-azure-native-sdk/storage/v2 v2.5.0
+## explicit; go 1.17
+# github.com/pulumi/pulumi-azure-native-sdk/v2 v2.5.0
+## explicit; go 1.17
 # github.com/pulumi/pulumi-command/sdk v0.8.2
 ## explicit; go 1.19
 github.com/pulumi/pulumi-command/sdk/go/command/internal

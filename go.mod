@@ -3,8 +3,11 @@ module github.com/crc/crc-cloud
 go 1.19
 
 require (
+	github.com/pulumi/pulumi-aws/sdk/v5 v5.42.0
 	github.com/pulumi/pulumi-azure-native-sdk/resources v1.104.0
+	github.com/pulumi/pulumi-azure-native-sdk/resources/v2 v2.5.0
 	github.com/pulumi/pulumi-azure-native-sdk/storage v1.104.0
+	github.com/pulumi/pulumi-azure-native-sdk/storage/v2 v2.5.0
 	github.com/pulumi/pulumi-tls/sdk/v4 v4.10.0
 	github.com/pulumi/pulumi/sdk/v3 v3.80.0
 	github.com/spf13/cobra v1.7.0
@@ -15,7 +18,6 @@ require (
 require (
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
-	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
@@ -37,6 +39,7 @@ require (
 	github.com/muesli/termenv v0.15.1 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pulumi/pulumi-azure-native-sdk v1.104.0 // indirect
+	github.com/pulumi/pulumi-azure-native-sdk/v2 v2.5.0 // indirect
 	github.com/skeema/knownhosts v1.2.0 // indirect
 	github.com/zclconf/go-cty v1.14.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
@@ -77,7 +80,6 @@ require (
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pkg/term v1.1.0 // indirect
-	github.com/pulumi/pulumi-aws/sdk/v5 v5.42.0
 	github.com/pulumi/pulumi-command/sdk v0.8.2
 	github.com/pulumi/pulumi-random/sdk/v4 v4.13.2
 	github.com/rivo/uniseg v0.4.4 // indirect
