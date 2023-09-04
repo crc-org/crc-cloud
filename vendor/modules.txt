@@ -58,7 +58,7 @@ github.com/charmbracelet/bubbles/textinput
 # github.com/charmbracelet/bubbletea v0.24.2
 ## explicit; go 1.17
 github.com/charmbracelet/bubbletea
-# github.com/charmbracelet/lipgloss v0.7.1
+# github.com/charmbracelet/lipgloss v0.8.0
 ## explicit; go 1.17
 github.com/charmbracelet/lipgloss
 # github.com/cheggaaa/pb v1.0.29
@@ -78,7 +78,7 @@ github.com/cloudflare/circl/math/mlsbset
 github.com/cloudflare/circl/sign
 github.com/cloudflare/circl/sign/ed25519
 github.com/cloudflare/circl/sign/ed448
-# github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81
+# github.com/containerd/console v1.0.4-0.20230706203907-8f6c4e4faef5
 ## explicit; go 1.13
 github.com/containerd/console
 # github.com/djherbis/times v1.5.0
@@ -235,7 +235,7 @@ github.com/mitchellh/go-wordwrap
 # github.com/mitchellh/mapstructure v1.5.0
 ## explicit; go 1.14
 github.com/mitchellh/mapstructure
-# github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b
+# github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6
 ## explicit; go 1.17
 github.com/muesli/ansi
 github.com/muesli/ansi/compressor
@@ -248,7 +248,7 @@ github.com/muesli/reflow/ansi
 github.com/muesli/reflow/truncate
 github.com/muesli/reflow/wordwrap
 github.com/muesli/reflow/wrap
-# github.com/muesli/termenv v0.15.1
+# github.com/muesli/termenv v0.15.2
 ## explicit; go 1.17
 github.com/muesli/termenv
 # github.com/nxadm/tail v1.4.8
@@ -292,8 +292,6 @@ github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2
 github.com/pulumi/pulumi-aws/sdk/v6/go/aws/iam
 github.com/pulumi/pulumi-aws/sdk/v6/go/aws/internal
 github.com/pulumi/pulumi-aws/sdk/v6/go/aws/s3
-# github.com/pulumi/pulumi-azure-native-sdk v1.104.0
-## explicit; go 1.17
 # github.com/pulumi/pulumi-azure-native-sdk/resources/v2 v2.5.0
 ## explicit; go 1.17
 github.com/pulumi/pulumi-azure-native-sdk/resources/v2
