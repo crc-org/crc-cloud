@@ -3,10 +3,8 @@ module github.com/crc/crc-cloud
 go 1.19
 
 require (
-	github.com/pulumi/pulumi-aws/sdk/v5 v5.42.0
-	github.com/pulumi/pulumi-azure-native-sdk/resources v1.104.0
+	github.com/pulumi/pulumi-aws/sdk/v6 v6.0.4
 	github.com/pulumi/pulumi-azure-native-sdk/resources/v2 v2.5.0
-	github.com/pulumi/pulumi-azure-native-sdk/storage v1.104.0
 	github.com/pulumi/pulumi-azure-native-sdk/storage/v2 v2.5.0
 	github.com/pulumi/pulumi-tls/sdk/v4 v4.10.0
 	github.com/pulumi/pulumi/sdk/v3 v3.80.0

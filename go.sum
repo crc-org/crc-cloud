@@ -277,6 +277,8 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
 github.com/pulumi/pulumi-aws/sdk/v5 v5.42.0 h1:QdJvPoUklXdNL8faCOuCrv7qmMNp68jiewbGH8ZboUU=
 github.com/pulumi/pulumi-aws/sdk/v5 v5.42.0/go.mod h1:qFeKTFSNIlMHotu9ntOWFjJBHtCiUhJeaiUB/0nVwXk=
+github.com/pulumi/pulumi-aws/sdk/v6 v6.0.4 h1:VSLvAi+/kZt0k+KjMZ9zd8/NJ5w3vsS0RUKX3vwFa1A=
+github.com/pulumi/pulumi-aws/sdk/v6 v6.0.4/go.mod h1:amR/FWXmTqZI5ZtR/5JASorWmOqAIif+FVBSBEZ0uOw=
 github.com/pulumi/pulumi-azure-native-sdk v1.104.0 h1:vyD4PvKSOkwL1z9WTis3ZE9XC73UM/7AyMNek4Vm1+E=
 github.com/pulumi/pulumi-azure-native-sdk v1.104.0/go.mod h1:ZfkbJPR8poiJgy4IlNaa2NBjHLW37nsLY2BIbZp3lHc=
 github.com/pulumi/pulumi-azure-native-sdk/resources v1.104.0 h1:oaqgOMuGswJooAyFFWkSn9r/m1IBVBxbEL7LIXgTjqI=

@@ -1,6 +1,6 @@
 package sg
 
-import "github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ec2"
+import "github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2"
 
 type IngressRule struct {
 	Description string

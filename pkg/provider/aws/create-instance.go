@@ -10,7 +10,7 @@ import (
 	providerAPI "github.com/crc/crc-cloud/pkg/manager/provider/api"
 	"github.com/crc/crc-cloud/pkg/provider/aws/sg"
 	"github.com/crc/crc-cloud/pkg/util"
-	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ec2"
+	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2"
 	"github.com/pulumi/pulumi-tls/sdk/v4/go/tls"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
