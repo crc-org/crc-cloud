@@ -5,7 +5,7 @@ WORKDIR /workspace
 COPY . .
 
 # renovate: datasource=github-releases depName=pulumi/pulumi
-ENV PULUMI_VERSION=v3.80.0
+ENV PULUMI_VERSION=v3.81.0
 ENV PULUMI_URL https://github.com/pulumi/pulumi/releases/download/${PULUMI_VERSION}/pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
 RUN make build \
@@ -37,7 +37,7 @@ ARG PULUMI_RANDOM_VERSION=v4.13.2
 ARG PULUMI_AWS_VERSION=v6.0.4
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-azure-native
-ARG PULUMI_AZURE_NATIVE_VERSION=v2.5.0
+ARG PULUMI_AZURE_NATIVE_VERSION=v2.6.0
 
 RUN microdnf install -y python3 python3-pip zstd && \
     pip install -r requirements.txt && \
