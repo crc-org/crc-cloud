@@ -19,7 +19,7 @@ type context struct {
 
 var c context
 
-func Init(projectName string, tags map[string]string) {
+func Create(projectName string, tags map[string]string) {
 	c = context{
 		projectName: projectName,
 		tags: maps.Convert(tags,

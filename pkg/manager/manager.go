@@ -24,7 +24,7 @@ func Import(projectName, backerURL, outputFoler string,
 	bundleDownloadURL, shasumfileDownloadURL string, provider Provider,
 	tags map[string]string) error {
 	// Initialize context
-	context.Init(projectName, tags)
+	context.Create(projectName, tags)
 	// Pick the import function according to the provider
 	p, err := getProvider(provider)
 	if err != nil {
@@ -72,7 +72,7 @@ func Create(projectName, backerURL, outputFoler string,
 	tags map[string]string) error {
 
 	// Initialize context
-	context.Init(projectName, tags)
+	context.Create(projectName, tags)
 
 	// this will return a provider which implements the api.Provider interface
 	p, err := getProvider(provider)
