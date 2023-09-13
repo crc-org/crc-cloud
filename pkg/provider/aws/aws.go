@@ -22,7 +22,7 @@ func (a *Provider) ImportImageRunFunc(projectName, bundleDownloadURL, shasumfile
 	if err != nil {
 		return nil, err
 	}
-	return (pulumi.RunFunc)(r.runFunc), nil
+	return r.runFunc, nil
 }
 
 func (a *Provider) CreateParams() map[string]string {
@@ -43,5 +43,5 @@ func (a *Provider) CreateRunFunc(projectName, bootingPrivateKeyFilePath, ocpPull
 	if err != nil {
 		return nil, err
 	}
-	return (pulumi.RunFunc)(r.runFunc), nil
+	return r.runFunc, nil
 }
