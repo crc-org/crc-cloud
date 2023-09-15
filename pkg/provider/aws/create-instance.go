@@ -9,6 +9,7 @@ import (
 	"github.com/crc/crc-cloud/pkg/manager/context"
 	providerAPI "github.com/crc/crc-cloud/pkg/manager/provider/api"
 	"github.com/crc/crc-cloud/pkg/provider/aws/sg"
+	"github.com/crc/crc-cloud/pkg/provider/constants"
 	"github.com/crc/crc-cloud/pkg/util"
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2"
 	"github.com/pulumi/pulumi-tls/sdk/v4/go/tls"
@@ -106,9 +107,9 @@ func (r createRequest) runFunc(ctx *pulumi.Context) error {
 
 func securityGroupsIds(ctx *pulumi.Context) (pulumi.StringArrayInput, error) {
 	ingressRules := []sg.IngressRule{
-		{Description: "SSH", FromPort: 22, ToPort: 22, Protocol: "tcp"},
-		{Description: "Cluster API", FromPort: 443, ToPort: 443, Protocol: "tcp"},
-		{Description: "Console", FromPort: 6443, ToPort: 6443, Protocol: "tcp"}}
+		{Description: "SSH", FromPort: constants.SSHPort, ToPort: constants.SSHPort, Protocol: "tcp"},
+		{Description: "Cluster API", FromPort: constants.HTTPSPort, ToPort: constants.HTTPSPort, Protocol: "tcp"},
+		{Description: "Console", FromPort: constants.APIPort, ToPort: constants.APIPort, Protocol: "tcp"}}
 	sgID, err := sg.Create(ctx, ingressRules, "OpenshiftLocal-OCP", "OpenshiftLocal OCP ingress rules")
 	if err != nil {
 		return nil, err

@@ -2,14 +2,16 @@ package gcp
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/crc/crc-cloud/pkg/bundle"
 	"github.com/crc/crc-cloud/pkg/bundle/setup"
 	providerAPI "github.com/crc/crc-cloud/pkg/manager/provider/api"
+	"github.com/crc/crc-cloud/pkg/provider/constants"
 	"github.com/crc/crc-cloud/pkg/util"
 	"github.com/pulumi/pulumi-gcp/sdk/v6/go/gcp/compute"
 	"github.com/pulumi/pulumi-tls/sdk/v4/go/tls"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
-	"strconv"
 )
 
 type createRequest struct {
@@ -77,7 +79,10 @@ func (r createRequest) runFunc(ctx *pulumi.Context) error {
 			compute.FirewallAllowArgs{
 				Protocol: pulumi.String("tcp"),
 				Ports: pulumi.ToStringArray([]string{
-					"22", "443", "6443", "80",
+					strconv.Itoa(constants.HTTPPort),
+					strconv.Itoa(constants.HTTPSPort),
+					strconv.Itoa(constants.APIPort),
+					strconv.Itoa(constants.SSHPort),
 				}),
 			},
 		},
