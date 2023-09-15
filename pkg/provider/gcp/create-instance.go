@@ -9,8 +9,8 @@ import (
 	providerAPI "github.com/crc/crc-cloud/pkg/manager/provider/api"
 	"github.com/crc/crc-cloud/pkg/provider/constants"
 	"github.com/crc/crc-cloud/pkg/util"
+	crctls "github.com/crc/crc-cloud/pkg/util/tls"
 	"github.com/pulumi/pulumi-gcp/sdk/v6/go/gcp/compute"
-	"github.com/pulumi/pulumi-tls/sdk/v4/go/tls"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -51,7 +51,7 @@ func fillCreateRequest(projectName, bootingPrivateKeyFilePath, ocpPullSecretFile
 }
 
 func (r createRequest) runFunc(ctx *pulumi.Context) error {
-	privateKey, err := createKey(ctx)
+	privateKey, err := crctls.CreateKey(ctx)
 	if err != nil {
 		return err
 	}
@@ -158,18 +158,4 @@ func (r createRequest) runFunc(ctx *pulumi.Context) error {
 	ctx.Export(providerAPI.OutputUsername, pulumi.String(bundle.ImageUsername))
 	ctx.Export(providerAPI.OutputPassword, password.Result)
 	return nil
-}
-
-func createKey(ctx *pulumi.Context) (*tls.PrivateKey, error) {
-	pk, err := tls.NewPrivateKey(
-		ctx,
-		"OpenshiftLocal-OCP",
-		&tls.PrivateKeyArgs{
-			Algorithm: pulumi.String("RSA"),
-			RsaBits:   pulumi.Int(4096),
-		})
-	if err != nil {
-		return nil, err
-	}
-	return pk, nil
 }
