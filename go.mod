@@ -6,6 +6,7 @@ require (
 	github.com/pulumi/pulumi-aws/sdk/v6 v6.4.0
 	github.com/pulumi/pulumi-azure-native-sdk/resources/v2 v2.10.0
 	github.com/pulumi/pulumi-azure-native-sdk/storage/v2 v2.10.0
+	github.com/pulumi/pulumi-gcp/sdk/v6 v6.65.0
 	github.com/pulumi/pulumi-tls/sdk/v4 v4.11.0
 	github.com/pulumi/pulumi/sdk/v3 v3.87.0
 	github.com/spf13/cobra v1.7.0
@@ -99,7 +100,7 @@ require (
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/crypto v0.16.0 // indirect
-	golang.org/x/exp v0.0.0-20231127185646-65229373498e
+	golang.org/x/exp v0.0.0-20231127185646-65229373498e // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/term v0.15.0 // indirect

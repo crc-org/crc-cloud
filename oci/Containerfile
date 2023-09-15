@@ -36,6 +36,9 @@ ARG PULUMI_RANDOM_VERSION=v4.14.0
 # renovate: datasource=github-releases depName=pulumi/pulumi-aws
 ARG PULUMI_AWS_VERSION=v6.13.3
 
+# renovate: datasource=github-releases depName=pulumi/pulumi-gcp
+ARG PULUMI_GCP_VERSION=v6.65.0
+
 # renovate: datasource=github-releases depName=pulumi/pulumi-azure-native
 ARG PULUMI_AZURE_NATIVE_VERSION=v2.21.2
 
@@ -45,6 +48,7 @@ RUN dnf install -y python3 python3-pip zstd qemu-img && \
     pulumi plugin install resource tls ${PULUMI_TLS_VERSION} && \
     pulumi plugin install resource random ${PULUMI_RANDOM_VERSION} && \
     pulumi plugin install resource aws ${PULUMI_AWS_VERSION} && \
-    pulumi plugin install resource azure-native ${PULUMI_AZURE_NATIVE_VERSION}
+    pulumi plugin install resource azure-native ${PULUMI_AZURE_NATIVE_VERSION} && \
+    pulumi plugin install resource gcp ${PULUMI_GCP_VERSION}
 
 ENTRYPOINT [ "crc-cloud" ]
