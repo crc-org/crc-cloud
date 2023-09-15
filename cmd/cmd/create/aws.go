@@ -26,7 +26,7 @@ func getAWSProviderCmd() *cobra.Command {
 			}
 			// Provider dependent params
 			providerParams := make(map[string]string)
-			for name := range manager.CreateParams() {
+			for name := range manager.CreateParams(manager.AWS) {
 				if viper.IsSet(name) {
 					providerParams[name] = viper.GetString(name)
 				}
@@ -49,7 +49,7 @@ func getAWSProviderCmd() *cobra.Command {
 
 	flagSet := pflag.NewFlagSet(awsProviderName, pflag.ExitOnError)
 	// Provider dependent params
-	for name, description := range manager.CreateParams() {
+	for name, description := range manager.CreateParams(manager.AWS) {
 		flagSet.StringP(name, "", "", description)
 	}
 

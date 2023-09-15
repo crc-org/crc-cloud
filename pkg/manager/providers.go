@@ -22,8 +22,3 @@ func getProvider(provider Provider) (providerAPI.Provider, error) {
 	}
 	return nil, fmt.Errorf("%s: provider not supported", provider)
 }
-
-func getSupportedProviders() (sp []providerAPI.Provider) {
-	sp = append(sp, aws.GetProvider())
-	return
-}
