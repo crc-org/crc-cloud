@@ -4,7 +4,6 @@ import (
 	"github.com/crc/crc-cloud/pkg/manager/context"
 	providerAPI "github.com/crc/crc-cloud/pkg/manager/provider/api"
 	"github.com/pulumi/pulumi/sdk/v3/go/auto"
-	"golang.org/x/exp/maps"
 )
 
 const (
@@ -12,12 +11,9 @@ const (
 	stackImportImage string = "crcCloud-ImageImport"
 )
 
-func CreateParams() (params map[string]string) {
-	params = map[string]string{}
-	for _, p := range getSupportedProviders() {
-		maps.Copy(params, p.CreateParams())
-	}
-	return
+func CreateParams(provider Provider) map[string]string {
+	p, _ := getProvider(provider)
+	return p.CreateParams()
 }
 
 func Import(projectName, backerURL, outputFoler string,
