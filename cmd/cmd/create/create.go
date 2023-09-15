@@ -34,6 +34,7 @@ func GetCreateCmd() *cobra.Command {
 	createCmd.PersistentFlags().AddFlagSet(flagSet)
 
 	createCmd.AddCommand(getAWSProviderCmd())
+	createCmd.AddCommand(getGCPProviderCmd())
 
 	return createCmd
 }

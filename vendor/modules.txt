@@ -309,6 +309,10 @@ github.com/pulumi/pulumi-azure-native-sdk/v2/utilities
 github.com/pulumi/pulumi-command/sdk/go/command/internal
 github.com/pulumi/pulumi-command/sdk/go/command/local
 github.com/pulumi/pulumi-command/sdk/go/command/remote
+# github.com/pulumi/pulumi-gcp/sdk/v6 v6.65.0
+## explicit; go 1.21
+github.com/pulumi/pulumi-gcp/sdk/v6/go/gcp/compute
+github.com/pulumi/pulumi-gcp/sdk/v6/go/gcp/internal
 # github.com/pulumi/pulumi-random/sdk/v4 v4.14.0
 ## explicit; go 1.21
 github.com/pulumi/pulumi-random/sdk/v4/go/random
@@ -489,7 +493,6 @@ golang.org/x/crypto/ssh/knownhosts
 # golang.org/x/exp v0.0.0-20231127185646-65229373498e
 ## explicit; go 1.20
 golang.org/x/exp/constraints
-golang.org/x/exp/maps
 golang.org/x/exp/slices
 golang.org/x/exp/slog
 golang.org/x/exp/slog/internal
