@@ -9,11 +9,14 @@ import (
 
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/internal"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
-// `ec2.getVpcIamPoolCidrs` provides details about an IPAM pool.
+// `ec2.getVpcIpamPoolCidrs` provides details about an IPAM pool.
 //
 // This resource can prove useful when an ipam pool was shared to your account and you want to know all (or a filtered list) of the CIDRs that are provisioned into the pool.
+//
+// Deprecated: aws.ec2/getvpciampoolcidrs.getVpcIamPoolCidrs has been deprecated in favor of aws.ec2/getvpcipampoolcidrs.getVpcIpamPoolCidrs
 func GetVpcIamPoolCidrs(ctx *pulumi.Context, args *GetVpcIamPoolCidrsArgs, opts ...pulumi.InvokeOption) (*GetVpcIamPoolCidrsResult, error) {
 	opts = internal.PkgInvokeDefaultOpts(opts)
 	var rv GetVpcIamPoolCidrsResult
@@ -80,6 +83,12 @@ func (o GetVpcIamPoolCidrsResultOutput) ToGetVpcIamPoolCidrsResultOutput() GetVp
 
 func (o GetVpcIamPoolCidrsResultOutput) ToGetVpcIamPoolCidrsResultOutputWithContext(ctx context.Context) GetVpcIamPoolCidrsResultOutput {
 	return o
+}
+
+func (o GetVpcIamPoolCidrsResultOutput) ToOutput(ctx context.Context) pulumix.Output[GetVpcIamPoolCidrsResult] {
+	return pulumix.Output[GetVpcIamPoolCidrsResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 func (o GetVpcIamPoolCidrsResultOutput) Filters() GetVpcIamPoolCidrsFilterArrayOutput {
