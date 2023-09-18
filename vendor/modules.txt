@@ -81,6 +81,9 @@ github.com/cloudflare/circl/sign/ed448
 # github.com/containerd/console v1.0.4-0.20230706203907-8f6c4e4faef5
 ## explicit; go 1.13
 github.com/containerd/console
+# github.com/cyphar/filepath-securejoin v0.2.4
+## explicit; go 1.13
+github.com/cyphar/filepath-securejoin
 # github.com/djherbis/times v1.5.0
 ## explicit; go 1.16
 github.com/djherbis/times
@@ -101,16 +104,16 @@ github.com/go-git/gcfg
 github.com/go-git/gcfg/scanner
 github.com/go-git/gcfg/token
 github.com/go-git/gcfg/types
-# github.com/go-git/go-billy/v5 v5.4.1
-## explicit; go 1.13
+# github.com/go-git/go-billy/v5 v5.5.0
+## explicit; go 1.19
 github.com/go-git/go-billy/v5
 github.com/go-git/go-billy/v5/helper/chroot
 github.com/go-git/go-billy/v5/helper/polyfill
 github.com/go-git/go-billy/v5/memfs
 github.com/go-git/go-billy/v5/osfs
 github.com/go-git/go-billy/v5/util
-# github.com/go-git/go-git/v5 v5.8.1
-## explicit; go 1.18
+# github.com/go-git/go-git/v5 v5.9.0
+## explicit; go 1.19
 github.com/go-git/go-git/v5
 github.com/go-git/go-git/v5/config
 github.com/go-git/go-git/v5/internal/path_util
@@ -285,20 +288,20 @@ github.com/pkg/errors
 # github.com/pkg/term v1.1.0
 ## explicit; go 1.14
 github.com/pkg/term/termios
-# github.com/pulumi/pulumi-aws/sdk/v6 v6.0.4
-## explicit; go 1.17
+# github.com/pulumi/pulumi-aws/sdk/v6 v6.1.0
+## explicit; go 1.21
 github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ebs
 github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2
 github.com/pulumi/pulumi-aws/sdk/v6/go/aws/iam
 github.com/pulumi/pulumi-aws/sdk/v6/go/aws/internal
 github.com/pulumi/pulumi-aws/sdk/v6/go/aws/s3
-# github.com/pulumi/pulumi-azure-native-sdk/resources/v2 v2.6.0
+# github.com/pulumi/pulumi-azure-native-sdk/resources/v2 v2.8.0
 ## explicit; go 1.17
 github.com/pulumi/pulumi-azure-native-sdk/resources/v2
-# github.com/pulumi/pulumi-azure-native-sdk/storage/v2 v2.6.0
+# github.com/pulumi/pulumi-azure-native-sdk/storage/v2 v2.8.0
 ## explicit; go 1.17
 github.com/pulumi/pulumi-azure-native-sdk/storage/v2
-# github.com/pulumi/pulumi-azure-native-sdk/v2 v2.6.0
+# github.com/pulumi/pulumi-azure-native-sdk/v2 v2.8.0
 ## explicit; go 1.17
 github.com/pulumi/pulumi-azure-native-sdk/v2/utilities
 # github.com/pulumi/pulumi-command/sdk v0.8.2
@@ -306,13 +309,13 @@ github.com/pulumi/pulumi-azure-native-sdk/v2/utilities
 github.com/pulumi/pulumi-command/sdk/go/command/internal
 github.com/pulumi/pulumi-command/sdk/go/command/local
 github.com/pulumi/pulumi-command/sdk/go/command/remote
-# github.com/pulumi/pulumi-random/sdk/v4 v4.13.2
+# github.com/pulumi/pulumi-random/sdk/v4 v4.13.4
 ## explicit; go 1.19
 github.com/pulumi/pulumi-random/sdk/v4/go/random
 # github.com/pulumi/pulumi-tls/sdk/v4 v4.10.0
 ## explicit; go 1.17
 github.com/pulumi/pulumi-tls/sdk/v4/go/tls
-# github.com/pulumi/pulumi/sdk/v3 v3.81.0
+# github.com/pulumi/pulumi/sdk/v3 v3.83.0
 ## explicit; go 1.18
 github.com/pulumi/pulumi/sdk/v3/go/auto
 github.com/pulumi/pulumi/sdk/v3/go/auto/debug
@@ -533,10 +536,10 @@ golang.org/x/tools/internal/pkgbits
 golang.org/x/tools/internal/tokeninternal
 golang.org/x/tools/internal/typeparams
 golang.org/x/tools/internal/typesinternal
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20230822172742-b8732ec3820d
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20230913181813-007df8e322eb
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.58.0
+# google.golang.org/grpc v1.58.1
 ## explicit; go 1.19
 google.golang.org/grpc
 google.golang.org/grpc/attributes
