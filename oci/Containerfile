@@ -1,11 +1,11 @@
-FROM registry.access.redhat.com/ubi9/go-toolset:1.19.10-14@sha256:620d6e757aa9469cfdbcf9a5ca8356cef3964f447c82994b2cd26937ce51d44b as builder
+FROM registry.access.redhat.com/ubi9/go-toolset:1.19.10-14.1695131433@sha256:d55ff49e9b6907d5f50290f8bcffa15657470da009a5f982202780c4122ce2dd as builder
 
 USER root
 WORKDIR /workspace
 COPY . .
 
 # renovate: datasource=github-releases depName=pulumi/pulumi
-ENV PULUMI_VERSION=v3.83.0
+ENV PULUMI_VERSION=v3.85.0
 ENV PULUMI_URL https://github.com/pulumi/pulumi/releases/download/${PULUMI_VERSION}/pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
 RUN make build \
@@ -25,16 +25,16 @@ COPY requirements.txt ./
 USER root
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-command
-ARG PULUMI_COMMAND_VERSION=v0.8.2
+ARG PULUMI_COMMAND_VERSION=v0.9.1
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-tls
-ARG PULUMI_TLS_VERSION=v4.10.0
+ARG PULUMI_TLS_VERSION=v4.11.0
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-random
-ARG PULUMI_RANDOM_VERSION=v4.13.4
+ARG PULUMI_RANDOM_VERSION=v4.14.0
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-aws
-ARG PULUMI_AWS_VERSION=v6.1.0
+ARG PULUMI_AWS_VERSION=v6.2.1
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-azure-native
 ARG PULUMI_AZURE_NATIVE_VERSION=v2.8.0

@@ -7,10 +7,13 @@ import (
 	"context"
 	"reflect"
 
+	"github.com/pulumi/pulumi-tls/sdk/v4/go/tls/internal"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 func GetCertificate(ctx *pulumi.Context, args *GetCertificateArgs, opts ...pulumi.InvokeOption) (*GetCertificateResult, error) {
+	opts = internal.PkgInvokeDefaultOpts(opts)
 	var rv GetCertificateResult
 	err := ctx.Invoke("tls:index/getCertificate:getCertificate", args, &rv, opts...)
 	if err != nil {
@@ -83,6 +86,12 @@ func (o GetCertificateResultOutput) ToGetCertificateResultOutput() GetCertificat
 
 func (o GetCertificateResultOutput) ToGetCertificateResultOutputWithContext(ctx context.Context) GetCertificateResultOutput {
 	return o
+}
+
+func (o GetCertificateResultOutput) ToOutput(ctx context.Context) pulumix.Output[GetCertificateResult] {
+	return pulumix.Output[GetCertificateResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // The certificates protecting the site, with the root of the chain first.
