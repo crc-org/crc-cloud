@@ -7,8 +7,10 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/pkg/errors"
+	"errors"
+	"github.com/pulumi/pulumi-tls/sdk/v4/go/tls/internal"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 type SelfSignedCert struct {
@@ -16,11 +18,7 @@ type SelfSignedCert struct {
 
 	// List of key usages allowed for the issued certificate. Values are defined in [RFC 5280](https://datatracker.ietf.org/doc/html/rfc5280) and combine flags defined by both [Key Usages](https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.3) and [Extended Key Usages](https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12). Accepted values: `anyExtended`, `certSigning`, `clientAuth`, `codeSigning`, `contentCommitment`, `crlSigning`, `dataEncipherment`, `decipherOnly`, `digitalSignature`, `emailProtection`, `encipherOnly`, `ipsecEndSystem`, `ipsecTunnel`, `ipsecUser`, `keyAgreement`, `keyEncipherment`, `microsoftCommercialCodeSigning`, `microsoftKernelCodeSigning`, `microsoftServerGatedCrypto`, `netscapeServerGatedCrypto`, `ocspSigning`, `serverAuth`, `timestamping`.
 	AllowedUses pulumi.StringArrayOutput `pulumi:"allowedUses"`
-	// Certificate data in [PEM (RFC 1421)](https://datatracker.ietf.org/doc/html/rfc1421) format. **NOTE**: the
-	// [underlying](https://pkg.go.dev/encoding/pem#Encode)
-	// [libraries](https://pkg.go.dev/golang.org/x/crypto/ssh#MarshalAuthorizedKey) that generate this value append a `\n` at
-	// the end of the PEM. In case this disrupts your use case, we recommend using
-	// [`trimspace()`](https://www.terraform.io/language/functions/trimspace).
+	// Certificate data in PEM (RFC 1421).
 	CertPem pulumi.StringOutput `pulumi:"certPem"`
 	// List of DNS names for which a certificate is being requested (i.e. certificate subjects).
 	DnsNames pulumi.StringArrayOutput `pulumi:"dnsNames"`
@@ -83,6 +81,7 @@ func NewSelfSignedCert(ctx *pulumi.Context,
 		"privateKeyPem",
 	})
 	opts = append(opts, secrets)
+	opts = internal.PkgResourceDefaultOpts(opts)
 	var resource SelfSignedCert
 	err := ctx.RegisterResource("tls:index/selfSignedCert:SelfSignedCert", name, args, &resource, opts...)
 	if err != nil {
@@ -107,11 +106,7 @@ func GetSelfSignedCert(ctx *pulumi.Context,
 type selfSignedCertState struct {
 	// List of key usages allowed for the issued certificate. Values are defined in [RFC 5280](https://datatracker.ietf.org/doc/html/rfc5280) and combine flags defined by both [Key Usages](https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.3) and [Extended Key Usages](https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12). Accepted values: `anyExtended`, `certSigning`, `clientAuth`, `codeSigning`, `contentCommitment`, `crlSigning`, `dataEncipherment`, `decipherOnly`, `digitalSignature`, `emailProtection`, `encipherOnly`, `ipsecEndSystem`, `ipsecTunnel`, `ipsecUser`, `keyAgreement`, `keyEncipherment`, `microsoftCommercialCodeSigning`, `microsoftKernelCodeSigning`, `microsoftServerGatedCrypto`, `netscapeServerGatedCrypto`, `ocspSigning`, `serverAuth`, `timestamping`.
 	AllowedUses []string `pulumi:"allowedUses"`
-	// Certificate data in [PEM (RFC 1421)](https://datatracker.ietf.org/doc/html/rfc1421) format. **NOTE**: the
-	// [underlying](https://pkg.go.dev/encoding/pem#Encode)
-	// [libraries](https://pkg.go.dev/golang.org/x/crypto/ssh#MarshalAuthorizedKey) that generate this value append a `\n` at
-	// the end of the PEM. In case this disrupts your use case, we recommend using
-	// [`trimspace()`](https://www.terraform.io/language/functions/trimspace).
+	// Certificate data in PEM (RFC 1421).
 	CertPem *string `pulumi:"certPem"`
 	// List of DNS names for which a certificate is being requested (i.e. certificate subjects).
 	DnsNames []string `pulumi:"dnsNames"`
@@ -154,11 +149,7 @@ type selfSignedCertState struct {
 type SelfSignedCertState struct {
 	// List of key usages allowed for the issued certificate. Values are defined in [RFC 5280](https://datatracker.ietf.org/doc/html/rfc5280) and combine flags defined by both [Key Usages](https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.3) and [Extended Key Usages](https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12). Accepted values: `anyExtended`, `certSigning`, `clientAuth`, `codeSigning`, `contentCommitment`, `crlSigning`, `dataEncipherment`, `decipherOnly`, `digitalSignature`, `emailProtection`, `encipherOnly`, `ipsecEndSystem`, `ipsecTunnel`, `ipsecUser`, `keyAgreement`, `keyEncipherment`, `microsoftCommercialCodeSigning`, `microsoftKernelCodeSigning`, `microsoftServerGatedCrypto`, `netscapeServerGatedCrypto`, `ocspSigning`, `serverAuth`, `timestamping`.
 	AllowedUses pulumi.StringArrayInput
-	// Certificate data in [PEM (RFC 1421)](https://datatracker.ietf.org/doc/html/rfc1421) format. **NOTE**: the
-	// [underlying](https://pkg.go.dev/encoding/pem#Encode)
-	// [libraries](https://pkg.go.dev/golang.org/x/crypto/ssh#MarshalAuthorizedKey) that generate this value append a `\n` at
-	// the end of the PEM. In case this disrupts your use case, we recommend using
-	// [`trimspace()`](https://www.terraform.io/language/functions/trimspace).
+	// Certificate data in PEM (RFC 1421).
 	CertPem pulumi.StringPtrInput
 	// List of DNS names for which a certificate is being requested (i.e. certificate subjects).
 	DnsNames pulumi.StringArrayInput
@@ -296,6 +287,12 @@ func (i *SelfSignedCert) ToSelfSignedCertOutputWithContext(ctx context.Context) 
 	return pulumi.ToOutputWithContext(ctx, i).(SelfSignedCertOutput)
 }
 
+func (i *SelfSignedCert) ToOutput(ctx context.Context) pulumix.Output[*SelfSignedCert] {
+	return pulumix.Output[*SelfSignedCert]{
+		OutputState: i.ToSelfSignedCertOutputWithContext(ctx).OutputState,
+	}
+}
+
 // SelfSignedCertArrayInput is an input type that accepts SelfSignedCertArray and SelfSignedCertArrayOutput values.
 // You can construct a concrete instance of `SelfSignedCertArrayInput` via:
 //
@@ -319,6 +316,12 @@ func (i SelfSignedCertArray) ToSelfSignedCertArrayOutput() SelfSignedCertArrayOu
 
 func (i SelfSignedCertArray) ToSelfSignedCertArrayOutputWithContext(ctx context.Context) SelfSignedCertArrayOutput {
 	return pulumi.ToOutputWithContext(ctx, i).(SelfSignedCertArrayOutput)
+}
+
+func (i SelfSignedCertArray) ToOutput(ctx context.Context) pulumix.Output[[]*SelfSignedCert] {
+	return pulumix.Output[[]*SelfSignedCert]{
+		OutputState: i.ToSelfSignedCertArrayOutputWithContext(ctx).OutputState,
+	}
 }
 
 // SelfSignedCertMapInput is an input type that accepts SelfSignedCertMap and SelfSignedCertMapOutput values.
@@ -346,6 +349,12 @@ func (i SelfSignedCertMap) ToSelfSignedCertMapOutputWithContext(ctx context.Cont
 	return pulumi.ToOutputWithContext(ctx, i).(SelfSignedCertMapOutput)
 }
 
+func (i SelfSignedCertMap) ToOutput(ctx context.Context) pulumix.Output[map[string]*SelfSignedCert] {
+	return pulumix.Output[map[string]*SelfSignedCert]{
+		OutputState: i.ToSelfSignedCertMapOutputWithContext(ctx).OutputState,
+	}
+}
+
 type SelfSignedCertOutput struct{ *pulumi.OutputState }
 
 func (SelfSignedCertOutput) ElementType() reflect.Type {
@@ -360,16 +369,18 @@ func (o SelfSignedCertOutput) ToSelfSignedCertOutputWithContext(ctx context.Cont
 	return o
 }
 
+func (o SelfSignedCertOutput) ToOutput(ctx context.Context) pulumix.Output[*SelfSignedCert] {
+	return pulumix.Output[*SelfSignedCert]{
+		OutputState: o.OutputState,
+	}
+}
+
 // List of key usages allowed for the issued certificate. Values are defined in [RFC 5280](https://datatracker.ietf.org/doc/html/rfc5280) and combine flags defined by both [Key Usages](https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.3) and [Extended Key Usages](https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.12). Accepted values: `anyExtended`, `certSigning`, `clientAuth`, `codeSigning`, `contentCommitment`, `crlSigning`, `dataEncipherment`, `decipherOnly`, `digitalSignature`, `emailProtection`, `encipherOnly`, `ipsecEndSystem`, `ipsecTunnel`, `ipsecUser`, `keyAgreement`, `keyEncipherment`, `microsoftCommercialCodeSigning`, `microsoftKernelCodeSigning`, `microsoftServerGatedCrypto`, `netscapeServerGatedCrypto`, `ocspSigning`, `serverAuth`, `timestamping`.
 func (o SelfSignedCertOutput) AllowedUses() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v *SelfSignedCert) pulumi.StringArrayOutput { return v.AllowedUses }).(pulumi.StringArrayOutput)
 }
 
-// Certificate data in [PEM (RFC 1421)](https://datatracker.ietf.org/doc/html/rfc1421) format. **NOTE**: the
-// [underlying](https://pkg.go.dev/encoding/pem#Encode)
-// [libraries](https://pkg.go.dev/golang.org/x/crypto/ssh#MarshalAuthorizedKey) that generate this value append a `\n` at
-// the end of the PEM. In case this disrupts your use case, we recommend using
-// [`trimspace()`](https://www.terraform.io/language/functions/trimspace).
+// Certificate data in PEM (RFC 1421).
 func (o SelfSignedCertOutput) CertPem() pulumi.StringOutput {
 	return o.ApplyT(func(v *SelfSignedCert) pulumi.StringOutput { return v.CertPem }).(pulumi.StringOutput)
 }
@@ -466,6 +477,12 @@ func (o SelfSignedCertArrayOutput) ToSelfSignedCertArrayOutputWithContext(ctx co
 	return o
 }
 
+func (o SelfSignedCertArrayOutput) ToOutput(ctx context.Context) pulumix.Output[[]*SelfSignedCert] {
+	return pulumix.Output[[]*SelfSignedCert]{
+		OutputState: o.OutputState,
+	}
+}
+
 func (o SelfSignedCertArrayOutput) Index(i pulumi.IntInput) SelfSignedCertOutput {
 	return pulumi.All(o, i).ApplyT(func(vs []interface{}) *SelfSignedCert {
 		return vs[0].([]*SelfSignedCert)[vs[1].(int)]
@@ -484,6 +501,12 @@ func (o SelfSignedCertMapOutput) ToSelfSignedCertMapOutput() SelfSignedCertMapOu
 
 func (o SelfSignedCertMapOutput) ToSelfSignedCertMapOutputWithContext(ctx context.Context) SelfSignedCertMapOutput {
 	return o
+}
+
+func (o SelfSignedCertMapOutput) ToOutput(ctx context.Context) pulumix.Output[map[string]*SelfSignedCert] {
+	return pulumix.Output[map[string]*SelfSignedCert]{
+		OutputState: o.OutputState,
+	}
 }
 
 func (o SelfSignedCertMapOutput) MapIndex(k pulumi.StringInput) SelfSignedCertOutput {
