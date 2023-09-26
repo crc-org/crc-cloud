@@ -94,6 +94,7 @@ func randomID() string {
 // This function creates a temporary bucket to upload the disk image to be imported
 // It returns the bucket resource, the generated bucket name and error if any
 func createTempBucket(ctx *pulumi.Context, bucketName string) (*s3.BucketV2, pulumi.Resource, error) {
+
 	bucket, err := s3.NewBucketV2(ctx,
 		"crcCloudImporterTempBucket",
 		&s3.BucketV2Args{
@@ -103,12 +104,25 @@ func createTempBucket(ctx *pulumi.Context, bucketName string) (*s3.BucketV2, pul
 	if err != nil {
 		return nil, nil, err
 	}
+	// https://aws.amazon.com/blogs/aws/heads-up-amazon-s3-security-changes-are-coming-in-april-of-2023/
+	bucketOwnership, err := s3.NewBucketOwnershipControls(ctx,
+		"crcCloudImporterTempBucketOC",
+		&s3.BucketOwnershipControlsArgs{
+			Bucket: bucket.ID(),
+			Rule: &s3.BucketOwnershipControlsRuleArgs{
+				ObjectOwnership: pulumi.String("ObjectWriter"),
+			},
+		})
+	if err != nil {
+		return nil, nil, err
+	}
 	bucketACL, err := s3.NewBucketAclV2(ctx,
 		"crcCloudImporterTempBucketACL",
 		&s3.BucketAclV2Args{
 			Bucket: bucket.Bucket,
 			Acl:    pulumi.String("private"),
-		})
+		},
+		pulumi.DependsOn([]pulumi.Resource{bucketOwnership}))
 	return bucket, bucketACL, err
 }
 
