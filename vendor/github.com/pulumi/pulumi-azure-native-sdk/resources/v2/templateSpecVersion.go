@@ -10,6 +10,7 @@ import (
 	"errors"
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Template Spec Version object.
@@ -169,6 +170,12 @@ func (i *TemplateSpecVersion) ToTemplateSpecVersionOutputWithContext(ctx context
 	return pulumi.ToOutputWithContext(ctx, i).(TemplateSpecVersionOutput)
 }
 
+func (i *TemplateSpecVersion) ToOutput(ctx context.Context) pulumix.Output[*TemplateSpecVersion] {
+	return pulumix.Output[*TemplateSpecVersion]{
+		OutputState: i.ToTemplateSpecVersionOutputWithContext(ctx).OutputState,
+	}
+}
+
 type TemplateSpecVersionOutput struct{ *pulumi.OutputState }
 
 func (TemplateSpecVersionOutput) ElementType() reflect.Type {
@@ -181,6 +188,12 @@ func (o TemplateSpecVersionOutput) ToTemplateSpecVersionOutput() TemplateSpecVer
 
 func (o TemplateSpecVersionOutput) ToTemplateSpecVersionOutputWithContext(ctx context.Context) TemplateSpecVersionOutput {
 	return o
+}
+
+func (o TemplateSpecVersionOutput) ToOutput(ctx context.Context) pulumix.Output[*TemplateSpecVersion] {
+	return pulumix.Output[*TemplateSpecVersion]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Template Spec version description.

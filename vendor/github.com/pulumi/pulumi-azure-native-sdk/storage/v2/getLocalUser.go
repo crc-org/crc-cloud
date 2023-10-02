@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Get the local user of the storage account by username.
@@ -97,6 +98,12 @@ func (o LookupLocalUserResultOutput) ToLookupLocalUserResultOutput() LookupLocal
 
 func (o LookupLocalUserResultOutput) ToLookupLocalUserResultOutputWithContext(ctx context.Context) LookupLocalUserResultOutput {
 	return o
+}
+
+func (o LookupLocalUserResultOutput) ToOutput(ctx context.Context) pulumix.Output[LookupLocalUserResult] {
+	return pulumix.Output[LookupLocalUserResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Indicates whether shared key exists. Set it to false to remove existing shared key.

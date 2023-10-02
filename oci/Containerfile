@@ -5,14 +5,14 @@ WORKDIR /workspace
 COPY . .
 
 # renovate: datasource=github-releases depName=pulumi/pulumi
-ENV PULUMI_VERSION=v3.85.0
+ENV PULUMI_VERSION=v3.86.0
 ENV PULUMI_URL https://github.com/pulumi/pulumi/releases/download/${PULUMI_VERSION}/pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
 RUN make build \
     && curl -LO ${PULUMI_URL} \
     && tar -xzvf pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
-FROM quay.io/centos/centos:stream9
+FROM quay.io/centos/centos:stream9@sha256:76149efdc6811cea398d04e78e5bc8ed092c09aa151db27ce846955220612509
 
 LABEL MAINTAINER "CRC <devtools-cdk@redhat.com>"
 
@@ -34,10 +34,10 @@ ARG PULUMI_TLS_VERSION=v4.11.0
 ARG PULUMI_RANDOM_VERSION=v4.14.0
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-aws
-ARG PULUMI_AWS_VERSION=v6.2.1
+ARG PULUMI_AWS_VERSION=v6.3.0
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-azure-native
-ARG PULUMI_AZURE_NATIVE_VERSION=v2.8.0
+ARG PULUMI_AZURE_NATIVE_VERSION=v2.9.0
 
 RUN dnf install -y python3 python3-pip zstd qemu-img && \
     pip install -r requirements.txt && \

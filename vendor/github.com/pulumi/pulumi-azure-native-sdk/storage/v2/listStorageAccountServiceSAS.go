@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // List service SAS credentials of a specific resource.
@@ -145,6 +146,12 @@ func (o ListStorageAccountServiceSASResultOutput) ToListStorageAccountServiceSAS
 
 func (o ListStorageAccountServiceSASResultOutput) ToListStorageAccountServiceSASResultOutputWithContext(ctx context.Context) ListStorageAccountServiceSASResultOutput {
 	return o
+}
+
+func (o ListStorageAccountServiceSASResultOutput) ToOutput(ctx context.Context) pulumix.Output[ListStorageAccountServiceSASResult] {
+	return pulumix.Output[ListStorageAccountServiceSASResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // List service SAS credentials of specific resource.

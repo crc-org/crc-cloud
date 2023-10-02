@@ -10,6 +10,7 @@ import (
 	"errors"
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // The storage account blob inventory policy.
@@ -159,6 +160,12 @@ func (i *BlobInventoryPolicy) ToBlobInventoryPolicyOutputWithContext(ctx context
 	return pulumi.ToOutputWithContext(ctx, i).(BlobInventoryPolicyOutput)
 }
 
+func (i *BlobInventoryPolicy) ToOutput(ctx context.Context) pulumix.Output[*BlobInventoryPolicy] {
+	return pulumix.Output[*BlobInventoryPolicy]{
+		OutputState: i.ToBlobInventoryPolicyOutputWithContext(ctx).OutputState,
+	}
+}
+
 type BlobInventoryPolicyOutput struct{ *pulumi.OutputState }
 
 func (BlobInventoryPolicyOutput) ElementType() reflect.Type {
@@ -171,6 +178,12 @@ func (o BlobInventoryPolicyOutput) ToBlobInventoryPolicyOutput() BlobInventoryPo
 
 func (o BlobInventoryPolicyOutput) ToBlobInventoryPolicyOutputWithContext(ctx context.Context) BlobInventoryPolicyOutput {
 	return o
+}
+
+func (o BlobInventoryPolicyOutput) ToOutput(ctx context.Context) pulumix.Output[*BlobInventoryPolicy] {
+	return pulumix.Output[*BlobInventoryPolicy]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Returns the last modified date and time of the blob inventory policy.

@@ -10,6 +10,7 @@ import (
 	"errors"
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // The Get Storage Account ManagementPolicies operation response.
@@ -166,6 +167,12 @@ func (i *ManagementPolicy) ToManagementPolicyOutputWithContext(ctx context.Conte
 	return pulumi.ToOutputWithContext(ctx, i).(ManagementPolicyOutput)
 }
 
+func (i *ManagementPolicy) ToOutput(ctx context.Context) pulumix.Output[*ManagementPolicy] {
+	return pulumix.Output[*ManagementPolicy]{
+		OutputState: i.ToManagementPolicyOutputWithContext(ctx).OutputState,
+	}
+}
+
 type ManagementPolicyOutput struct{ *pulumi.OutputState }
 
 func (ManagementPolicyOutput) ElementType() reflect.Type {
@@ -178,6 +185,12 @@ func (o ManagementPolicyOutput) ToManagementPolicyOutput() ManagementPolicyOutpu
 
 func (o ManagementPolicyOutput) ToManagementPolicyOutputWithContext(ctx context.Context) ManagementPolicyOutput {
 	return o
+}
+
+func (o ManagementPolicyOutput) ToOutput(ctx context.Context) pulumix.Output[*ManagementPolicy] {
+	return pulumix.Output[*ManagementPolicy]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Returns the date and time the ManagementPolicies was last modified.

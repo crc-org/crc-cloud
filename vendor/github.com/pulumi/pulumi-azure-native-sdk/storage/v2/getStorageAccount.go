@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Returns the properties for the specified storage account including but not limited to name, SKU name, location, and account status. The ListKeys operation should be used to retrieve storage keys.
@@ -184,6 +185,12 @@ func (o LookupStorageAccountResultOutput) ToLookupStorageAccountResultOutput() L
 
 func (o LookupStorageAccountResultOutput) ToLookupStorageAccountResultOutputWithContext(ctx context.Context) LookupStorageAccountResultOutput {
 	return o
+}
+
+func (o LookupStorageAccountResultOutput) ToOutput(ctx context.Context) pulumix.Output[LookupStorageAccountResult] {
+	return pulumix.Output[LookupStorageAccountResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Required for storage accounts where kind = BlobStorage. The access tier is used for billing. The 'Premium' access tier is the default value for premium block blobs storage account type and it cannot be changed for the premium block blobs storage account type.

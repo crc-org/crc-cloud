@@ -10,6 +10,7 @@ import (
 	"errors"
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // The replication policy between two storage accounts. Multiple rules can be defined in one policy.
@@ -174,6 +175,12 @@ func (i *ObjectReplicationPolicy) ToObjectReplicationPolicyOutputWithContext(ctx
 	return pulumi.ToOutputWithContext(ctx, i).(ObjectReplicationPolicyOutput)
 }
 
+func (i *ObjectReplicationPolicy) ToOutput(ctx context.Context) pulumix.Output[*ObjectReplicationPolicy] {
+	return pulumix.Output[*ObjectReplicationPolicy]{
+		OutputState: i.ToObjectReplicationPolicyOutputWithContext(ctx).OutputState,
+	}
+}
+
 type ObjectReplicationPolicyOutput struct{ *pulumi.OutputState }
 
 func (ObjectReplicationPolicyOutput) ElementType() reflect.Type {
@@ -186,6 +193,12 @@ func (o ObjectReplicationPolicyOutput) ToObjectReplicationPolicyOutput() ObjectR
 
 func (o ObjectReplicationPolicyOutput) ToObjectReplicationPolicyOutputWithContext(ctx context.Context) ObjectReplicationPolicyOutput {
 	return o
+}
+
+func (o ObjectReplicationPolicyOutput) ToOutput(ctx context.Context) pulumix.Output[*ObjectReplicationPolicy] {
+	return pulumix.Output[*ObjectReplicationPolicy]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Required. Destination account name. It should be full resource id if allowCrossTenantReplication set to false.

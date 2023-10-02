@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Gets properties of a specified container.
@@ -121,6 +122,12 @@ func (o LookupBlobContainerResultOutput) ToLookupBlobContainerResultOutput() Loo
 
 func (o LookupBlobContainerResultOutput) ToLookupBlobContainerResultOutputWithContext(ctx context.Context) LookupBlobContainerResultOutput {
 	return o
+}
+
+func (o LookupBlobContainerResultOutput) ToOutput(ctx context.Context) pulumix.Output[LookupBlobContainerResult] {
+	return pulumix.Output[LookupBlobContainerResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Default the container to use specified encryption scope for all writes.

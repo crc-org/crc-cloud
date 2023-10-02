@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Gets the properties of a storage account’s Queue service, including properties for Storage Analytics and CORS (Cross-Origin Resource Sharing) rules.
@@ -83,6 +84,12 @@ func (o LookupQueueServicePropertiesResultOutput) ToLookupQueueServiceProperties
 
 func (o LookupQueueServicePropertiesResultOutput) ToLookupQueueServicePropertiesResultOutputWithContext(ctx context.Context) LookupQueueServicePropertiesResultOutput {
 	return o
+}
+
+func (o LookupQueueServicePropertiesResultOutput) ToOutput(ctx context.Context) pulumix.Output[LookupQueueServicePropertiesResult] {
+	return pulumix.Output[LookupQueueServicePropertiesResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Specifies CORS rules for the Queue service. You can include up to five CorsRule elements in the request. If no CorsRule elements are included in the request body, all CORS rules will be deleted, and CORS will be disabled for the Queue service.

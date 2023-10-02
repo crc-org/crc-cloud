@@ -10,6 +10,7 @@ import (
 	"errors"
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Manages a Blob within a Storage Container.
@@ -153,6 +154,12 @@ func (i *Blob) ToBlobOutputWithContext(ctx context.Context) BlobOutput {
 	return pulumi.ToOutputWithContext(ctx, i).(BlobOutput)
 }
 
+func (i *Blob) ToOutput(ctx context.Context) pulumix.Output[*Blob] {
+	return pulumix.Output[*Blob]{
+		OutputState: i.ToBlobOutputWithContext(ctx).OutputState,
+	}
+}
+
 type BlobOutput struct{ *pulumi.OutputState }
 
 func (BlobOutput) ElementType() reflect.Type {
@@ -165,6 +172,12 @@ func (o BlobOutput) ToBlobOutput() BlobOutput {
 
 func (o BlobOutput) ToBlobOutputWithContext(ctx context.Context) BlobOutput {
 	return o
+}
+
+func (o BlobOutput) ToOutput(ctx context.Context) pulumix.Output[*Blob] {
+	return pulumix.Output[*Blob]{
+		OutputState: o.OutputState,
+	}
 }
 
 // The access tier of the storage blob.

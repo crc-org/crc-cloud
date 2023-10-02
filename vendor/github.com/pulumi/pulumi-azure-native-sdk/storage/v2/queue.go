@@ -10,6 +10,7 @@ import (
 	"errors"
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Azure REST API version: 2022-09-01. Prior API version in Azure Native 1.x: 2021-02-01
@@ -153,6 +154,12 @@ func (i *Queue) ToQueueOutputWithContext(ctx context.Context) QueueOutput {
 	return pulumi.ToOutputWithContext(ctx, i).(QueueOutput)
 }
 
+func (i *Queue) ToOutput(ctx context.Context) pulumix.Output[*Queue] {
+	return pulumix.Output[*Queue]{
+		OutputState: i.ToQueueOutputWithContext(ctx).OutputState,
+	}
+}
+
 type QueueOutput struct{ *pulumi.OutputState }
 
 func (QueueOutput) ElementType() reflect.Type {
@@ -165,6 +172,12 @@ func (o QueueOutput) ToQueueOutput() QueueOutput {
 
 func (o QueueOutput) ToQueueOutputWithContext(ctx context.Context) QueueOutput {
 	return o
+}
+
+func (o QueueOutput) ToOutput(ctx context.Context) pulumix.Output[*Queue] {
+	return pulumix.Output[*Queue]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Integer indicating an approximate number of messages in the queue. This number is not lower than the actual number of messages in the queue, but could be higher.

@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Gets the existing immutability policy along with the corresponding ETag in response headers and body.
@@ -95,6 +96,12 @@ func (o LookupBlobContainerImmutabilityPolicyResultOutput) ToLookupBlobContainer
 
 func (o LookupBlobContainerImmutabilityPolicyResultOutput) ToLookupBlobContainerImmutabilityPolicyResultOutputWithContext(ctx context.Context) LookupBlobContainerImmutabilityPolicyResultOutput {
 	return o
+}
+
+func (o LookupBlobContainerImmutabilityPolicyResultOutput) ToOutput(ctx context.Context) pulumix.Output[LookupBlobContainerImmutabilityPolicyResult] {
+	return pulumix.Output[LookupBlobContainerImmutabilityPolicyResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // This property can only be changed for unlocked time-based retention policies. When enabled, new blocks can be written to an append blob while maintaining immutability protection and compliance. Only new blocks can be added and any existing blocks cannot be modified or deleted. This property cannot be changed with ExtendImmutabilityPolicy API.

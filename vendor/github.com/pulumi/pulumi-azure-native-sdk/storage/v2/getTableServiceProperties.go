@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Gets the properties of a storage account’s Table service, including properties for Storage Analytics and CORS (Cross-Origin Resource Sharing) rules.
@@ -83,6 +84,12 @@ func (o LookupTableServicePropertiesResultOutput) ToLookupTableServiceProperties
 
 func (o LookupTableServicePropertiesResultOutput) ToLookupTableServicePropertiesResultOutputWithContext(ctx context.Context) LookupTableServicePropertiesResultOutput {
 	return o
+}
+
+func (o LookupTableServicePropertiesResultOutput) ToOutput(ctx context.Context) pulumix.Output[LookupTableServicePropertiesResult] {
+	return pulumix.Output[LookupTableServicePropertiesResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Specifies CORS rules for the Table service. You can include up to five CorsRule elements in the request. If no CorsRule elements are included in the request body, all CORS rules will be deleted, and CORS will be disabled for the Table service.

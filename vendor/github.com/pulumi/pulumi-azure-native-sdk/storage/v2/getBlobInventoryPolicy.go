@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Gets the blob inventory policy associated with the specified storage account.
@@ -87,6 +88,12 @@ func (o LookupBlobInventoryPolicyResultOutput) ToLookupBlobInventoryPolicyResult
 
 func (o LookupBlobInventoryPolicyResultOutput) ToLookupBlobInventoryPolicyResultOutputWithContext(ctx context.Context) LookupBlobInventoryPolicyResultOutput {
 	return o
+}
+
+func (o LookupBlobInventoryPolicyResultOutput) ToOutput(ctx context.Context) pulumix.Output[LookupBlobInventoryPolicyResult] {
+	return pulumix.Output[LookupBlobInventoryPolicyResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Fully qualified resource ID for the resource. Ex - /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}

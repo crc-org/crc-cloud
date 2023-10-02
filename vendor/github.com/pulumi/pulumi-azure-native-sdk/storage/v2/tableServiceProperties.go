@@ -10,6 +10,7 @@ import (
 	"errors"
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // The properties of a storage account’s Table service.
@@ -152,6 +153,12 @@ func (i *TableServiceProperties) ToTableServicePropertiesOutputWithContext(ctx c
 	return pulumi.ToOutputWithContext(ctx, i).(TableServicePropertiesOutput)
 }
 
+func (i *TableServiceProperties) ToOutput(ctx context.Context) pulumix.Output[*TableServiceProperties] {
+	return pulumix.Output[*TableServiceProperties]{
+		OutputState: i.ToTableServicePropertiesOutputWithContext(ctx).OutputState,
+	}
+}
+
 type TableServicePropertiesOutput struct{ *pulumi.OutputState }
 
 func (TableServicePropertiesOutput) ElementType() reflect.Type {
@@ -164,6 +171,12 @@ func (o TableServicePropertiesOutput) ToTableServicePropertiesOutput() TableServ
 
 func (o TableServicePropertiesOutput) ToTableServicePropertiesOutputWithContext(ctx context.Context) TableServicePropertiesOutput {
 	return o
+}
+
+func (o TableServicePropertiesOutput) ToOutput(ctx context.Context) pulumix.Output[*TableServiceProperties] {
+	return pulumix.Output[*TableServiceProperties]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Specifies CORS rules for the Table service. You can include up to five CorsRule elements in the request. If no CorsRule elements are included in the request body, all CORS rules will be deleted, and CORS will be disabled for the Table service.

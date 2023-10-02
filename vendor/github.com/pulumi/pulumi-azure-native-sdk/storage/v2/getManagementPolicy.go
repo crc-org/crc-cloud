@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Gets the managementpolicy associated with the specified storage account.
@@ -85,6 +86,12 @@ func (o LookupManagementPolicyResultOutput) ToLookupManagementPolicyResultOutput
 
 func (o LookupManagementPolicyResultOutput) ToLookupManagementPolicyResultOutputWithContext(ctx context.Context) LookupManagementPolicyResultOutput {
 	return o
+}
+
+func (o LookupManagementPolicyResultOutput) ToOutput(ctx context.Context) pulumix.Output[LookupManagementPolicyResult] {
+	return pulumix.Output[LookupManagementPolicyResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Fully qualified resource ID for the resource. Ex - /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}

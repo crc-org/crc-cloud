@@ -10,6 +10,7 @@ import (
 	"errors"
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Object model for the Azure CLI script.
@@ -235,6 +236,12 @@ func (i *AzureCliScript) ToAzureCliScriptOutputWithContext(ctx context.Context) 
 	return pulumi.ToOutputWithContext(ctx, i).(AzureCliScriptOutput)
 }
 
+func (i *AzureCliScript) ToOutput(ctx context.Context) pulumix.Output[*AzureCliScript] {
+	return pulumix.Output[*AzureCliScript]{
+		OutputState: i.ToAzureCliScriptOutputWithContext(ctx).OutputState,
+	}
+}
+
 type AzureCliScriptOutput struct{ *pulumi.OutputState }
 
 func (AzureCliScriptOutput) ElementType() reflect.Type {
@@ -247,6 +254,12 @@ func (o AzureCliScriptOutput) ToAzureCliScriptOutput() AzureCliScriptOutput {
 
 func (o AzureCliScriptOutput) ToAzureCliScriptOutputWithContext(ctx context.Context) AzureCliScriptOutput {
 	return o
+}
+
+func (o AzureCliScriptOutput) ToOutput(ctx context.Context) pulumix.Output[*AzureCliScript] {
+	return pulumix.Output[*AzureCliScript]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Command line arguments to pass to the script. Arguments are separated by spaces. ex: -Name blue* -Location 'West US 2'

@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Wrapper resource for tags API requests and responses.
@@ -75,6 +76,12 @@ func (o LookupTagAtScopeResultOutput) ToLookupTagAtScopeResultOutput() LookupTag
 
 func (o LookupTagAtScopeResultOutput) ToLookupTagAtScopeResultOutputWithContext(ctx context.Context) LookupTagAtScopeResultOutput {
 	return o
+}
+
+func (o LookupTagAtScopeResultOutput) ToOutput(ctx context.Context) pulumix.Output[LookupTagAtScopeResult] {
+	return pulumix.Output[LookupTagAtScopeResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // The ID of the tags wrapper resource.

@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Gets properties of a specified share.
@@ -123,6 +124,12 @@ func (o LookupFileShareResultOutput) ToLookupFileShareResultOutput() LookupFileS
 
 func (o LookupFileShareResultOutput) ToLookupFileShareResultOutputWithContext(ctx context.Context) LookupFileShareResultOutput {
 	return o
+}
+
+func (o LookupFileShareResultOutput) ToOutput(ctx context.Context) pulumix.Output[LookupFileShareResult] {
+	return pulumix.Output[LookupFileShareResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Access tier for specific share. GpV2 account can choose between TransactionOptimized (default), Hot, and Cool. FileStorage account can choose Premium.

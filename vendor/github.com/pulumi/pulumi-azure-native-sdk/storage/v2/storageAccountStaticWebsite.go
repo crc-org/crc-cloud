@@ -10,6 +10,7 @@ import (
 	"errors"
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Enables the static website feature of a storage account.
@@ -115,6 +116,12 @@ func (i *StorageAccountStaticWebsite) ToStorageAccountStaticWebsiteOutputWithCon
 	return pulumi.ToOutputWithContext(ctx, i).(StorageAccountStaticWebsiteOutput)
 }
 
+func (i *StorageAccountStaticWebsite) ToOutput(ctx context.Context) pulumix.Output[*StorageAccountStaticWebsite] {
+	return pulumix.Output[*StorageAccountStaticWebsite]{
+		OutputState: i.ToStorageAccountStaticWebsiteOutputWithContext(ctx).OutputState,
+	}
+}
+
 type StorageAccountStaticWebsiteOutput struct{ *pulumi.OutputState }
 
 func (StorageAccountStaticWebsiteOutput) ElementType() reflect.Type {
@@ -127,6 +134,12 @@ func (o StorageAccountStaticWebsiteOutput) ToStorageAccountStaticWebsiteOutput()
 
 func (o StorageAccountStaticWebsiteOutput) ToStorageAccountStaticWebsiteOutputWithContext(ctx context.Context) StorageAccountStaticWebsiteOutput {
 	return o
+}
+
+func (o StorageAccountStaticWebsiteOutput) ToOutput(ctx context.Context) pulumix.Output[*StorageAccountStaticWebsite] {
+	return pulumix.Output[*StorageAccountStaticWebsite]{
+		OutputState: o.OutputState,
+	}
 }
 
 // The name of the container to upload blobs to.
