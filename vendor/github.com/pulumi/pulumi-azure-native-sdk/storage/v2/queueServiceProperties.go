@@ -10,6 +10,7 @@ import (
 	"errors"
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // The properties of a storage account’s Queue service.
@@ -152,6 +153,12 @@ func (i *QueueServiceProperties) ToQueueServicePropertiesOutputWithContext(ctx c
 	return pulumi.ToOutputWithContext(ctx, i).(QueueServicePropertiesOutput)
 }
 
+func (i *QueueServiceProperties) ToOutput(ctx context.Context) pulumix.Output[*QueueServiceProperties] {
+	return pulumix.Output[*QueueServiceProperties]{
+		OutputState: i.ToQueueServicePropertiesOutputWithContext(ctx).OutputState,
+	}
+}
+
 type QueueServicePropertiesOutput struct{ *pulumi.OutputState }
 
 func (QueueServicePropertiesOutput) ElementType() reflect.Type {
@@ -164,6 +171,12 @@ func (o QueueServicePropertiesOutput) ToQueueServicePropertiesOutput() QueueServ
 
 func (o QueueServicePropertiesOutput) ToQueueServicePropertiesOutputWithContext(ctx context.Context) QueueServicePropertiesOutput {
 	return o
+}
+
+func (o QueueServicePropertiesOutput) ToOutput(ctx context.Context) pulumix.Output[*QueueServiceProperties] {
+	return pulumix.Output[*QueueServiceProperties]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Specifies CORS rules for the Queue service. You can include up to five CorsRule elements in the request. If no CorsRule elements are included in the request body, all CORS rules will be deleted, and CORS will be disabled for the Queue service.

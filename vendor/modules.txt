@@ -288,21 +288,21 @@ github.com/pkg/errors
 # github.com/pkg/term v1.1.0
 ## explicit; go 1.14
 github.com/pkg/term/termios
-# github.com/pulumi/pulumi-aws/sdk/v6 v6.2.1
+# github.com/pulumi/pulumi-aws/sdk/v6 v6.3.0
 ## explicit; go 1.21
 github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ebs
 github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2
 github.com/pulumi/pulumi-aws/sdk/v6/go/aws/iam
 github.com/pulumi/pulumi-aws/sdk/v6/go/aws/internal
 github.com/pulumi/pulumi-aws/sdk/v6/go/aws/s3
-# github.com/pulumi/pulumi-azure-native-sdk/resources/v2 v2.8.0
-## explicit; go 1.17
+# github.com/pulumi/pulumi-azure-native-sdk/resources/v2 v2.9.0
+## explicit; go 1.18
 github.com/pulumi/pulumi-azure-native-sdk/resources/v2
-# github.com/pulumi/pulumi-azure-native-sdk/storage/v2 v2.8.0
-## explicit; go 1.17
+# github.com/pulumi/pulumi-azure-native-sdk/storage/v2 v2.9.0
+## explicit; go 1.18
 github.com/pulumi/pulumi-azure-native-sdk/storage/v2
-# github.com/pulumi/pulumi-azure-native-sdk/v2 v2.8.0
-## explicit; go 1.17
+# github.com/pulumi/pulumi-azure-native-sdk/v2 v2.9.0
+## explicit; go 1.18
 github.com/pulumi/pulumi-azure-native-sdk/v2/utilities
 # github.com/pulumi/pulumi-command/sdk v0.9.1
 ## explicit; go 1.19
@@ -317,7 +317,7 @@ github.com/pulumi/pulumi-random/sdk/v4/go/random/internal
 ## explicit; go 1.21
 github.com/pulumi/pulumi-tls/sdk/v4/go/tls
 github.com/pulumi/pulumi-tls/sdk/v4/go/tls/internal
-# github.com/pulumi/pulumi/sdk/v3 v3.85.0
+# github.com/pulumi/pulumi/sdk/v3 v3.86.0
 ## explicit; go 1.18
 github.com/pulumi/pulumi/sdk/v3/go/auto
 github.com/pulumi/pulumi/sdk/v3/go/auto/debug

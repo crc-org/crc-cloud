@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Gets a Deployment Stack with a given name.
@@ -111,6 +112,12 @@ func (o LookupDeploymentStackAtSubscriptionResultOutput) ToLookupDeploymentStack
 
 func (o LookupDeploymentStackAtSubscriptionResultOutput) ToLookupDeploymentStackAtSubscriptionResultOutputWithContext(ctx context.Context) LookupDeploymentStackAtSubscriptionResultOutput {
 	return o
+}
+
+func (o LookupDeploymentStackAtSubscriptionResultOutput) ToOutput(ctx context.Context) pulumix.Output[LookupDeploymentStackAtSubscriptionResult] {
+	return pulumix.Output[LookupDeploymentStackAtSubscriptionResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Defines the behavior of resources that are not managed immediately after the stack is updated.

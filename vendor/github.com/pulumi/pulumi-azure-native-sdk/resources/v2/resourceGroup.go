@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Resource group information.
@@ -178,6 +179,12 @@ func (i *ResourceGroup) ToResourceGroupOutputWithContext(ctx context.Context) Re
 	return pulumi.ToOutputWithContext(ctx, i).(ResourceGroupOutput)
 }
 
+func (i *ResourceGroup) ToOutput(ctx context.Context) pulumix.Output[*ResourceGroup] {
+	return pulumix.Output[*ResourceGroup]{
+		OutputState: i.ToResourceGroupOutputWithContext(ctx).OutputState,
+	}
+}
+
 type ResourceGroupOutput struct{ *pulumi.OutputState }
 
 func (ResourceGroupOutput) ElementType() reflect.Type {
@@ -190,6 +197,12 @@ func (o ResourceGroupOutput) ToResourceGroupOutput() ResourceGroupOutput {
 
 func (o ResourceGroupOutput) ToResourceGroupOutputWithContext(ctx context.Context) ResourceGroupOutput {
 	return o
+}
+
+func (o ResourceGroupOutput) ToOutput(ctx context.Context) pulumix.Output[*ResourceGroup] {
+	return pulumix.Output[*ResourceGroup]{
+		OutputState: o.OutputState,
+	}
 }
 
 // The location of the resource group. It cannot be changed after the resource group has been created. It must be one of the supported Azure locations.

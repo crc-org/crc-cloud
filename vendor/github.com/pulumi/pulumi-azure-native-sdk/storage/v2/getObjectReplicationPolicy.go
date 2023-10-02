@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Get the object replication policy of the storage account by policy ID.
@@ -91,6 +92,12 @@ func (o LookupObjectReplicationPolicyResultOutput) ToLookupObjectReplicationPoli
 
 func (o LookupObjectReplicationPolicyResultOutput) ToLookupObjectReplicationPolicyResultOutputWithContext(ctx context.Context) LookupObjectReplicationPolicyResultOutput {
 	return o
+}
+
+func (o LookupObjectReplicationPolicyResultOutput) ToOutput(ctx context.Context) pulumix.Output[LookupObjectReplicationPolicyResult] {
+	return pulumix.Output[LookupObjectReplicationPolicyResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Required. Destination account name. It should be full resource id if allowCrossTenantReplication set to false.

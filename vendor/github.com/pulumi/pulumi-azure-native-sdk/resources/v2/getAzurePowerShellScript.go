@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Gets a deployment script with a given name.
@@ -135,6 +136,12 @@ func (o LookupAzurePowerShellScriptResultOutput) ToLookupAzurePowerShellScriptRe
 
 func (o LookupAzurePowerShellScriptResultOutput) ToLookupAzurePowerShellScriptResultOutputWithContext(ctx context.Context) LookupAzurePowerShellScriptResultOutput {
 	return o
+}
+
+func (o LookupAzurePowerShellScriptResultOutput) ToOutput(ctx context.Context) pulumix.Output[LookupAzurePowerShellScriptResult] {
+	return pulumix.Output[LookupAzurePowerShellScriptResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Command line arguments to pass to the script. Arguments are separated by spaces. ex: -Name blue* -Location 'West US 2'

@@ -9,6 +9,7 @@ import (
 
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Gets a deployment.
@@ -83,6 +84,12 @@ func (o LookupDeploymentAtScopeResultOutput) ToLookupDeploymentAtScopeResultOutp
 
 func (o LookupDeploymentAtScopeResultOutput) ToLookupDeploymentAtScopeResultOutputWithContext(ctx context.Context) LookupDeploymentAtScopeResultOutput {
 	return o
+}
+
+func (o LookupDeploymentAtScopeResultOutput) ToOutput(ctx context.Context) pulumix.Output[LookupDeploymentAtScopeResult] {
+	return pulumix.Output[LookupDeploymentAtScopeResult]{
+		OutputState: o.OutputState,
+	}
 }
 
 // The ID of the deployment.

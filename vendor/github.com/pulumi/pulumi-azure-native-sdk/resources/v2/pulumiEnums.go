@@ -8,6 +8,7 @@ import (
 	"reflect"
 
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // The clean up preference when the script execution gets in a terminal state. Default setting is 'Always'.
@@ -99,6 +100,12 @@ func (o DeploymentModeOutput) ToDeploymentModePtrOutputWithContext(ctx context.C
 	}).(DeploymentModePtrOutput)
 }
 
+func (o DeploymentModeOutput) ToOutput(ctx context.Context) pulumix.Output[DeploymentMode] {
+	return pulumix.Output[DeploymentMode]{
+		OutputState: o.OutputState,
+	}
+}
+
 func (o DeploymentModeOutput) ToStringOutput() pulumi.StringOutput {
 	return o.ToStringOutputWithContext(context.Background())
 }
@@ -132,6 +139,12 @@ func (o DeploymentModePtrOutput) ToDeploymentModePtrOutput() DeploymentModePtrOu
 
 func (o DeploymentModePtrOutput) ToDeploymentModePtrOutputWithContext(ctx context.Context) DeploymentModePtrOutput {
 	return o
+}
+
+func (o DeploymentModePtrOutput) ToOutput(ctx context.Context) pulumix.Output[*DeploymentMode] {
+	return pulumix.Output[*DeploymentMode]{
+		OutputState: o.OutputState,
+	}
 }
 
 func (o DeploymentModePtrOutput) Elem() DeploymentModeOutput {
@@ -194,6 +207,12 @@ func (in *deploymentModePtr) ToDeploymentModePtrOutput() DeploymentModePtrOutput
 
 func (in *deploymentModePtr) ToDeploymentModePtrOutputWithContext(ctx context.Context) DeploymentModePtrOutput {
 	return pulumi.ToOutputWithContext(ctx, in).(DeploymentModePtrOutput)
+}
+
+func (in *deploymentModePtr) ToOutput(ctx context.Context) pulumix.Output[*DeploymentMode] {
+	return pulumix.Output[*DeploymentMode]{
+		OutputState: in.ToDeploymentModePtrOutputWithContext(ctx).OutputState,
+	}
 }
 
 // Specifies the action that should be taken on the resource when the deployment stack is deleted. Delete will attempt to delete the resource from Azure. Detach will leave the resource in it's current state.
@@ -295,6 +314,12 @@ func (o OnErrorDeploymentTypeOutput) ToOnErrorDeploymentTypePtrOutputWithContext
 	}).(OnErrorDeploymentTypePtrOutput)
 }
 
+func (o OnErrorDeploymentTypeOutput) ToOutput(ctx context.Context) pulumix.Output[OnErrorDeploymentType] {
+	return pulumix.Output[OnErrorDeploymentType]{
+		OutputState: o.OutputState,
+	}
+}
+
 func (o OnErrorDeploymentTypeOutput) ToStringOutput() pulumi.StringOutput {
 	return o.ToStringOutputWithContext(context.Background())
 }
@@ -328,6 +353,12 @@ func (o OnErrorDeploymentTypePtrOutput) ToOnErrorDeploymentTypePtrOutput() OnErr
 
 func (o OnErrorDeploymentTypePtrOutput) ToOnErrorDeploymentTypePtrOutputWithContext(ctx context.Context) OnErrorDeploymentTypePtrOutput {
 	return o
+}
+
+func (o OnErrorDeploymentTypePtrOutput) ToOutput(ctx context.Context) pulumix.Output[*OnErrorDeploymentType] {
+	return pulumix.Output[*OnErrorDeploymentType]{
+		OutputState: o.OutputState,
+	}
 }
 
 func (o OnErrorDeploymentTypePtrOutput) Elem() OnErrorDeploymentTypeOutput {
@@ -390,6 +421,12 @@ func (in *onErrorDeploymentTypePtr) ToOnErrorDeploymentTypePtrOutput() OnErrorDe
 
 func (in *onErrorDeploymentTypePtr) ToOnErrorDeploymentTypePtrOutputWithContext(ctx context.Context) OnErrorDeploymentTypePtrOutput {
 	return pulumi.ToOutputWithContext(ctx, in).(OnErrorDeploymentTypePtrOutput)
+}
+
+func (in *onErrorDeploymentTypePtr) ToOutput(ctx context.Context) pulumix.Output[*OnErrorDeploymentType] {
+	return pulumix.Output[*OnErrorDeploymentType]{
+		OutputState: in.ToOnErrorDeploymentTypePtrOutputWithContext(ctx).OutputState,
+	}
 }
 
 // The identity type.
@@ -462,6 +499,12 @@ func (o ResourceIdentityTypeOutput) ToResourceIdentityTypePtrOutputWithContext(c
 	}).(ResourceIdentityTypePtrOutput)
 }
 
+func (o ResourceIdentityTypeOutput) ToOutput(ctx context.Context) pulumix.Output[ResourceIdentityType] {
+	return pulumix.Output[ResourceIdentityType]{
+		OutputState: o.OutputState,
+	}
+}
+
 func (o ResourceIdentityTypeOutput) ToStringOutput() pulumi.StringOutput {
 	return o.ToStringOutputWithContext(context.Background())
 }
@@ -495,6 +538,12 @@ func (o ResourceIdentityTypePtrOutput) ToResourceIdentityTypePtrOutput() Resourc
 
 func (o ResourceIdentityTypePtrOutput) ToResourceIdentityTypePtrOutputWithContext(ctx context.Context) ResourceIdentityTypePtrOutput {
 	return o
+}
+
+func (o ResourceIdentityTypePtrOutput) ToOutput(ctx context.Context) pulumix.Output[*ResourceIdentityType] {
+	return pulumix.Output[*ResourceIdentityType]{
+		OutputState: o.OutputState,
+	}
 }
 
 func (o ResourceIdentityTypePtrOutput) Elem() ResourceIdentityTypeOutput {
@@ -557,6 +606,12 @@ func (in *resourceIdentityTypePtr) ToResourceIdentityTypePtrOutput() ResourceIde
 
 func (in *resourceIdentityTypePtr) ToResourceIdentityTypePtrOutputWithContext(ctx context.Context) ResourceIdentityTypePtrOutput {
 	return pulumi.ToOutputWithContext(ctx, in).(ResourceIdentityTypePtrOutput)
+}
+
+func (in *resourceIdentityTypePtr) ToOutput(ctx context.Context) pulumix.Output[*ResourceIdentityType] {
+	return pulumix.Output[*ResourceIdentityType]{
+		OutputState: in.ToResourceIdentityTypePtrOutputWithContext(ctx).OutputState,
+	}
 }
 
 // Type of the script.

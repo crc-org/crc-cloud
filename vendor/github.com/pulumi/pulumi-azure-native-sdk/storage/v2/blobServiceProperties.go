@@ -10,6 +10,7 @@ import (
 	"errors"
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // The properties of a storage account’s Blob service.
@@ -211,6 +212,12 @@ func (i *BlobServiceProperties) ToBlobServicePropertiesOutputWithContext(ctx con
 	return pulumi.ToOutputWithContext(ctx, i).(BlobServicePropertiesOutput)
 }
 
+func (i *BlobServiceProperties) ToOutput(ctx context.Context) pulumix.Output[*BlobServiceProperties] {
+	return pulumix.Output[*BlobServiceProperties]{
+		OutputState: i.ToBlobServicePropertiesOutputWithContext(ctx).OutputState,
+	}
+}
+
 type BlobServicePropertiesOutput struct{ *pulumi.OutputState }
 
 func (BlobServicePropertiesOutput) ElementType() reflect.Type {
@@ -223,6 +230,12 @@ func (o BlobServicePropertiesOutput) ToBlobServicePropertiesOutput() BlobService
 
 func (o BlobServicePropertiesOutput) ToBlobServicePropertiesOutputWithContext(ctx context.Context) BlobServicePropertiesOutput {
 	return o
+}
+
+func (o BlobServicePropertiesOutput) ToOutput(ctx context.Context) pulumix.Output[*BlobServiceProperties] {
+	return pulumix.Output[*BlobServiceProperties]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Deprecated in favor of isVersioningEnabled property.

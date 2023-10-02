@@ -10,6 +10,7 @@ import (
 	"errors"
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // Wrapper resource for tags API requests and responses.
@@ -135,6 +136,12 @@ func (i *TagAtScope) ToTagAtScopeOutputWithContext(ctx context.Context) TagAtSco
 	return pulumi.ToOutputWithContext(ctx, i).(TagAtScopeOutput)
 }
 
+func (i *TagAtScope) ToOutput(ctx context.Context) pulumix.Output[*TagAtScope] {
+	return pulumix.Output[*TagAtScope]{
+		OutputState: i.ToTagAtScopeOutputWithContext(ctx).OutputState,
+	}
+}
+
 type TagAtScopeOutput struct{ *pulumi.OutputState }
 
 func (TagAtScopeOutput) ElementType() reflect.Type {
@@ -147,6 +154,12 @@ func (o TagAtScopeOutput) ToTagAtScopeOutput() TagAtScopeOutput {
 
 func (o TagAtScopeOutput) ToTagAtScopeOutputWithContext(ctx context.Context) TagAtScopeOutput {
 	return o
+}
+
+func (o TagAtScopeOutput) ToOutput(ctx context.Context) pulumix.Output[*TagAtScope] {
+	return pulumix.Output[*TagAtScope]{
+		OutputState: o.OutputState,
+	}
 }
 
 // The name of the tags wrapper resource.

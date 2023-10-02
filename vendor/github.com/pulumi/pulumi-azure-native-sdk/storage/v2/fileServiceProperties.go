@@ -10,6 +10,7 @@ import (
 	"errors"
 	"github.com/pulumi/pulumi-azure-native-sdk/v2/utilities"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumix"
 )
 
 // The properties of File services in storage account.
@@ -169,6 +170,12 @@ func (i *FileServiceProperties) ToFileServicePropertiesOutputWithContext(ctx con
 	return pulumi.ToOutputWithContext(ctx, i).(FileServicePropertiesOutput)
 }
 
+func (i *FileServiceProperties) ToOutput(ctx context.Context) pulumix.Output[*FileServiceProperties] {
+	return pulumix.Output[*FileServiceProperties]{
+		OutputState: i.ToFileServicePropertiesOutputWithContext(ctx).OutputState,
+	}
+}
+
 type FileServicePropertiesOutput struct{ *pulumi.OutputState }
 
 func (FileServicePropertiesOutput) ElementType() reflect.Type {
@@ -181,6 +188,12 @@ func (o FileServicePropertiesOutput) ToFileServicePropertiesOutput() FileService
 
 func (o FileServicePropertiesOutput) ToFileServicePropertiesOutputWithContext(ctx context.Context) FileServicePropertiesOutput {
 	return o
+}
+
+func (o FileServicePropertiesOutput) ToOutput(ctx context.Context) pulumix.Output[*FileServiceProperties] {
+	return pulumix.Output[*FileServiceProperties]{
+		OutputState: o.OutputState,
+	}
 }
 
 // Specifies CORS rules for the File service. You can include up to five CorsRule elements in the request. If no CorsRule elements are included in the request body, all CORS rules will be deleted, and CORS will be disabled for the File service.
