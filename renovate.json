@@ -4,5 +4,6 @@
     "github>platform-engineering-org/.github"
   ],
   "rangeStrategy": "bump",
-  "ignoreDeps": ["go"]
+  "ignoreDeps": ["go"],
+  "automerge": false
 }
