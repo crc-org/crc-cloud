@@ -3,14 +3,14 @@ module github.com/crc/crc-cloud
 go 1.19
 
 require (
-	github.com/pulumi/pulumi-aws/sdk/v6 v6.3.0
-	github.com/pulumi/pulumi-azure-native-sdk/resources/v2 v2.9.0
-	github.com/pulumi/pulumi-azure-native-sdk/storage/v2 v2.9.0
+	github.com/pulumi/pulumi-aws/sdk/v6 v6.4.0
+	github.com/pulumi/pulumi-azure-native-sdk/resources/v2 v2.10.0
+	github.com/pulumi/pulumi-azure-native-sdk/storage/v2 v2.10.0
 	github.com/pulumi/pulumi-tls/sdk/v4 v4.11.0
-	github.com/pulumi/pulumi/sdk/v3 v3.86.0
+	github.com/pulumi/pulumi/sdk/v3 v3.87.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.16.0
+	github.com/spf13/viper v1.17.0
 )
 
 require (
@@ -37,9 +37,13 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
-	github.com/pulumi/pulumi-azure-native-sdk/v2 v2.9.0 // indirect
+	github.com/pulumi/pulumi-azure-native-sdk/v2 v2.10.0 // indirect
+	github.com/sagikazarmark/locafero v0.3.0 // indirect
+	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/skeema/knownhosts v1.2.1 // indirect
+	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/zclconf/go-cty v1.14.1 // indirect
+	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/mod v0.13.0 // indirect
 	golang.org/x/sync v0.4.0 // indirect
 	golang.org/x/tools v0.14.0 // indirect
@@ -87,7 +91,6 @@ require (
 	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/spf13/afero v1.10.0 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
-	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/texttheater/golang-levenshtein v1.0.1 // indirect
 	github.com/tweekmonster/luser v0.0.0-20161003172636-3fa38070dbd7 // indirect
