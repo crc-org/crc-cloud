@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/go-toolset:1.19.10-14.1696536543@sha256:c53f72b29ef0213e92149931f0e31a631b0fec61a3e1373aa748f1735be83c06 as builder
+FROM registry.access.redhat.com/ubi9/go-toolset:1.19.13-4.1697647145@sha256:12d67bb6d991a18a91f3b8184ac4b711334f3c095e0e3cdcf7f9ed361ee2b710 as builder
 
 USER root
 WORKDIR /workspace
@@ -12,7 +12,7 @@ RUN make build \
     && curl -LO ${PULUMI_URL} \
     && tar -xzvf pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
-FROM quay.io/centos/centos:stream9@sha256:743cf31b5c29c227aa1371eddd9f9313b2a0487f39ccfc03ec5c89a692c4a0c7
+FROM quay.io/centos/centos:stream9@sha256:aeca8aee6df1e62c25f306396dc6631520dc350fe90d48cf30f45272ffeb2c61
 
 LABEL MAINTAINER "CRC <devtools-cdk@redhat.com>"
 
