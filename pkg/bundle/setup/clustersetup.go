@@ -36,10 +36,12 @@ func SwapKeys(ctx *pulumi.Context, publicIP *pulumi.StringOutput,
 	}
 
 	c := remote.ConnectionArgs{
-		Host:       publicIP,
-		PrivateKey: pulumi.String(privateKey),
-		User:       pulumi.String(bundle.ImageUsername),
-		Port:       pulumi.Float64(bundle.ImageSSHPort),
+		Host:           publicIP,
+		PrivateKey:     pulumi.String(privateKey),
+		User:           pulumi.String(bundle.ImageUsername),
+		Port:           pulumi.Float64(bundle.ImageSSHPort),
+		DialErrorLimit: pulumi.Int(-1),
+		PerDialTimeout: pulumi.Int(0),
 	}
 
 	pubKeyFilename := newPublicKey.ApplyT(util.WriteTempFile).(pulumi.StringOutput)
@@ -79,11 +81,12 @@ func Setup(ctx *pulumi.Context,
 	pullSecretEncoded := base64.StdEncoding.EncodeToString([]byte(pullsecret))
 
 	c := remote.ConnectionArgs{
-		Host:       publicIP,
-		PrivateKey: privateKey,
-		User:       pulumi.String(bundle.ImageUsername),
-		Port:       pulumi.Float64(bundle.ImageSSHPort),
-	}
+		Host:           publicIP,
+		PrivateKey:     privateKey,
+		User:           pulumi.String(bundle.ImageUsername),
+		Port:           pulumi.Float64(bundle.ImageSSHPort),
+		DialErrorLimit: pulumi.Int(-1),
+		PerDialTimeout: pulumi.Int(0)}
 
 	clusterSetupfileName, err := util.WriteTempFile(string(script))
 	if err != nil {
