@@ -27,7 +27,9 @@ func getAWSProviderCmd() *cobra.Command {
 			// Provider dependent params
 			providerParams := make(map[string]string)
 			for name := range manager.CreateParams() {
-				providerParams[name] = viper.GetString(name)
+				if viper.IsSet(name) {
+					providerParams[name] = viper.GetString(name)
+				}
 			}
 			if err := manager.Create(
 				viper.GetString(constants.ProjectName),
