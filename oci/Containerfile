@@ -12,7 +12,7 @@ RUN make build \
     && curl -LO ${PULUMI_URL} \
     && tar -xzvf pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
-FROM quay.io/centos/centos:stream9@sha256:8845d412fc1bfcd06a0f8615dcd53acf8f8895af653e40fd95625be6b24c370b
+FROM quay.io/centos/centos:stream9@sha256:f72d75a4553b7d4523efa745b7b97961f347f5f1e20e53709e2f8db313c44f7f
 
 LABEL MAINTAINER "CRC <devtools-cdk@redhat.com>"
 
@@ -25,7 +25,7 @@ COPY requirements.txt ./
 USER root
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-command
-ARG PULUMI_COMMAND_VERSION=v0.9.1
+ARG PULUMI_COMMAND_VERSION=v0.9.2
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-tls
 ARG PULUMI_TLS_VERSION=v4.11.0
