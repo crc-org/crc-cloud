@@ -4,15 +4,15 @@
     "github>platform-engineering-org/.github"
   ],
   "rangeStrategy": "bump",
-  "ignoreDeps": ["go"],
   "automerge": false,
   "packageRules": [
     {
       "matchPackageNames": [
+        "go",
         "registry.access.redhat.com/ubi9/go-toolset"
       ],
       "dependencyDashboardApproval": true,
-      "groupName": null
+      "groupName": "go upgrade"
     }
   ]
 }
