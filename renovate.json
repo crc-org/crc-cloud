@@ -9,7 +9,7 @@
   "packageRules": [
     {
       "matchPackageNames": [
-        "registry.access.redhat.com/ubi9/go-toolset	"
+        "registry.access.redhat.com/ubi9/go-toolset"
       ],
       "dependencyDashboardApproval": true,
       "groupName": null
