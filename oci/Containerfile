@@ -1,11 +1,11 @@
-FROM registry.access.redhat.com/ubi9/go-toolset:1.19.13-4.1697647145@sha256:12d67bb6d991a18a91f3b8184ac4b711334f3c095e0e3cdcf7f9ed361ee2b710 as builder
+FROM registry.access.redhat.com/ubi9/go-toolset:1.20.10-2.1699551725@sha256:310fbbc9b2a6af87d730e244d5b20a1836df3ae295c290ffec2d4ef6a53a33f8 as builder
 
 USER root
 WORKDIR /workspace
 COPY . .
 
 # renovate: datasource=github-releases depName=pulumi/pulumi
-ENV PULUMI_VERSION=v3.87.0
+ENV PULUMI_VERSION=v3.96.1
 ENV PULUMI_URL https://github.com/pulumi/pulumi/releases/download/${PULUMI_VERSION}/pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
 RUN make build \
@@ -28,16 +28,16 @@ USER root
 ARG PULUMI_COMMAND_VERSION=v0.9.2
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-tls
-ARG PULUMI_TLS_VERSION=v4.11.0
+ARG PULUMI_TLS_VERSION=v5.0.0
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-random
 ARG PULUMI_RANDOM_VERSION=v4.14.0
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-aws
-ARG PULUMI_AWS_VERSION=v6.4.0
+ARG PULUMI_AWS_VERSION=v6.13.1
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-azure-native
-ARG PULUMI_AZURE_NATIVE_VERSION=v2.10.0
+ARG PULUMI_AZURE_NATIVE_VERSION=v2.21.1
 
 RUN dnf install -y python3 python3-pip zstd qemu-img && \
     pip install -r requirements.txt && \
