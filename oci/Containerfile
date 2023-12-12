@@ -12,7 +12,7 @@ RUN make build \
     && curl -LO ${PULUMI_URL} \
     && tar -xzvf pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
-FROM quay.io/centos/centos:stream9@sha256:f72d75a4553b7d4523efa745b7b97961f347f5f1e20e53709e2f8db313c44f7f
+FROM quay.io/centos/centos:stream9@sha256:1ad5272613140d855a997a0d1b4f489a51cd9320447967feb72305f91fd4dda2
 
 LABEL MAINTAINER "CRC <devtools-cdk@redhat.com>"
 
@@ -34,7 +34,7 @@ ARG PULUMI_TLS_VERSION=v5.0.0
 ARG PULUMI_RANDOM_VERSION=v4.14.0
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-aws
-ARG PULUMI_AWS_VERSION=v6.13.2
+ARG PULUMI_AWS_VERSION=v6.13.3
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-azure-native
 ARG PULUMI_AZURE_NATIVE_VERSION=v2.21.2
