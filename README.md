@@ -28,13 +28,40 @@ To facilite the usage of `crc-cloud`, a [container image](https://quay.io/reposi
 
 ### Authetication  
 
-All operations require to set the authentication mechanism in place. As so any `aws` authentication mechanism is supported by `crc-cloud`:
+All operations require to set the authentication mechanism in place.
+
+As so any `aws` authentication mechanism is supported by `crc-cloud`:
 
 - long term credentials `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` as environment variables  
 - short lived credentials (in addition to `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` would require `AWS_SESSION_TOKEN`)
 - credentials on config file (default file ~/.aws/config), in case of multiple profiles it will also accepts `AWS_PROFILE`
 
+As so any `gcp` authentication mechanism is supported by `crc-cloud`:
+
+- Credentials `GOOGLE_APPLICATION_CREDENTIALS` as environment variable
+- Project ID `GCLOUD_PROJECT` as environment variable
+- Region `GCLOUD_REGION` as environment variable
+- Zone `GCLOUD_ZONE` as environment variable
+
 ### Restrictions
+
+**Note**: `import` operation is not supported on `gcp` provider. As of now please use following manual steps to import the image on `gcp`:
+```bash
+# Download the required bundle from https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/crc/bundles/openshift/
+curl -L -O https://mirror.openshift.com/pub/openshift-v4/clients/crc/bundles/openshift/4.14.3/crc_libvirt_4.14.3_amd64.crcbundle
+# Extract the bundle
+tar -xvf crc_libvirt_4.14.3_amd64.crcbundle && cd crc_libvirt_4.14.3_amd64
+# Convert the qcow2 image to raw
+qemu-img convert crc.qcow2 disk.raw
+# Compress the raw image to tar.gz
+tar --format=oldgnu -Sczf /tmp/crc.tar.gz disk.raw
+# Upload the tar.gz to GCS
+gsutil cp /tmp/crc.tar.gz gs://crc-bundle-github-ci
+# Create the image on GCP
+gcloud compute images create crc --source-uri  gs://crc-bundle-github-ci/crc.tar.gz
+# List the images and check for crc one
+gcloud compute images list --no-standard-images | grep crc
+```
 
 The `import` operation downloads and transform the bundle offered by crc into an image supported by `AWS`, as so there are some disk demanding operation. So there is a requirement of at least 70G free on disk to run this operation.  
 
@@ -98,7 +125,7 @@ podman run -d --rm \
 
 `create` operation is responsible for create all required resources on the cloud provider to spin the Openshift Single Node Cluster.  
 
-Usage:
+Usage: In case of `aws` provider
 
 ```bash
 create crc cloud instance on AWS
@@ -121,6 +148,29 @@ Global Flags:
       --pullsecret-filepath string   path for pullsecret file
 ```
 
+Usage: In case of `gcp` provider
+
+```bash
+create crc cloud instance on GCP
+
+Usage:
+  crc-cloud create gcp [flags]
+
+Flags:
+      --gcp-disk-size string       Disk size in GB for the machine running the cluster. Default is 100.
+      --gcp-image-id string        GCP image identifier
+      --gcp-instance-type string   Instance type for the machine running the cluster. Default is n1-standard-8.
+  -h, --help                       help for gcp
+
+Global Flags:
+      --backed-url string            backed for stack state. Can be a local path with format file:///path/subpath or s3 s3://existing-bucket
+      --key-filepath string          path to init key obtained when importing the image
+      --output string                path to export assets
+      --project-name string          project name to identify the instance of the stack
+      --pullsecret-filepath string   path for pullsecret file
+      --tags stringToString          tags to add on each resource (--tags name1=value1,name2=value2) (default [])
+```
+
 Outputs:
 
 - `kubeconfig` file with the kube config to connect withint the cluster  
@@ -129,7 +179,7 @@ Outputs:
 - `id_rsa` key to connect the remote host
 - `password` password generated for `kubeadmin` and `developer` default cluster users
 
-Sample
+Sample for `aws` provider:
 
 ```bash
 podman run -d --rm \
@@ -145,6 +195,27 @@ podman run -d --rm \
         --aws-ami-id "ami-xxxx" \
         --aws-instance-type "c6i.4xlarge" \
         --aws-disk-size "200" \
+        --pullsecret-filepath "/workspace/pullsecret" \
+        --key-filepath "/workspace/id_ecdsa"
+```
+
+Sample for `gcp` provider:
+
+```bash
+podman run -d --rm \
+    -v ${PWD}:/workspace:z \
+    -e GOOGLE_APPLICATION_CREDENTIALS=${gcp_credentials} \
+    -e GCLOUD_PROJECT=${gcp_project_id} \
+    -e GCLOUD_REGION=${gcp_region} \
+    -e GCLOUD_ZONE=${gcp_zone} \
+    quay.io/crcont/crc-cloud:v0.0.2 create gcp \
+        --project-name "crc-ocp412" \
+        --backed-url "file:///workspace" \
+        --output "/workspace" \
+        --tags account=qe-pt,profile=builder \
+        --gcp-image-id "gcp-xxxx" \
+        --gcp-instance-type "n1-standard-8" \
+        --gcp-disk-size "100" \
         --pullsecret-filepath "/workspace/pullsecret" \
         --key-filepath "/workspace/id_ecdsa"
 ```
@@ -168,7 +239,7 @@ Flags:
       --provider string       target cloud provider
 ```
 
-Sample
+Sample for `aws` provider:
 
 ```bash
 podman run -d --rm \
@@ -180,4 +251,19 @@ podman run -d --rm \
         --project-name "crc-ocp412" \
         --backed-url "file:///workspace" \
         --provider "aws" 
+```
+
+Sample for `gcp` provider:
+
+```bash
+podman run -d --rm \
+    -v ${PWD}:/workspace:z \
+    -e GOOGLE_APPLICATION_CREDENTIALS=${gcp_credentials} \
+    -e GCLOUD_PROJECT=${gcp_project_id} \
+    -e GCLOUD_REGION=${gcp_region} \
+    -e GCLOUD_ZONE=${gcp_zone} \
+    quay.io/crcont/crc-cloud:v0.0.2 destroy \
+        --project-name "crc-ocp412" \
+        --backed-url "file:///workspace" \
+        --provider "gcp"
 ```
