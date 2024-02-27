@@ -5,7 +5,7 @@ WORKDIR /workspace
 COPY . .
 
 # renovate: datasource=github-releases depName=pulumi/pulumi
-ENV PULUMI_VERSION=v3.101.1
+ENV PULUMI_VERSION=v3.107.0
 ENV PULUMI_URL https://github.com/pulumi/pulumi/releases/download/${PULUMI_VERSION}/pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
 RUN make build \
@@ -34,13 +34,13 @@ ARG PULUMI_TLS_VERSION=v5.0.1
 ARG PULUMI_RANDOM_VERSION=v4.15.1
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-aws
-ARG PULUMI_AWS_VERSION=v6.18.1
+ARG PULUMI_AWS_VERSION=v6.23.0
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-gcp
-ARG PULUMI_GCP_VERSION=v7.5.0
+ARG PULUMI_GCP_VERSION=v7.11.0
 
 # renovate: datasource=github-releases depName=pulumi/pulumi-azure-native
-ARG PULUMI_AZURE_NATIVE_VERSION=v2.24.0
+ARG PULUMI_AZURE_NATIVE_VERSION=v2.30.0
 
 RUN dnf install -y python3 python3-pip zstd qemu-img && \
     pip install -r requirements.txt && \
