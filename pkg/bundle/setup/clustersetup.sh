@@ -3,7 +3,7 @@
 export KUBECONFIG="/opt/kubeconfig"
 LOG_PATH="/tmp"
 LOG_FILE="$LOG_PATH/_RANDOM_SUFFIX_.log"
-DNSMASQ_CONF="/var/srv/dnsmasq.conf"
+DNSMASQ_CONF="/etc/dnsmasq.d/crc-dnsmasq.conf"
 CLUSTER_HEALTH_SLEEP=8
 CLUSTER_HEALTH_RETRIES=500
 STEPS_SLEEP_TIME=10
@@ -99,11 +99,10 @@ replace_default_pubkey() {
 }
 
 setup_dsnmasq(){
+    hostName=$(hostname)
     pr_info "writing Dnsmasq conf on $DNSMASQ_CONF"
-         cat << EOF > /var/srv/dnsmasq.conf
-user=root
-port= 53
-bind-interfaces
+         cat << EOF > /etc/dnsmasq.d/crc-dnsmasq.conf
+listen-address=$IIP
 expand-hosts
 log-queries
 local=/crc.testing/
@@ -111,21 +110,21 @@ domain=crc.testing
 address=/apps-crc.testing/$IIP
 address=/api.crc.testing/$IIP
 address=/api-int.crc.testing/$IIP
-address=/crc-wz8dw-master-0.crc.testing/192.168.126.11
+address=/$hostName.crc.testing/192.168.126.11
 EOF
 
     stop_if_failed  $? "failed to write Dnsmasq configuration in $DNSMASQ_CONF"
     pr_info  "adding Dnsmasq as primary DNS"
     sleep 2
-    nmcli connection modify Wired\ connection\ 1 ipv4.dns "10.88.0.8,169.254.169.254"
+    nmcli connection modify Wired\ connection\ 1 ipv4.dns "$IIP,169.254.169.254"
     stop_if_failed  $? "failed to modify NetworkManager settings"
     pr_info  "restarting NetworkManager"
     sleep 2
     systemctl restart NetworkManager 
     stop_if_failed $? "failed to restart NetworkManager"
     pr_info  "enabling & starting Dnsmasq service"
-    systemctl enable crc-dnsmasq.service
-    systemctl start crc-dnsmasq.service
+    systemctl enable dnsmasq.service
+    systemctl start dnsmasq.service
     sleep 2
     stop_if_failed $? "failed to start Dnsmasq service"
 }
