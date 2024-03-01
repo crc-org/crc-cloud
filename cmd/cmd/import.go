@@ -33,7 +33,7 @@ func init() {
 var crcCloudImportCmd = &cobra.Command{
 	Use:   importImageCmdName,
 	Short: importImageCmdDescription,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, _ []string) error {
 		if err := viper.BindPFlags(cmd.Flags()); err != nil {
 			return err
 		}

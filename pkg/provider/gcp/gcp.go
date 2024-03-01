@@ -17,7 +17,7 @@ func (a *Provider) GetPlugin() *providerAPI.PluginInfo {
 		Version: "v6.65.0"}
 }
 
-func (a *Provider) ImportImageRunFunc(projectName, bundleDownloadURL, shasumfileDownloadURL string) (pulumi.RunFunc, error) {
+func (a *Provider) ImportImageRunFunc(_, _, _ string) (pulumi.RunFunc, error) {
 	return nil, nil
 }
 
