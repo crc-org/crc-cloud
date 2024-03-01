@@ -43,9 +43,17 @@ As so any `gcp` authentication mechanism is supported by `crc-cloud`:
 - Region `GCLOUD_REGION` as environment variable
 - Zone `GCLOUD_ZONE` as environment variable
 
+As so any `openstack` authentication mechanism is supported by `crc-cloud`:
+
+- `OS_CLIENT_CONFIG_FILE` as environment variable to select cloud yaml file which have details about the openstack cloud
+  - https://docs.openstack.org/os-client-config/1.24.0/
+- `OS_CLOUD` as environment variable to select the cloud from the cloud yaml file
+
 ### Restrictions
 
-**Note**: `import` operation is not supported on `gcp` provider. As of now please use following manual steps to import the image on `gcp`:
+**Note**: `import` operation is not supported on `gcp` and `openstack` provider. 
+
+As of now please use following manual steps to import the image on `gcp`:
 ```bash
 # Download the required bundle from https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/crc/bundles/openshift/
 curl -L -O https://mirror.openshift.com/pub/openshift-v4/clients/crc/bundles/openshift/4.14.3/crc_libvirt_4.14.3_amd64.crcbundle
@@ -61,6 +69,18 @@ gsutil cp /tmp/crc.tar.gz gs://crc-bundle-github-ci
 gcloud compute images create crc --source-uri  gs://crc-bundle-github-ci/crc.tar.gz
 # List the images and check for crc one
 gcloud compute images list --no-standard-images | grep crc
+```
+
+As of now please use following manual steps to import the image on `openstack`:
+```bash
+# Download the required bundle from https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/crc/bundles/openshift/
+curl -L -O https://mirror.openshift.com/pub/openshift-v4/clients/crc/bundles/openshift/4.14.3/crc_libvirt_4.14.3_amd64.crcbundle
+# Extract the bundle
+tar -xvf crc_libvirt_4.14.3_amd64.crcbundle && cd crc_libvirt_4.14.3_amd64
+# Convert the qcow2 image to raw
+qemu-img convert crc.qcow2 crc.raw
+# Upload the raw image to openstack
+openstack image create --disk-format raw --file crc.raw  --tag openshift-local --progress openshift-local-4.14.3
 ```
 
 The `import` operation downloads and transform the bundle offered by crc into an image supported by `AWS`, as so there are some disk demanding operation. So there is a requirement of at least 70G free on disk to run this operation.  
@@ -171,6 +191,29 @@ Global Flags:
       --tags stringToString          tags to add on each resource (--tags name1=value1,name2=value2) (default [])
 ```
 
+Usage: In case of `openstack` provider
+```bash
+create crc cloud instance on OpenStack
+
+Usage:
+  crc-cloud create openstack [flags]
+
+Flags:
+      --disk-size string   Disk size in GB for the machine running the cluster. Default is 100.
+      --flavor string      OpenStack flavor type for the machine running the cluster. Default is m1.xlarge.
+  -h, --help               help for openstack
+      --image string       OpenStack image identifier
+      --network string     OpenStack network name for the machine running the cluster.
+
+Global Flags:
+      --backed-url string            backed for stack state. Can be a local path with format file:///path/subpath or s3 s3://existing-bucket
+      --key-filepath string          path to init key obtained when importing the image
+      --output string                path to export assets
+      --project-name string          project name to identify the instance of the stack
+      --pullsecret-filepath string   path for pullsecret file
+      --tags stringToString          tags to add on each resource (--tags name1=value1,name2=value2) (default [])
+
+```
 Outputs:
 
 - `kubeconfig` file with the kube config to connect withint the cluster  
@@ -220,6 +263,25 @@ podman run -d --rm \
         --key-filepath "/workspace/id_ecdsa"
 ```
 
+Sample for `openstack` provider:
+
+```bash
+podman run --rm \
+    -v ${PWD}:/workspace:z \
+    -e OS_CLOUD=openstack \
+    -e OS_CLIENT_CONFIG_FILE=/workspace/prkumar_clouds.yaml \
+    quay.io/crcont/crc-cloud:latest create openstack \
+    --image openshift-local-4.14.12 \
+    --backed-url file:///workspace \
+    --project-name crc-ocp414 \
+    --output /workspace \
+    --key-filepath "/workspace/id_ecdsa" \
+    --pullsecret-filepath "/workspace/pull-secret" \
+    --disk-size 100 \
+    --network provider_net_cci_5 \
+    --flavor ocp-master
+```
+
 #### Destroy
 
 `destroy` operation will remove any resource created at the cloud provider, it uses the files holding the state of the infrastructure which has been store at location defined by parameter `backed-url` on `create` operation.  
@@ -266,4 +328,17 @@ podman run -d --rm \
         --project-name "crc-ocp412" \
         --backed-url "file:///workspace" \
         --provider "gcp"
+```
+
+Sample for `openstack` provider:
+
+```bash
+podman run --rm \
+    -v ${PWD}:/workspace:z \
+    -e OS_CLOUD=openstack \
+    -e OS_CLIENT_CONFIG_FILE=/workspace/prkumar_clouds.yaml \
+    quay.io/crcont/crc-cloud:latest destroy \
+    --provider openstack \
+    --backed-url file:///workspace \
+    --project-name crc-ocp414
 ```
