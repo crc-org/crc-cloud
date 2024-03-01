@@ -1,3 +1,4 @@
 workdir/
 debug.sh
 out/
+.pulumi/
