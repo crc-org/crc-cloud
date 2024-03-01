@@ -105,7 +105,7 @@ func (c *converter) Close() error {
 }
 
 func (c *converter) ConvertState(ctx context.Context, req *ConvertStateRequest) (*ConvertStateResponse, error) {
-	label := fmt.Sprintf("%s.ConvertState", c.label())
+	label := c.label() + ".ConvertState"
 	logging.V(7).Infof("%s executing", label)
 
 	resp, err := c.clientRaw.ConvertState(ctx, &pulumirpc.ConvertStateRequest{
@@ -126,15 +126,27 @@ func (c *converter) ConvertState(ctx context.Context, req *ConvertStateRequest) 
 			ID:                resource.Id,
 			Version:           resource.Version,
 			PluginDownloadURL: resource.PluginDownloadURL,
+			LogicalName:       resource.LogicalName,
+			IsRemote:          resource.IsRemote,
+			IsComponent:       resource.IsComponent,
 		}
 	}
 
+	// Translate the rpc diagnostics into hcl.Diagnostics.
+	var diags hcl.Diagnostics
+	for _, rpcDiag := range resp.Diagnostics {
+		diags = append(diags, RPCDiagnosticToHclDiagnostic(rpcDiag))
+	}
+
 	logging.V(7).Infof("%s success", label)
-	return &ConvertStateResponse{Resources: resources}, nil
+	return &ConvertStateResponse{
+		Resources:   resources,
+		Diagnostics: diags,
+	}, nil
 }
 
 func (c *converter) ConvertProgram(ctx context.Context, req *ConvertProgramRequest) (*ConvertProgramResponse, error) {
-	label := fmt.Sprintf("%s.ConvertProgram", c.label())
+	label := c.label() + ".ConvertProgram"
 	logging.V(7).Infof("%s executing", label)
 
 	resp, err := c.clientRaw.ConvertProgram(ctx, &pulumirpc.ConvertProgramRequest{

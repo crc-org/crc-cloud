@@ -35,6 +35,7 @@ func GetCreateCmd() *cobra.Command {
 
 	createCmd.AddCommand(getAWSProviderCmd())
 	createCmd.AddCommand(getGCPProviderCmd())
+	createCmd.AddCommand(getOpenStackProviderCmd())
 
 	return createCmd
 }

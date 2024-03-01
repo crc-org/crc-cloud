@@ -5,7 +5,7 @@ WORKDIR /workspace
 COPY . .
 
 # renovate: datasource=github-releases depName=pulumi/pulumi
-ENV PULUMI_VERSION=v3.107.0
+ENV PULUMI_VERSION=v3.103.1
 ENV PULUMI_URL https://github.com/pulumi/pulumi/releases/download/${PULUMI_VERSION}/pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
 RUN make build \
@@ -42,6 +42,9 @@ ARG PULUMI_GCP_VERSION=v7.11.0
 # renovate: datasource=github-releases depName=pulumi/pulumi-azure-native
 ARG PULUMI_AZURE_NATIVE_VERSION=v2.30.0
 
+# renovate: datasource=github-releases depName=pulumi/pulumi-openstack
+ARG PULUMI_OPENSTACK_VERSION=v3.15.1
+
 RUN dnf install -y python3 python3-pip zstd qemu-img && \
     pip install -r requirements.txt && \
     pulumi plugin install resource command ${PULUMI_COMMAND_VERSION} && \
@@ -49,6 +52,7 @@ RUN dnf install -y python3 python3-pip zstd qemu-img && \
     pulumi plugin install resource random ${PULUMI_RANDOM_VERSION} && \
     pulumi plugin install resource aws ${PULUMI_AWS_VERSION} && \
     pulumi plugin install resource azure-native ${PULUMI_AZURE_NATIVE_VERSION} && \
-    pulumi plugin install resource gcp ${PULUMI_GCP_VERSION}
+    pulumi plugin install resource gcp ${PULUMI_GCP_VERSION} && \
+    pulumi plugin install resource openstack ${PULUMI_OPENSTACK_VERSION}
 
 ENTRYPOINT [ "crc-cloud" ]

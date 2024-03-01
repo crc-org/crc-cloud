@@ -51,11 +51,21 @@ func (c *converterServer) ConvertState(ctx context.Context,
 			Id:                resource.ID,
 			Version:           resource.Version,
 			PluginDownloadURL: resource.PluginDownloadURL,
+			LogicalName:       resource.LogicalName,
+			IsRemote:          resource.IsRemote,
+			IsComponent:       resource.IsComponent,
 		}
 	}
 
+	// Translate the hcl.Diagnostics into rpc diagnostics.
+	diags := slice.Prealloc[*codegenrpc.Diagnostic](len(resp.Diagnostics))
+	for _, diag := range resp.Diagnostics {
+		diags = append(diags, HclDiagnosticToRPCDiagnostic(diag))
+	}
+
 	rpcResp := &pulumirpc.ConvertStateResponse{
-		Resources: resources,
+		Resources:   resources,
+		Diagnostics: diags,
 	}
 	return rpcResp, nil
 }

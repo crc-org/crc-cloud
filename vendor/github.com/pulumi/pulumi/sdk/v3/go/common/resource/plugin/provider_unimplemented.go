@@ -74,11 +74,11 @@ func (p *UnimplementedProvider) Update(urn resource.URN, id resource.ID, oldInpu
 	return resource.PropertyMap{}, resource.StatusUnknown, status.Error(codes.Unimplemented, "Update is not yet implemented")
 }
 
-func (p *UnimplementedProvider) Delete(urn resource.URN, id resource.ID, props resource.PropertyMap, timeout float64) (resource.Status, error) {
+func (p *UnimplementedProvider) Delete(urn resource.URN, id resource.ID, oldInputs, oldOutputs resource.PropertyMap, timeout float64) (resource.Status, error) {
 	return resource.StatusUnknown, status.Error(codes.Unimplemented, "Delete is not yet implemented")
 }
 
-func (p *UnimplementedProvider) Construct(info ConstructInfo, typ tokens.Type, name tokens.QName, parent resource.URN, inputs resource.PropertyMap, options ConstructOptions) (ConstructResult, error) {
+func (p *UnimplementedProvider) Construct(info ConstructInfo, typ tokens.Type, name string, parent resource.URN, inputs resource.PropertyMap, options ConstructOptions) (ConstructResult, error) {
 	return ConstructResult{}, status.Error(codes.Unimplemented, "Construct is not yet implemented")
 }
 

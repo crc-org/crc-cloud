@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/pulumi/pulumi/sdk/v3/go/common/util/contract"
+	"github.com/pulumi/pulumi/sdk/v3/go/common/util/logging"
 )
 
 // PropertyPath represents a path to a nested property. The path may be composed of strings (which access properties
@@ -46,16 +47,29 @@ type PropertyPath []interface{}
 // - ["root key with a ."][100]
 // - root.array[*].field
 // - root.array["*"].field
-func ParsePropertyPath(path string) (PropertyPath, error) {
+func parsePropertyPath(path string, strict bool) (PropertyPath, error) {
 	// We interpret the grammar above a little loosely in order to keep things simple. Specifically, we will accept
 	// something close to the following:
-	// pathElement := { '.' } ( '[' ( [0-9]+ | '"' ('\' '"' | [^"] )+ '"' ']' | [a-zA-Z_$][a-zA-Z0-9_$] )
-	// path := { pathElement }
+	// pathElement := { '.' } [a-zA-Z_$][a-zA-Z0-9_$]
+	// pathIndex := '[' ( [0-9]+ | '"' ('\' '"' | [^"] )+ '"' ']'
+	// path := { pathElement | pathIndex }
 	var elements []interface{}
+	if len(path) > 0 && path[0] == '.' {
+		return nil, errors.New("expected property path to start with a name or index")
+	}
 	for len(path) > 0 {
 		switch path[0] {
 		case '.':
 			path = path[1:]
+			if len(path) == 0 {
+				return nil, errors.New("expected property path to end with a name or index")
+			}
+			if path[0] == '[' && strict {
+				return nil, errors.New("expected property name after '.'")
+			} else if path[0] == '[' {
+				// We tolerate a '.' followed by a '[', which is not strictly legal, but is common from old providers.
+				logging.V(10).Infof("property path '%s' contains a '.' followed by a '['; this is not strictly legal", path)
+			}
 		case '[':
 			// If the character following the '[' is a '"', parse a string key.
 			var pathElement interface{}
@@ -109,6 +123,14 @@ func ParsePropertyPath(path string) (PropertyPath, error) {
 		}
 	}
 	return PropertyPath(elements), nil
+}
+
+func ParsePropertyPath(path string) (PropertyPath, error) {
+	return parsePropertyPath(path, false)
+}
+
+func ParsePropertyPathStrict(path string) (PropertyPath, error) {
+	return parsePropertyPath(path, true)
 }
 
 // Get attempts to get the value located by the PropertyPath inside the given PropertyValue. If any component of the
@@ -301,10 +323,26 @@ func (p PropertyPath) Contains(other PropertyPath) bool {
 	return true
 }
 
-func (p PropertyPath) reset(old, new PropertyValue) bool {
+// unwrapSecrets recursively unwraps any secrets from the given PropertyValue returning true if any secrets were
+// unwrapped.
+func unwrapSecrets(v PropertyValue) (PropertyValue, bool) {
+	if v.IsSecret() {
+		inner, _ := unwrapSecrets(v.SecretValue().Element)
+		return inner, true
+	}
+	return v, false
+}
+
+func (p PropertyPath) reset(old, new PropertyValue, oldIsSecret, newIsSecret bool) bool {
 	if len(p) == 0 {
 		return false
 	}
+
+	// Unwrap any secrets from old & new, we can just go through them for this traversal.
+	old, isSecret := unwrapSecrets(old)
+	oldIsSecret = oldIsSecret || isSecret
+	new, isSecret = unwrapSecrets(new)
+	newIsSecret = newIsSecret || isSecret
 
 	// If this is the last component we want to do the reset, else we want to search for the next component.
 	key := p[0]
@@ -339,6 +377,11 @@ func (p PropertyPath) reset(old, new PropertyValue) bool {
 			// Otherwise both arrays contain this index and we can reset the value of it in new to what is in
 			// old.
 			v := old.ArrayValue()[key]
+			// If this was a secret value in old, but new isn't currently a secret context then we need to mark this
+			// reset value as secret.
+			if oldIsSecret && !newIsSecret {
+				v = MakeSecret(v)
+			}
 			new.ArrayValue()[key] = v
 			return true
 		}
@@ -356,7 +399,7 @@ func (p PropertyPath) reset(old, new PropertyValue) bool {
 		}
 		old = old.ArrayValue()[key]
 		new = new.ArrayValue()[key]
-		return p[1:].reset(old, new)
+		return p[1:].reset(old, new, oldIsSecret, newIsSecret)
 
 	case string:
 		if key == "*" {
@@ -365,6 +408,11 @@ func (p PropertyPath) reset(old, new PropertyValue) bool {
 					if old.IsObject() {
 						for k := range old.ObjectValue() {
 							v := old.ObjectValue()[k]
+							// If this was a secret value in old, but new isn't currently a secret context then we need
+							// to mark this reset value as secret.
+							if oldIsSecret && !newIsSecret {
+								v = MakeSecret(v)
+							}
 							new.ObjectValue()[k] = v
 						}
 						for k := range new.ObjectValue() {
@@ -378,13 +426,17 @@ func (p PropertyPath) reset(old, new PropertyValue) bool {
 					if old.IsArray() {
 						for i := range old.ArrayValue() {
 							v := old.ArrayValue()[i]
+							// If this was a secret value in old, but new isn't currently a secret context then we need
+							// to mark this reset value as secret.
+							if oldIsSecret && !newIsSecret {
+								v = MakeSecret(v)
+							}
 							new.ArrayValue()[i] = v
 						}
 					}
 					return true
-				} else {
-					return false
 				}
+				return false
 			}
 
 			if old.IsObject() && new.IsObject() {
@@ -399,7 +451,7 @@ func (p PropertyPath) reset(old, new PropertyValue) bool {
 						return false
 					}
 
-					if !p[1:].reset(oldValue, newValue) {
+					if !p[1:].reset(oldValue, newValue, oldIsSecret, newIsSecret) {
 						return false
 					}
 				}
@@ -409,14 +461,13 @@ func (p PropertyPath) reset(old, new PropertyValue) bool {
 				newArray := new.ArrayValue()
 
 				for i := range oldArray {
-					if !p[1:].reset(oldArray[i], newArray[i]) {
+					if !p[1:].reset(oldArray[i], newArray[i], oldIsSecret, newIsSecret) {
 						return false
 					}
 				}
 				return true
-			} else {
-				return false
 			}
+			return false
 		} else {
 			pkey := PropertyKey(key)
 
@@ -436,7 +487,11 @@ func (p PropertyPath) reset(old, new PropertyValue) bool {
 					if !new.IsObject() {
 						return false
 					}
-					// Else simply overwrite the value in new with the value from old
+					// Else simply overwrite the value in new with the value from old, if this was a secret value in
+					// old, but new isn't currently a secret context then we need to mark this reset value as secret.
+					if oldIsSecret && !newIsSecret {
+						v = MakeSecret(v)
+					}
 					new.ObjectValue()[pkey] = v
 				} else {
 					// If the path doesn't exist in old then we want to delete it from new, but if new isn't
@@ -469,7 +524,7 @@ func (p PropertyPath) reset(old, new PropertyValue) bool {
 				return true
 			}
 
-			return p[1:].reset(old, new)
+			return p[1:].reset(old, new, oldIsSecret, newIsSecret)
 		}
 	}
 
@@ -482,7 +537,7 @@ func (p PropertyPath) reset(old, new PropertyValue) bool {
 // intermediate locations, it also won't create or delete array locations (because that would change the size
 // of the array).
 func (p PropertyPath) Reset(old, new PropertyMap) bool {
-	return p.reset(NewObjectProperty(old), NewObjectProperty(new))
+	return p.reset(NewObjectProperty(old), NewObjectProperty(new), false, false)
 }
 
 func requiresQuote(c rune) bool {
