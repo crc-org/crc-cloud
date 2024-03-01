@@ -16,7 +16,6 @@ package plugin
 
 import (
 	"errors"
-	"fmt"
 	"io"
 
 	"github.com/pulumi/pulumi/sdk/v3/go/common/resource"
@@ -73,11 +72,12 @@ type Provider interface {
 	Update(urn resource.URN, id resource.ID,
 		oldInputs, oldOutputs, newInputs resource.PropertyMap, timeout float64,
 		ignoreChanges []string, preview bool) (resource.PropertyMap, resource.Status, error)
-	// Delete tears down an existing resource.
-	Delete(urn resource.URN, id resource.ID, props resource.PropertyMap, timeout float64) (resource.Status, error)
+	// Delete tears down an existing resource. The inputs and outputs are the last recorded ones from state.
+	Delete(urn resource.URN, id resource.ID,
+		inputs, outputs resource.PropertyMap, timeout float64) (resource.Status, error)
 
 	// Construct creates a new component resource.
-	Construct(info ConstructInfo, typ tokens.Type, name tokens.QName, parent resource.URN, inputs resource.PropertyMap,
+	Construct(info ConstructInfo, typ tokens.Type, name string, parent resource.URN, inputs resource.PropertyMap,
 		options ConstructOptions) (ConstructResult, error)
 
 	// Invoke dynamically executes a built-in function in the provider.
@@ -169,9 +169,11 @@ func (d DiffKind) IsReplace() bool {
 	switch d {
 	case DiffAddReplace, DiffDeleteReplace, DiffUpdateReplace:
 		return true
-	default:
+	case DiffAdd, DiffDelete, DiffUpdate:
 		return false
 	}
+	contract.Failf("Unknown diff kind %v", int(d))
+	return false
 }
 
 // AsReplace converts a DiffKind into the equivalent replacement if it not already
@@ -237,65 +239,70 @@ type DiffResult struct {
 }
 
 // NewDetailedDiffFromObjectDiff computes the detailed diff of Updated, Added and Deleted keys.
-func NewDetailedDiffFromObjectDiff(diff *resource.ObjectDiff) map[string]PropertyDiff {
+func NewDetailedDiffFromObjectDiff(diff *resource.ObjectDiff, inputDiff bool) map[string]PropertyDiff {
 	if diff == nil {
 		return map[string]PropertyDiff{}
 	}
 	out := map[string]PropertyDiff{}
-	objectDiffToDetailedDiff("", diff, out)
+	objectDiffToDetailedDiff(nil, diff, inputDiff, out)
 	return out
 }
 
-func objectDiffToDetailedDiff(prefix string, diff *resource.ObjectDiff, acc map[string]PropertyDiff) {
-	getPrefix := func(k resource.PropertyKey) string {
-		if prefix == "" {
-			return string(k)
-		}
-		return fmt.Sprintf("%s.%s", prefix, string(k))
+func objectDiffToDetailedDiff(
+	prefix resource.PropertyPath, diff *resource.ObjectDiff, inputDiff bool, acc map[string]PropertyDiff,
+) {
+	getPrefix := func(k resource.PropertyKey) resource.PropertyPath {
+		return append(prefix, string(k))
 	}
 
 	for k, vd := range diff.Updates {
 		nestedPrefix := getPrefix(k)
-		valueDiffToDetailedDiff(nestedPrefix, vd, acc)
+		valueDiffToDetailedDiff(nestedPrefix, vd, inputDiff, acc)
 	}
 
 	for k := range diff.Adds {
 		nestedPrefix := getPrefix(k)
-		acc[nestedPrefix] = PropertyDiff{Kind: DiffAdd}
+		acc[nestedPrefix.String()] = PropertyDiff{Kind: DiffAdd, InputDiff: inputDiff}
 	}
 
 	for k := range diff.Deletes {
 		nestedPrefix := getPrefix(k)
-		acc[nestedPrefix] = PropertyDiff{Kind: DiffDelete}
+		acc[nestedPrefix.String()] = PropertyDiff{Kind: DiffDelete, InputDiff: inputDiff}
 	}
 }
 
-func arrayDiffToDetailedDiff(prefix string, d *resource.ArrayDiff, acc map[string]PropertyDiff) {
-	nestedPrefix := func(i int) string { return fmt.Sprintf("%s[%d]", prefix, i) }
+func arrayDiffToDetailedDiff(
+	prefix resource.PropertyPath, d *resource.ArrayDiff, inputDiff bool, acc map[string]PropertyDiff,
+) {
+	nestedPrefix := func(i int) resource.PropertyPath {
+		return append(prefix, i)
+	}
 	for i, vd := range d.Updates {
-		valueDiffToDetailedDiff(nestedPrefix(i), vd, acc)
+		valueDiffToDetailedDiff(nestedPrefix(i), vd, inputDiff, acc)
 	}
 	for i := range d.Adds {
-		acc[nestedPrefix(i)] = PropertyDiff{Kind: DiffAdd}
+		acc[nestedPrefix(i).String()] = PropertyDiff{Kind: DiffAdd, InputDiff: inputDiff}
 	}
 	for i := range d.Deletes {
-		acc[nestedPrefix(i)] = PropertyDiff{Kind: DiffDelete}
+		acc[nestedPrefix(i).String()] = PropertyDiff{Kind: DiffDelete, InputDiff: inputDiff}
 	}
 }
 
-func valueDiffToDetailedDiff(prefix string, vd resource.ValueDiff, acc map[string]PropertyDiff) {
+func valueDiffToDetailedDiff(
+	prefix resource.PropertyPath, vd resource.ValueDiff, inputDiff bool, acc map[string]PropertyDiff,
+) {
 	if vd.Object != nil {
-		objectDiffToDetailedDiff(prefix, vd.Object, acc)
+		objectDiffToDetailedDiff(prefix, vd.Object, inputDiff, acc)
 	} else if vd.Array != nil {
-		arrayDiffToDetailedDiff(prefix, vd.Array, acc)
+		arrayDiffToDetailedDiff(prefix, vd.Array, inputDiff, acc)
 	} else {
 		switch {
 		case vd.Old.V == nil && vd.New.V != nil:
-			acc[prefix] = PropertyDiff{Kind: DiffAdd}
+			acc[prefix.String()] = PropertyDiff{Kind: DiffAdd, InputDiff: inputDiff}
 		case vd.Old.V != nil && vd.New.V == nil:
-			acc[prefix] = PropertyDiff{Kind: DiffDelete}
+			acc[prefix.String()] = PropertyDiff{Kind: DiffDelete, InputDiff: inputDiff}
 		default:
-			acc[prefix] = PropertyDiff{Kind: DiffUpdate}
+			acc[prefix.String()] = PropertyDiff{Kind: DiffUpdate, InputDiff: inputDiff}
 		}
 	}
 }

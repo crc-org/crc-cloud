@@ -25,6 +25,7 @@ import (
 	multierror "github.com/hashicorp/go-multierror"
 
 	"github.com/pulumi/pulumi/sdk/v3/go/common/constant"
+	"github.com/pulumi/pulumi/sdk/v3/go/common/resource"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/util/contract"
 	pulumirpc "github.com/pulumi/pulumi/sdk/v3/proto/go"
 
@@ -105,7 +106,7 @@ func runErrInner(body RunFunc, logError func(*Context, error), opts ...RunOption
 // RunWithContext runs the body of a Pulumi program using the given Context for information about the target stack,
 // configuration, and engine connection.
 func RunWithContext(ctx *Context, body RunFunc) error {
-	info := ctx.info
+	info := ctx.state.info
 
 	// Create a root stack resource that we'll parent everything to.
 	var stack ResourceState
@@ -114,7 +115,7 @@ func RunWithContext(ctx *Context, body RunFunc) error {
 	if err != nil {
 		return err
 	}
-	ctx.stack = &stack
+	ctx.state.stack = &stack
 
 	// Execute the body.
 	var result error
@@ -123,7 +124,7 @@ func RunWithContext(ctx *Context, body RunFunc) error {
 	}
 
 	// Register all the outputs to the stack object.
-	if err = ctx.RegisterResourceOutputs(ctx.stack, Map(ctx.exports)); err != nil {
+	if err = ctx.RegisterResourceOutputs(ctx.state.stack, Map(ctx.state.exports)); err != nil {
 		result = multierror.Append(result, err)
 	}
 
@@ -141,16 +142,17 @@ type RunFunc func(ctx *Context) error
 
 // RunInfo contains all the metadata about a run request.
 type RunInfo struct {
-	Project          string
-	Stack            string
-	Config           map[string]string
-	ConfigSecretKeys []string
-	Parallel         int
-	DryRun           bool
-	MonitorAddr      string
-	EngineAddr       string
-	Organization     string
-	Mocks            MockResourceMonitor
+	Project           string
+	Stack             string
+	Config            map[string]string
+	ConfigSecretKeys  []string
+	ConfigPropertyMap resource.PropertyMap
+	Parallel          int
+	DryRun            bool
+	MonitorAddr       string
+	EngineAddr        string
+	Organization      string
+	Mocks             MockResourceMonitor
 
 	getPlugins bool
 	engineConn *grpc.ClientConn // Pre-existing engine connection. If set this is used over EngineAddr.

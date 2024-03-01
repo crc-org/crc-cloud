@@ -22,9 +22,12 @@ import (
 )
 
 type ResourceImport struct {
-	Type string
-	Name string
-	ID   string
+	Type        string
+	Name        string
+	ID          string
+	LogicalName string
+	IsComponent bool
+	IsRemote    bool
 
 	Version           string
 	PluginDownloadURL string
@@ -36,7 +39,8 @@ type ConvertStateRequest struct {
 }
 
 type ConvertStateResponse struct {
-	Resources []ResourceImport
+	Resources   []ResourceImport
+	Diagnostics hcl.Diagnostics
 }
 
 type ConvertProgramRequest struct {
