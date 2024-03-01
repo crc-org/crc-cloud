@@ -54,7 +54,7 @@ func fillCreateRequest(projectName, bootingPrivateKeyFilePath, ocpPullSecretFile
 }
 
 func (r createRequest) runFunc(ctx *pulumi.Context) error {
-	securityGroupsIds, err := securityGroupsIds(ctx)
+	securityGroupsIDs, err := securityGroupsIDs(ctx)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (r createRequest) runFunc(ctx *pulumi.Context) error {
 		InstanceType:             pulumi.String(r.instanceType),
 		KeyName:                  awsKeyPair.KeyName,
 		AssociatePublicIpAddress: pulumi.Bool(true),
-		VpcSecurityGroupIds:      securityGroupsIds,
+		VpcSecurityGroupIds:      securityGroupsIDs,
 		RootBlockDevice: ec2.InstanceRootBlockDeviceArgs{
 			VolumeSize: pulumi.Int(r.diskSize),
 		},
@@ -106,7 +106,7 @@ func (r createRequest) runFunc(ctx *pulumi.Context) error {
 	return nil
 }
 
-func securityGroupsIds(ctx *pulumi.Context) (pulumi.StringArrayInput, error) {
+func securityGroupsIDs(ctx *pulumi.Context) (pulumi.StringArrayInput, error) {
 	ingressRules := []sg.IngressRule{
 		{Description: "SSH", FromPort: constants.SSHPort, ToPort: constants.SSHPort, Protocol: "tcp"},
 		{Description: "Cluster API", FromPort: constants.HTTPSPort, ToPort: constants.HTTPSPort, Protocol: "tcp"},

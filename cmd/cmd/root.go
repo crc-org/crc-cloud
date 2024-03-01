@@ -22,10 +22,10 @@ var rootCmd = &cobra.Command{
 	Use:   commandName,
 	Short: descriptionShort,
 	Long:  descriptionLong,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+	PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 		return runPrerun(cmd)
 	},
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
 		runRoot()
 		_ = cmd.Help()
 	},
@@ -38,7 +38,7 @@ func init() {
 
 }
 
-func runPrerun(cmd *cobra.Command) error {
+func runPrerun(_ *cobra.Command) error {
 	return nil
 }
 
@@ -69,7 +69,7 @@ func attachMiddleware(names []string, cmd *cobra.Command) {
 	}
 }
 
-func executeWithLogging(fullCmd string, input func(cmd *cobra.Command, args []string) error) func(cmd *cobra.Command, args []string) error {
+func executeWithLogging(_ string, input func(cmd *cobra.Command, args []string) error) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		return input(cmd, args)
 	}

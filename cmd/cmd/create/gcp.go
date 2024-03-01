@@ -20,7 +20,7 @@ func getGCPProviderCmd() *cobra.Command {
 	gcpProviderCmd := &cobra.Command{
 		Use:   gcpProviderName,
 		Short: gcpProviderDescription,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			if err := viper.BindPFlags(cmd.Flags()); err != nil {
 				return err
 			}
