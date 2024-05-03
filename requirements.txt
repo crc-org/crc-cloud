@@ -1,2 +1,2 @@
-awscli==1.32.49
+awscli==1.32.98
 gcloud==0.18.3
