@@ -15,6 +15,7 @@ PASS_DEVELOPER="${PASS_DEVELOPER:-"_PASS_DEVELOPER_"}"
 PASS_KUBEADMIN="${PASS_KUBEADMIN:-"_PASS_KUBEADMIN_"}"
 PASS_REDHAT="${PASS_REDHAT:-"_PASS_REDHAT_"}"
 MAXIMUM_LOGIN_RETRY=500
+GLOBAL_SECURED_REGISTRIES="${GLOBAL_SECURED_REGISTRIES:-"false"}"
 
 pr_info() {
     echo "[INF] $1" | tee -a $LOG_FILE > /dev/null
@@ -182,6 +183,15 @@ patch_pull_secret() {
     sleep $STEPS_SLEEP_TIME
 }
 
+global_pull_secret() {
+    pr_info "adding pull-secret as global cluster pull secret"
+    oc get secret/pull-secret -n openshift-config --template='{{index .data ".dockerconfigjson" | base64decode}}' > /tmp/pull-secret.txt
+    oc create secret generic global-pull-secret --from-file=.dockerconfigjson=/tmp/pull-secret.txt --type=kubernetes.io/dockerconfigjson
+    stop_if_failed $? "failed to create global pull secret"
+    rm /tmp/pull-secret.txt
+    sleep $STEPS_SLEEP_TIME
+}
+
 create_certificate_and_patch_secret() {
     pr_info  "creating OpenShift secrets"
     openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout nip.key -out nip.crt -subj "/CN=$EIP.nip.io" -addext "subjectAltName=DNS:apps.$EIP.nip.io,DNS:*.apps.$EIP.nip.io,DNS:api.$EIP.nip.io"
@@ -262,6 +272,9 @@ stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIE
 
 
 patch_pull_secret
+if [[ "$GLOBAL_SECURED_REGISTRIES" =~ True|true ]]; then
+    global_pull_secret
+fi
 wait_cluster_become_healthy "etcd|openshift-apiserver"
 stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
 
