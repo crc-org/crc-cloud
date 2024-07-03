@@ -102,7 +102,7 @@ setup_dsnmasq(){
     hostName=$(hostname)
     pr_info "writing Dnsmasq conf on $DNSMASQ_CONF"
          cat << EOF > /etc/dnsmasq.d/crc-dnsmasq.conf
-listen-address=$IIP
+listen-address=0.0.0.0
 expand-hosts
 log-queries
 local=/crc.testing/
@@ -111,16 +111,19 @@ address=/apps-crc.testing/$IIP
 address=/api.crc.testing/$IIP
 address=/api-int.crc.testing/$IIP
 address=/$hostName.crc.testing/192.168.126.11
+address=/$EIP.nip.io/$IIP
 EOF
 
     stop_if_failed  $? "failed to write Dnsmasq configuration in $DNSMASQ_CONF"
     pr_info  "adding Dnsmasq as primary DNS"
     sleep 2
-    nmcli connection modify Wired\ connection\ 1 ipv4.dns "$IIP,169.254.169.254"
+    CURRENT_NAMESERVERS=$(grep "nameserver" /etc/resolv.conf  | awk '{print $2}' | xargs | sed 's/ /,/g')
+    nmcli connection modify "Wired connection 1" ipv4.dns "$IIP,$CURRENT_NAMESERVERS"
+    nmcli connection up "Wired connection 1"
     stop_if_failed  $? "failed to modify NetworkManager settings"
     pr_info  "restarting NetworkManager"
     sleep 2
-    systemctl restart NetworkManager 
+    systemctl restart NetworkManager
     stop_if_failed $? "failed to restart NetworkManager"
     pr_info  "enabling & starting Dnsmasq service"
     systemctl enable dnsmasq.service
