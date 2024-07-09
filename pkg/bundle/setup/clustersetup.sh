@@ -1,6 +1,6 @@
 #!/bin/bash
 #CONST
-KUBECONFIG="/opt/kubeconfig"
+export KUBECONFIG="/opt/kubeconfig"
 LOG_PATH="${LOG_PATH:-"/tmp"}"
 LOG_FILE="${LOG_FILE:-"$LOG_PATH/_RANDOM_SUFFIX_.log"}"
 DNSMASQ_CONF="${DNSMASQ_CONF:-"/etc/dnsmasq.d/crc-dnsmasq.conf"}"
