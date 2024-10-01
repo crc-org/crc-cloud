@@ -7,7 +7,7 @@ import (
 
 const (
 	// https://www.pulumi.com/docs/intro/concepts/resources/options/customtimeouts/
-	commandTimeout string = "20m"
+	commandTimeout string = "40m"
 )
 
 func CopyFile(ctx *pulumi.Context, resourceName string,
