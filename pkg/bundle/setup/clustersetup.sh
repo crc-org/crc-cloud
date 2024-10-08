@@ -114,19 +114,41 @@ address=/$hostName.crc.testing/192.168.126.11
 EOF
 
     stop_if_failed  $? "failed to write Dnsmasq configuration in $DNSMASQ_CONF"
-    pr_info  "adding Dnsmasq as primary DNS"
-    sleep 2
-    nmcli connection modify Wired\ connection\ 1 ipv4.dns "$IIP,169.254.169.254"
-    stop_if_failed  $? "failed to modify NetworkManager settings"
-    pr_info  "restarting NetworkManager"
-    sleep 2
-    systemctl restart NetworkManager 
-    stop_if_failed $? "failed to restart NetworkManager"
     pr_info  "enabling & starting Dnsmasq service"
     systemctl enable dnsmasq.service
     systemctl start dnsmasq.service
     sleep 2
     stop_if_failed $? "failed to start Dnsmasq service"
+}
+
+update_ovs_nm_config() {
+    cat << EOF > /etc/systemd/system/crc-cloud-ovs-nm.service
+[Unit]
+Description=CRC Cloud Unit for configuring nm ovs connection
+Requires=ovs-configuration.service
+After=ovs-configuration.service
+
+[Service]
+Type=oneshot
+ExecStart=nmcli con modify --temporary ovs-if-br-ex ipv4.dns "$IIP,169.254.169.254"
+StandardOutput=journal
+
+[Install]
+RequiredBy=kubelet-dependencies.target
+EOF
+
+    stop_if_failed  $? "failed to write systemd unit file for network manager ovs connection update"
+    pr_info  "adding Dnsmasq as primary DNS"
+    sleep 2
+
+    systemctl enable crc-cloud-ovs-nm.service
+    systemctl start crc-cloud-ovs-nm.service
+    stop_if_failed  $? "failed to modify NetworkManager settings"
+
+    pr_info  "restarting NetworkManager"
+    sleep 2
+    systemctl restart NetworkManager
+    stop_if_failed $? "failed to restart NetworkManager"
 }
 
 enable_and_start_kubelet() {
@@ -247,6 +269,7 @@ set_credentials() {
 }
 
 setup_dsnmasq
+update_ovs_nm_config
 
 enable_and_start_kubelet
 replace_default_pubkey
