@@ -1,0 +1,26 @@
+---
+# https://github.com/crc-org/crc-cloud/blob/main/pkg/bundle/setup/clustersetup.sh#L185
+- name: Generate ingress patch
+  ansible.builtin.copy:
+    content: |
+      spec:
+        appsDomain: apps.{{ eip }}.{{ alternative_domain }}
+        componentRoutes:
+        - hostname: console-openshift-console.apps.{{ eip }}.{{ alternative_domain }}
+          name: console
+          namespace: openshift-console
+          servingCertKeyPairSecret:
+            name: nip-secret
+        - hostname: oauth-openshift.apps.{{ eip }}.{{ alternative_domain }}
+          name: oauth-openshift
+          namespace: openshift-authentication
+          servingCertKeyPairSecret:
+            name: nip-secret
+    dest: ingress-patch.yaml
+
+- name: Apply patch for ingress
+  ansible.builtin.command: >
+    oc patch ingresses.config.openshift.io
+    cluster
+    --type=merge
+    --patch-file=ingress-patch.yaml

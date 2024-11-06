@@ -1,0 +1,16 @@
+---
+# https://github.com/crc-org/crc-cloud/blob/main/pkg/bundle/setup/clustersetup.sh#L282
+- name: Get route to console custom
+  ansible.builtin.shell: |
+    oc get route console-custom -n openshift-console
+  register: _route_console_custom
+  until: _route_console_custom.rc != 1
+  retries: 60
+  delay: 10
+  changed_when: false
+
+- name: Get console route
+  ansible.builtin.shell: >
+    oc get route console-custom
+    -n openshift-console
+    -o json | jq -r '.spec.host'

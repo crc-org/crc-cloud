@@ -1,0 +1,7 @@
+---
+# https://github.com/crc-org/crc-cloud/blob/main/pkg/bundle/setup/clustersetup.sh#L215
+- name: Patch apiserver
+  ansible.builtin.shell: >
+    oc patch apiserver cluster
+    --type merge
+    --patch '{"spec":{"servingCerts": {"namedCertificates":[{"names":["api.{{ eip }}.{{ alternative_domain }}"],"servingCertificate": {"name": "nip-secret"}}]}}}'
