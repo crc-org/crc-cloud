@@ -1,0 +1,6 @@
+---
+- name: Prepare crc-cloud bootstrap container
+  gather_facts: true
+  hosts: crc
+  roles:
+    - crc-bootstrap

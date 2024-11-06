@@ -1,0 +1,33 @@
+---
+dnsmasq_conf_path: /etc/dnsmasq.d/crc-dnsmasq.conf
+openshift_pull_secret: ""
+eip: crc.dev
+alternative_domain: nip.io
+
+# wait for resource
+max_retry: 20
+wait_interval: 5
+
+# wait cluster become healthy
+max_retries: 20
+retry_delay: 5
+
+pass_developer: _PASS_DEVELOPER_
+pass_kubeadmin: _PASS_KUBEADMIN_
+pass_redhat: _PASS_REDHAT_
+
+users:
+  - name: developer
+    password: "{{ pass_developer }}"
+  - name: kubeadmin
+    password: "{{ pass_kubeadmin }}"
+  - name: redhat
+    password: "{{ pass_redhat }}"
+
+# replace default ca
+ca_user: "system:admin"
+ca_group: "system:masters"
+ca_user_subj: "/O=${GROUP}/CN=${USER}"
+ca_name: "custom"
+ca_subj: "/OU=openshift/CN=admin-kubeconfig-signer-custom"
+ca_validity: 3650

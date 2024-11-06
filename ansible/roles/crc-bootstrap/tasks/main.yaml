@@ -1,0 +1,105 @@
+---
+- name: Create bootstrap dir
+  ansible.builtin.file:
+    path: "{{ bootstrap_dir }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: '0755'
+
+- name: Clone crc-cloud repository
+  ansible.builtin.git:
+    repo: https://github.com/crc-org/crc-cloud
+    dest: "{{ bootstrap_dir }}/crc-cloud"
+    version: main
+
+- name: Check if bootstrap ssh key exists
+  ansible.builtin.stat:
+    path: "{{ bootstrap_dir }}/crc-cloud-bootstrap.pub"
+  register: _bootstrap_ssh_key
+
+- name: Generate ssh keypair
+  when: not _bootstrap_ssh_key.stat.exists
+  community.crypto.openssh_keypair:
+    path: "{{ bootstrap_dir }}/crc-cloud-bootstrap"
+    type: ed25519
+    state: present
+    owner: 1000
+    group: 1000
+    mode: '0600'
+
+- name: Set SELinux context for SSH key
+  ansible.builtin.command: chcon -t ssh_home_t "{{ bootstrap_dir }}/crc-cloud-bootstrap"
+  when: not _bootstrap_ssh_key.stat.exists
+
+- name: Get public key content
+  ansible.builtin.command: cat "{{ bootstrap_dir }}/crc-cloud-bootstrap.pub"
+  register: _pub_key
+
+- name: Add generated key to authorized keys
+  ansible.posix.authorized_key:
+    user: "{{ ansible_user }}"
+    key: "{{ _pub_key.stdout }}"
+    path: .ssh/authorized_keys.d/ignition
+    state: present
+
+- name: Create entrypoint file
+  ansible.builtin.copy:
+    src: entrypoint.sh
+    dest: "{{ bootstrap_dir }}/entrypoint.sh"
+    owner: 1000
+    group: 1000
+    mode: '0755'
+
+- name: Prepare Dockerfile
+  ansible.builtin.copy:
+    src: Dockerfile
+    dest: "{{ bootstrap_dir }}/Dockerfile"
+
+- name: Create inventory file
+  ansible.builtin.template:
+    src: inventory.yaml.j2
+    dest: "{{ bootstrap_dir }}/inventory.yaml"
+    owner: 1000
+    group: 1000
+    mode: '0644'
+
+- name: Create Ansible log directory
+  ansible.builtin.file:
+    path: "{{ bootstrap_dir }}/{{ item }}"
+    state: directory
+    owner: 1000
+    group: 1000
+    mode: '0755'
+  loop:
+    - ansible-logs
+    - .kube
+
+- name: Set SELinux context for directories
+  ansible.builtin.command: >
+    chcon -R -t container_file_t "{{ bootstrap_dir }}/{{ item }}"
+  loop:
+    - ansible-logs
+    - .kube
+
+- name: Build bootstrap container
+  become: true
+  ansible.builtin.shell: |
+    podman build -t crc-cloud-bootstrap -f {{ bootstrap_dir }}/Dockerfile
+
+- name: Create container to bootstrap
+  become: true
+  ansible.builtin.shell: >
+    podman create --name crc-cloud-bootstrap
+    --network host
+    -v "{{ bootstrap_dir }}/crc-cloud-bootstrap:/home/user/.ssh/id_ed25519:Z"
+    -v "{{ bootstrap_dir }}/inventory.yaml:/home/user/inventory.yaml:Z"
+    -v "{{ bootstrap_dir }}/crc-cloud:/home/user/crc-cloud:Z"
+    -v "{{ bootstrap_dir }}/ansible-logs:/home/user/ansible-logs:Z"
+    -v "{{ bootstrap_dir }}/.kube:/home/user/.kube:Z"
+    crc-cloud-bootstrap /home/user/entrypoint.sh
+
+- name: Start the container
+  become: true
+  ansible.builtin.shell: |
+    podman start crc-cloud-bootstrap

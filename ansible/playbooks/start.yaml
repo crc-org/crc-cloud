@@ -1,0 +1,6 @@
+---
+- name: Start crc-cloud
+  gather_facts: true
+  hosts: crc
+  roles:
+    - deploy-crc-cloud

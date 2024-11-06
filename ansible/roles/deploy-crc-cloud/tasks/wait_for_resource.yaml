@@ -1,0 +1,17 @@
+---
+# https://github.com/crc-org/crc-cloud/blob/main/pkg/bundle/setup/clustersetup.sh#L79
+- name: Wait for OpenShift resource to become available
+  block:
+    - name: Check for resource availability
+      ansible.builtin.command: "oc get {{ resource }}"
+      register: result
+      ignore_errors: true
+      retries: "{{ max_retry }}"
+      delay: "{{ wait_interval }}"
+      until: result.rc == 0
+      failed_when: result.rc != 0
+
+    - name: Fail if resource {{ resource }} unavailable
+      ansible.builtin.fail:
+        msg: "Impossible to get resource {{ resource }}"
+      when: result.rc != 0

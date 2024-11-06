@@ -1,0 +1,9 @@
+---
+# https://github.com/crc-org/crc-cloud/blob/main/pkg/bundle/setup/clustersetup.sh#L222
+- name: Patch default route
+  ansible.builtin.shell: >
+    oc patch
+    -p '{"spec": {"host": "default-route-openshift-image-registry.{{ eip }}.{{ alternative_domain }}"}}'
+    route default-route
+    -n openshift-image-registry
+    --type=merge

@@ -1,0 +1,69 @@
+---
+- name: Check if pull-secret is provided
+  when: not openshift_pull_secret
+  ansible.builtin.fail:
+    msg: "You need to provide openshift_pull_secret variable!"
+
+- name: Create kubeconfig
+  ansible.builtin.include_tasks: kubeconfig.yaml
+
+- name: Setup dnsmasq
+  ansible.builtin.include_tasks: dnsmasq.yaml
+
+- name: Start kubelet
+  ansible.builtin.include_tasks: kubelet.yaml
+
+- name: Replace default pubkey
+  ansible.builtin.include_tasks: pubkey.yaml
+
+- name: Wait for cluster become healthy
+  vars:
+    wait_components: "etcd|openshift-apiserver"
+  ansible.builtin.include_tasks: wait_cluster_become_healthy.yaml
+
+- name: Set credentials
+  ansible.builtin.include_tasks: set_credentials.yaml
+
+- name: Replace default CA
+  ansible.builtin.include_tasks: replace_default_ca.yaml
+
+- name: Login to the OpenShift cluster
+  ansible.builtin.include_tasks: login.yaml
+
+- name: Patch pull secret
+  ansible.builtin.include_tasks: patch_pull_secret.yaml
+
+- name: Wait for cluster become healthy after patching CA and pull secret
+  vars:
+    wait_components: "etcd|openshift-apiserver"
+  ansible.builtin.include_tasks: wait_cluster_become_healthy.yaml
+
+- name: Create certificate and patch secret
+  when: alternative_domain
+  ansible.builtin.include_tasks: create_certificate_and_patch_secret.yaml
+
+- name: Wait for cluster become healthy after adding domain
+  vars:
+    wait_components: "etcd|openshift-apiserver"
+  ansible.builtin.include_tasks: wait_cluster_become_healthy.yaml
+
+- name: Patch ingress config
+  when: alternative_domain
+  ansible.builtin.include_tasks: patch_ingress_config.yaml
+
+- name: Patch api server
+  when: alternative_domain
+  ansible.builtin.include_tasks: patch_api_server.yaml
+
+- name: Patch default route
+  when: alternative_domain
+  ansible.builtin.include_tasks: patch_default_route.yaml
+
+- name: Wait for cluster become healthy after changing ingress api server and default route
+  vars:
+    wait_components: "authentication|console|etcd|ingress|openshift-apiserver"
+  ansible.builtin.include_tasks: wait_cluster_become_healthy.yaml
+
+- name: Get console route
+  when: alternative_domain
+  ansible.builtin.include_tasks: console_route.yaml

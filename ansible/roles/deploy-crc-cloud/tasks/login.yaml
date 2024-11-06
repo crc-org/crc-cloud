@@ -1,0 +1,14 @@
+---
+# https://github.com/crc-org/crc-cloud/blob/main/pkg/bundle/setup/clustersetup.sh#L67
+- name: Try to login after all changes
+  ansible.builtin.command: >
+    oc login
+    --insecure-skip-tls-verify=true
+    -u kubeadmin
+    -p "{{ pass_kubeadmin }}"
+    https://api.crc.testing:6443
+  register: _openshift_login
+  until: _openshift_login.rc != 1
+  retries: 60
+  delay: 10
+  changed_when: false

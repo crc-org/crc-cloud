@@ -1,0 +1,52 @@
+---
+# https://github.com/crc-org/crc-cloud/blob/main/pkg/bundle/setup/clustersetup.sh#L41
+- name: Generate key
+  ansible.builtin.command: openssl genrsa -out {{ ca_name }}-ca.key 4096
+
+- name: Generate cert
+  ansible.builtin.command: >
+    openssl req -x509 -new -nodes
+    -key {{ ca_name }}-ca.key
+    -sha256
+    -days {{ ca_validity }}
+    -out {{ ca_name }}-ca.crt
+    -subj "{{ ca_subj }}"
+
+- name: Generate csr
+  ansible.builtin.command: >
+    openssl req -nodes
+    -newkey rsa:2048
+    -keyout {{ ca_user }}.key
+    -subj "{{ ca_user_subj }}"
+    -out {{ ca_user }}.csr
+
+- name: Generate user cert
+  ansible.builtin.shell: >
+    openssl x509
+    -extfile <(printf "extendedKeyUsage = clientAuth")
+    -req -in {{ ca_user }}.csr
+    -CA {{ ca_name }}-ca.crt
+    -CAkey {{ ca_name }}-ca.key
+    -CAcreateserial -out {{ ca_user }}.crt
+    -days {{ ca_validity }}
+    -sha256
+
+- name: Create configmap
+  ansible.builtin.command: >
+    oc create configmap
+    client-ca-custom
+    -n openshift-config
+    --from-file=ca-bundle.crt={{ ca_name }}-ca.crt
+
+- name: Patch apiserver
+  ansible.builtin.command: >
+    oc patch apiserver cluster
+    --type=merge
+    -p '{"spec": {"clientCA": {"name": "client-ca-custom"}}}'
+
+- name: Create configmap
+  ansible.builtin.shell: >
+    oc create configmap admin-kubeconfig-client-ca
+    -n openshift-config
+    --from-file=ca-bundle.crt={{ ca_name }}-ca.crt
+    --dry-run -o yaml | oc replace -f -
