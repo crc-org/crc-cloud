@@ -226,13 +226,26 @@ patch_default_route() {
     #sleep $STEPS_SLEEP_TIME
 }
 
+create_htpasswd_container() {
+    local tmpfile
+    tmpfile=$(mktemp /tmp/Dockerfile-htpasswd.XXXXXX)
+
+    cat << EOF > "$tmpfile"
+FROM quay.io/centos/centos:stream9-minimal
+RUN microdnf --setopt=tsflags=nodocs --setopt=install_weak_deps=0 install -y httpd-tools
+ENTRYPOINT ["htpasswd", "-Bbn"]
+EOF
+    podman build -t htpasswd -f "$tmpfile"
+    rm "$tmpfile"
+}
+
 set_credentials() {
     pr_info  "setting cluster credentials"
-    podman run --rm -ti xmartlabs/htpasswd developer $PASS_DEVELOPER > htpasswd.developer
+    podman run --rm -ti localhost/htpasswd:latest developer $PASS_DEVELOPER > htpasswd.developer
     stop_if_failed $? "failed to set developer password"
-    podman run --rm -ti xmartlabs/htpasswd kubeadmin $PASS_KUBEADMIN > htpasswd.kubeadmin
+    podman run --rm -ti localhost/htpasswd:latest kubeadmin $PASS_KUBEADMIN > htpasswd.kubeadmin
     stop_if_failed $? "failed to set kubeadmin password"
-    podman run --rm -ti xmartlabs/htpasswd redhat $PASS_REDHAT > htpasswd.redhat
+    podman run --rm -ti localhost/htpasswd:latest redhat $PASS_REDHAT > htpasswd.redhat
     stop_if_failed $? "failed to set redhat password"
 
     cat htpasswd.developer > htpasswd.txt
@@ -253,6 +266,7 @@ replace_default_pubkey
 wait_cluster_become_healthy "etcd|openshift-apiserver"
 stop_if_failed $? "failed to recover Cluster after $(expr $CLUSTER_HEALTH_RETRIES \* $CLUSTER_HEALTH_SLEEP) seconds"
 
+create_htpasswd_container
 set_credentials
 replace_default_ca
 login
