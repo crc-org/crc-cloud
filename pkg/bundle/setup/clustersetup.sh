@@ -226,13 +226,24 @@ patch_default_route() {
     #sleep $STEPS_SLEEP_TIME
 }
 
+create_htpasswd() {
+    local username="$1"
+    local password="$2"
+
+    python3 -c "
+import crypt
+username = '${username}'
+password = '${password}'
+print(f'{username}:' + crypt.crypt(password, crypt.mksalt(crypt.METHOD_MD5)))"
+}
+
 set_credentials() {
     pr_info  "setting cluster credentials"
-    podman run --rm -ti xmartlabs/htpasswd developer $PASS_DEVELOPER > htpasswd.developer
+    create_htpasswd "developer" "$PASS_DEVELOPER" > htpasswd.developer
     stop_if_failed $? "failed to set developer password"
-    podman run --rm -ti xmartlabs/htpasswd kubeadmin $PASS_KUBEADMIN > htpasswd.kubeadmin
+    create_htpasswd "kubeadmin" "$PASS_KUBEADMIN" > htpasswd.kubeadmin
     stop_if_failed $? "failed to set kubeadmin password"
-    podman run --rm -ti xmartlabs/htpasswd redhat $PASS_REDHAT > htpasswd.redhat
+    create_htpasswd "redhat" "$PASS_REDHAT" > htpasswd.redhat
     stop_if_failed $? "failed to set redhat password"
 
     cat htpasswd.developer > htpasswd.txt
