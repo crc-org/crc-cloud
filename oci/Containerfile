@@ -12,7 +12,7 @@ RUN make build \
     && curl -LO ${PULUMI_URL} \
     && tar -xzvf pulumi-${PULUMI_VERSION}-linux-x64.tar.gz
 
-FROM quay.io/centos/centos:stream9@sha256:e6653a0d104d2e77580a87811e88215339ccea8f4cc497efa475e88a4ebd4cd5
+FROM quay.io/centos/centos:stream9@sha256:131cca863dfe05582de3cf5907518288e1c68d75bc4df3a3355472dc62427cb7
 
 LABEL MAINTAINER "CRC <devtools-cdk@redhat.com>"
 
