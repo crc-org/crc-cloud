@@ -1,0 +1,25 @@
+---
+# https://github.com/crc-org/crc-cloud/blob/main/pkg/bundle/setup/clustersetup.sh#L93
+- name: Check if id_rsa.pub exists
+  ansible.builtin.stat:
+    path: id_rsa.pub
+  register: _id_rsa_pub
+
+- name: Add master ssh key when pub key exists
+  when: _id_rsa_pub.stat.exists
+  block:
+    - name: Read pub key
+      ansible.builtin.shell: |
+        tr -d '\n\r' < id_rsa.pub
+      register: _pub_key
+
+    - name: Wait for machineconfig
+      vars:
+        resource: machineconfig
+      ansible.builtin.include_tasks: wait_for_resource.yaml
+
+    - name: Patch machineconfig 99-master-ssh
+      ansible.builtin.shell: >
+        oc patch machineconfig 99-master-ssh
+        -p '{"spec": {"config": {"passwd": {"users": [{"name": "core", "sshAuthorizedKeys": ["{{_pub_key.stdout}}"]}]}}}}'
+        --type merge

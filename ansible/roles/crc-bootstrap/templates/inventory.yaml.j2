@@ -1,0 +1,11 @@
+---
+all:
+  hosts:
+    crc:
+      ansible_port: 22
+      ansible_host: {{ ansible_default_ipv4.address }}
+      ansible_user: core
+      ansible_ssh_private_key_file: /home/user/.ssh/id_ed25519
+  vars:
+    openshift_pull_secret: |
+      {{ openshift_pull_secret }}

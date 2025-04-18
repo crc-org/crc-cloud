@@ -1,0 +1,30 @@
+---
+# https://github.com/crc-org/crc-cloud/blob/main/pkg/bundle/setup/clustersetup.sh#L132
+- name: Start and enable kubelet
+  become: true
+  ansible.builtin.systemd:
+    name: kubelet
+    state: started
+    enabled: true
+
+- name: Wait for port 6443 to be up
+  ansible.builtin.wait_for:
+    timeout: 300
+    port: 6443
+    delay: 60
+
+- name: Wait for API to start before continue
+  ansible.builtin.command: >
+    oc get pods --all-namespaces
+  register: _openshift_containers
+  until: |
+    ('No resources found' not in _openshift_containers.stdout) or
+    ('connect: connection refused' not in _openshift_containers.stderr) or
+    ('get current server API group list' not in _openshift_containers.stderr)
+  retries: 60
+  delay: 20
+  changed_when: false
+  failed_when:
+    - "'connect: connection refused' in _openshift_containers.stderr"
+    - "'get current server API group list' in _openshift_containers.stderr"
+    - _openshift_containers.rc != 0

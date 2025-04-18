@@ -1,0 +1,22 @@
+---
+# https://github.com/crc-org/crc-cloud/blob/main/pkg/bundle/setup/clustersetup.sh#L159
+- name: Wait for OpenShift cluster components to become healthy
+  block:
+    - name: "Check if specified OpenShift components are healthy {{ wait_components }}"
+      ansible.builtin.shell: |
+        oc get co | grep -E '{{ wait_components }}' | awk '{ print $3 }'
+      register: component_status
+      retries: "{{ max_retries }}"
+      delay: "{{ retry_delay }}"
+      until: "'False' not in component_status.stdout_lines"
+      failed_when: "'False' in component_status.stdout_lines and retry_count >= max_retries"
+      ignore_errors: true
+
+    - name: Output success message if components are healthy
+      ansible.builtin.debug:
+        msg: "OpenShift cluster components have become healthy in approximately {{ max_retries }} * {{ retry_delay }} seconds."
+
+    - name: Fail if any components are still unhealthy
+      when: "'False' in component_status.stdout_lines"
+      ansible.builtin.fail:
+        msg: "OpenShift cluster components failed to become healthy after {{ max_retries }} checks."
