@@ -6,11 +6,11 @@ alternative_domain: nip.io
 
 # wait for resource
 max_retry: 20
-wait_interval: 5
+wait_interval: 15
 
 # wait cluster become healthy
 max_retries: 20
-retry_delay: 5
+retry_delay: 15
 
 pass_developer: _PASS_DEVELOPER_
 pass_kubeadmin: _PASS_KUBEADMIN_

@@ -84,7 +84,7 @@ wait_for_resource() {
     do
         [ $retry == $max_retry ] && stop_if_failed 1 "impossible to get resource ${resource}"
         pr_info "waiting for ${resource} to become available try $retry, hang on...."
-        sleep 5
+        sleep 15
         ((retry++))
     done
 }
