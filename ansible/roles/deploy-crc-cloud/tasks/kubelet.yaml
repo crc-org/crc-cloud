@@ -9,7 +9,7 @@
 
 - name: Wait for port 6443 to be up
   ansible.builtin.wait_for:
-    timeout: 300
+    timeout: 600
     port: 6443
     delay: 60
 
