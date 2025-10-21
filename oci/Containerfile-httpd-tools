@@ -1,0 +1,3 @@
+FROM quay.io/centos/centos:stream9-minimal
+RUN microdnf --setopt=tsflags=nodocs --setopt=install_weak_deps=0 install -y httpd-tools
+ENTRYPOINT ["htpasswd", "-Bbn"]
