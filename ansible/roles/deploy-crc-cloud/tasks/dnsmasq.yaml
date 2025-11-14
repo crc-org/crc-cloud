@@ -1,5 +1,30 @@
 ---
 # From https://github.com/crc-org/crc-cloud/blob/main/pkg/bundle/setup/clustersetup.sh#L101
+- name: Disable overwriting /etc/resolv.conf by the NetworkManager
+  become: true
+  ansible.builtin.copy:
+    content: |
+      [main]
+      dns=none
+    dest: /etc/NetworkManager/conf.d/00-custom-crc.conf
+  register: _disable_dns_overwrite
+
+- name: Restart NetworkManager when its needed
+  when: _disable_dns_overwrite.changed
+  become: true
+  ansible.builtin.systemd:
+    name: NetworkManager
+    state: restarted
+
+- name: Ensure /etc/resolv.conf is not a symlink and is writable
+  become: true
+  ansible.builtin.file:
+    path: /etc/resolv.conf
+    state: file
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Create crc-dnsmasq.conf
   become: true
   ansible.builtin.copy:
@@ -25,22 +50,6 @@
     create: true
   loop: "{{ [ansible_default_ipv4.address] + ansible_facts['dns']['nameservers'] | flatten }}"
   register: _etc_resolv
-
-- name: Disable overwriting /etc/resolv.conf by the NetworkManager
-  become: true
-  ansible.builtin.copy:
-    content: |
-      [main]
-      dns=none
-    dest: /etc/NetworkManager/conf.d/00-custom-crc.conf
-  register: _disable_dns_overwrite
-
-- name: Restart NetworkManager when its needed
-  when: _disable_dns_overwrite.changed
-  become: true
-  ansible.builtin.systemd:
-    name: NetworkManager
-    state: restarted
 
 - name: Restart dnsmasq
   when: _etc_resolv.changed
