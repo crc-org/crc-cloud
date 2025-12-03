@@ -12,11 +12,9 @@
       failed_when: "'False' in component_status.stdout_lines"
       ignore_errors: true
 
-    - name: Output success message if components are healthy
-      ansible.builtin.debug:
-        msg: "OpenShift cluster components have become healthy in approximately {{ max_retries }} * {{ retry_delay }} seconds."
-
-    - name: Fail if any components are still unhealthy
-      when: "'False' in component_status.stdout_lines"
-      ansible.builtin.fail:
-        msg: "OpenShift cluster components failed to become healthy after {{ max_retries }} checks."
+    - name: Assert components are healthy
+      ansible.builtin.assert:
+        that:
+          - "'False' not in component_status.stdout_lines"
+        fail_msg: "OpenShift cluster components failed to become healthy after {{ max_retries }} checks."
+        success_msg: "OpenShift cluster components have become healthy in approximately {{ max_retries }} * {{ retry_delay }} seconds."
