@@ -1,0 +1,11 @@
+---
+- name: Get csr in Pending state
+  ansible.builtin.shell: |
+    oc get csr --no-headers | awk '/Pending/ {print $1}'
+  register: _pending_csr
+
+- name: Accept OpenShift certificate if in Pending state
+  when: _pending_csr.stdout_lines | length > 0
+  ansible.builtin.shell: |
+    oc adm certificate approve {{ item }}
+  loop: "{{ _pending_csr.stdout_lines }}"

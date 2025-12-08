@@ -16,6 +16,9 @@
 - name: Replace default pubkey
   ansible.builtin.include_tasks: pubkey.yaml
 
+- name: Accept certificate
+  ansible.builtin.include_tasks: accept_cert.yaml
+
 - name: Wait for cluster become healthy
   vars:
     wait_components: "etcd|openshift-apiserver"
