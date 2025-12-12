@@ -8,8 +8,9 @@
       register: component_status
       retries: "{{ max_retries }}"
       delay: "{{ retry_delay }}"
-      until: "'False' not in component_status.stdout_lines"
-      failed_when: "'False' in component_status.stdout_lines"
+      until: >
+        ('False' not in component_status.stdout_lines) and
+        ('was refused' not in component_status.stdout_lines)
       ignore_errors: true
 
     - name: Output success message if components are healthy

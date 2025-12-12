@@ -50,6 +50,7 @@
       address=/apps.{{ eip }}.{{ alternative_domain }}/{{ ansible_default_ipv4.address }}
       address=/api.{{ eip }}.{{ alternative_domain }}/{{ ansible_default_ipv4.address }}
       address=/api-int.{{ eip }}.{{ alternative_domain }}/{{ ansible_default_ipv4.address }}
+  register: _dnsmasq_alt_domain_conf
 
 - name: Set this host as first nameserver in /etc/resolv.conf
   become: true
@@ -61,7 +62,9 @@
   loop: "{{ [ansible_default_ipv4.address] + ansible_facts['dns']['nameservers'] | flatten }}"
 
 - name: Restart dnsmasq
-  when: _dnsmasq_conf.changed
+  when: >
+    _dnsmasq_conf.changed or
+    (_dnsmasq_alt_domain_conf is defined and _dnsmasq_alt_domain_conf.changed)
   become: true
   ansible.builtin.systemd:
     name: dnsmasq
