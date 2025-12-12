@@ -5,3 +5,8 @@
     oc patch apiserver cluster
     --type merge
     --patch '{"spec":{"servingCerts": {"namedCertificates":[{"names":["api.{{ eip }}.{{ alternative_domain }}"],"servingCertificate": {"name": "nip-secret"}}]}}}'
+  register: _apiserver_cluster
+  retries: "{{ max_retries }}"
+  delay: "{{ retry_delay }}"
+  until: _apiserver_cluster is succeeded
+  changed_when: false

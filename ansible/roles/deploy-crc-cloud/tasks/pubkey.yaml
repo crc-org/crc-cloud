@@ -23,3 +23,8 @@
         oc patch machineconfig 99-master-ssh
         -p '{"spec": {"config": {"passwd": {"users": [{"name": "core", "sshAuthorizedKeys": ["{{_pub_key.stdout}}"]}]}}}}'
         --type merge
+      register: _machineconfig_patch
+      retries: "{{ max_retries }}"
+      delay: "{{ retry_delay }}"
+      until: _machineconfig_patch is succeeded
+      changed_when: false

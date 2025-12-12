@@ -24,3 +24,8 @@
     cluster
     --type=merge
     --patch-file=ingress-patch.yaml
+  register: _ingress_config
+  retries: "{{ max_retries }}"
+  delay: "{{ retry_delay }}"
+  until: _ingress_config is succeeded
+  changed_when: false
