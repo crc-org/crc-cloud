@@ -4,13 +4,18 @@
   ansible.builtin.shell: |
     oc get route console-custom -n openshift-console
   register: _route_console_custom
-  until: _route_console_custom.rc != 1
+  until: _route_console_custom is succeeded
   retries: 60
-  delay: 10
+  delay: "{{ retry_delay }}"
   changed_when: false
 
 - name: Get console route
   ansible.builtin.shell: >
     oc get route console-custom
     -n openshift-console
-    -o json | jq -r '.spec.host'
+    -o jsonpath='{.spec.host}'
+  register: _console_spec_host
+  retries: "{{ max_retries }}"
+  delay: "{{ retry_delay }}"
+  until: _console_spec_host is succeeded
+  changed_when: false

@@ -7,3 +7,8 @@
     route default-route
     -n openshift-image-registry
     --type=merge
+  register: _default_route
+  retries: "{{ max_retries }}"
+  delay: "{{ retry_delay }}"
+  until: _default_route is succeeded
+  changed_when: false

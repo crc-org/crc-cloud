@@ -10,5 +10,5 @@
   register: _openshift_login
   until: _openshift_login.rc != 1
   retries: 60
-  delay: 10
+  delay: "{{ retry_delay }}"
   changed_when: false

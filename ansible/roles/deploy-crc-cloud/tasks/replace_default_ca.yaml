@@ -37,12 +37,22 @@
     client-ca-custom
     -n openshift-config
     --from-file=ca-bundle.crt={{ ca_name }}-ca.crt
+  register: _client_ca_custom_cm
+  retries: "{{ max_retries }}"
+  delay: "{{ retry_delay }}"
+  until: _client_ca_custom_cm is succeeded
+  changed_when: false
 
 - name: Patch apiserver
   ansible.builtin.command: >
     oc patch apiserver cluster
     --type=merge
     -p '{"spec": {"clientCA": {"name": "client-ca-custom"}}}'
+  register: _apiserver_custom_ca
+  retries: "{{ max_retries }}"
+  delay: "{{ retry_delay }}"
+  until: _apiserver_custom_ca is succeeded
+  changed_when: false
 
 - name: Create configmap
   ansible.builtin.shell: >
@@ -50,3 +60,8 @@
     -n openshift-config
     --from-file=ca-bundle.crt={{ ca_name }}-ca.crt
     --dry-run -o yaml | oc replace -f -
+  register: _kubeconfig_client_ca_dry_run
+  retries: "{{ max_retries }}"
+  delay: "{{ retry_delay }}"
+  until: _kubeconfig_client_ca_dry_run is succeeded
+  changed_when: false
