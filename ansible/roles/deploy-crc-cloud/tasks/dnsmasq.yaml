@@ -41,6 +41,16 @@
     dest: "{{ dnsmasq_conf_path }}"
   register: _dnsmasq_conf
 
+- name: Add domains into crc-dnsmasq.conf when alternative_domain
+  when: alternative_domain
+  become: true
+  ansible.builtin.blockinfile:
+    path: "{{ dnsmasq_conf_path }}"
+    block: |
+      address=/apps.{{ eip }}.{{ alternative_domain }}/{{ ansible_default_ipv4.address }}
+      address=/api.{{ eip }}.{{ alternative_domain }}/{{ ansible_default_ipv4.address }}
+      address=/api-int.{{ eip }}.{{ alternative_domain }}/{{ ansible_default_ipv4.address }}
+
 - name: Set this host as first nameserver in /etc/resolv.conf
   become: true
   ansible.builtin.lineinfile:
@@ -49,10 +59,9 @@
     line: "nameserver {{ item }}"
     create: true
   loop: "{{ [ansible_default_ipv4.address] + ansible_facts['dns']['nameservers'] | flatten }}"
-  register: _etc_resolv
 
 - name: Restart dnsmasq
-  when: _etc_resolv.changed
+  when: _dnsmasq_conf.changed
   become: true
   ansible.builtin.systemd:
     name: dnsmasq
