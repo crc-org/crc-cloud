@@ -31,3 +31,6 @@ ca_user_subj: "/O=${GROUP}/CN=${USER}"
 ca_name: "custom"
 ca_subj: "/OU=openshift/CN=admin-kubeconfig-signer-custom"
 ca_validity: 3650
+
+# workaround for images, with expired CA cert
+ca_cert_approver: false
