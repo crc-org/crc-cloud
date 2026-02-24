@@ -9,3 +9,23 @@
   ansible.builtin.shell: |
     oc adm certificate approve {{ item }}
   loop: "{{ _pending_csr.stdout_lines }}"
+
+- name: Create cron job for accepting cert
+  when:
+    - ca_cert_approver
+    - _pending_csr.stdout_lines | length > 0
+  block:
+    - name: Create service account for - auto-csr-approver
+      ansible.builtin.copy:
+        src: cluster-cert-approver.yaml
+        dest: /tmp/cluster-cert-approver.yaml
+        mode: "0644"
+
+    - name: Apply cluster cert approver
+      ansible.builtin.command: |
+        oc apply -f /tmp/cluster-cert-approver.yaml
+      register: _cert_approver
+      until: _cert_approver.rc != 1
+      retries: 60
+      delay: 10
+      changed_when: false
