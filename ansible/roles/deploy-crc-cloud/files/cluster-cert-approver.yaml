@@ -19,6 +19,10 @@ rules:
 - apiGroups: ["certificates.k8s.io"]
   resources: ["signers"]
   verbs: ["approve"]
+  resourceNames:
+    - "kubernetes.io/kube-apiserver-client-kubelet"
+    - "kubernetes.io/kube-apiserver-client"
+    - "kubernetes.io/legacy-unknown"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
