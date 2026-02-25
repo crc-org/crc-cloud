@@ -11,9 +11,7 @@
   loop: "{{ _pending_csr.stdout_lines }}"
 
 - name: Create cron job for accepting cert
-  when:
-    - ca_cert_approver
-    - _pending_csr.stdout_lines | length > 0
+  when: ca_cert_approver | bool
   block:
     - name: Create service account for - auto-csr-approver
       ansible.builtin.copy:
