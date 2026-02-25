@@ -1,29 +1,27 @@
 ---
-- name: Get csr in Pending state
-  ansible.builtin.shell: |
-    oc get csr --no-headers | awk '/Pending/ {print $1}'
-  register: _pending_csr
+- name: Re-run accept certificates in Pending state few times
+  ansible.builtin.shell: >
+    set -o pipefail;
+    oc get csr --no-headers |
+    awk '/Pending/ {print $1}' |
+    xargs --no-run-if-empty oc adm certificate approve
+  loop: "{{ range(1, 4) | list }}"
+  loop_control:
+    pause: 10
+  ignore_errors: true
+  changed_when: false
 
-- name: Accept OpenShift certificate if in Pending state
-  when: _pending_csr.stdout_lines | length > 0
-  ansible.builtin.shell: |
-    oc adm certificate approve {{ item }}
-  loop: "{{ _pending_csr.stdout_lines }}"
+- name: Create service account for - auto-csr-approver
+  ansible.builtin.copy:
+    src: cluster-cert-approver.yaml
+    dest: /tmp/cluster-cert-approver.yaml
+    mode: "0644"
 
-- name: Create cron job for accepting cert
-  when: ca_cert_approver | bool
-  block:
-    - name: Create service account for - auto-csr-approver
-      ansible.builtin.copy:
-        src: cluster-cert-approver.yaml
-        dest: /tmp/cluster-cert-approver.yaml
-        mode: "0644"
-
-    - name: Apply cluster cert approver
-      ansible.builtin.command: |
-        oc apply -f /tmp/cluster-cert-approver.yaml
-      register: _cert_approver
-      until: _cert_approver.rc != 1
-      retries: 60
-      delay: 10
-      changed_when: false
+- name: Apply cluster cert approver
+  ansible.builtin.command: |
+    oc apply -f /tmp/cluster-cert-approver.yaml
+  register: _cert_approver
+  until: _cert_approver.rc == 0
+  retries: 60
+  delay: 10
+  changed_when: false

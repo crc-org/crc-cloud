@@ -17,6 +17,7 @@
   ansible.builtin.include_tasks: pubkey.yaml
 
 - name: Accept certificate
+  when: ca_cert_approver | bool
   ansible.builtin.include_tasks: accept_cert.yaml
 
 - name: Wait for cluster become healthy
