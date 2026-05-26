@@ -66,6 +66,15 @@ func getStack(ctx context.Context, target providerAPI.Stack) auto.Stack {
 }
 
 func getOpts(target providerAPI.Stack) []auto.LocalWorkspaceOption {
+	// Read passphrase from environment variable, or use default if not set
+	// WARNING: Using a hardcoded default passphrase is insecure for production use.
+	// Set PULUMI_CONFIG_PASSPHRASE environment variable to use a custom passphrase.
+	passphrase := os.Getenv("PULUMI_CONFIG_PASSPHRASE")
+	if passphrase == "" {
+		// #nosec G101 -- This is a default passphrase, users should override via PULUMI_CONFIG_PASSPHRASE env var
+		passphrase = "crc-cloud-default-passphrase"
+	}
+
 	return []auto.LocalWorkspaceOption{
 		auto.Project(workspace.Project{
 			Name:    tokens.PackageName(target.ProjectName),
@@ -75,15 +84,21 @@ func getOpts(target providerAPI.Stack) []auto.LocalWorkspaceOption {
 			},
 		}),
 		auto.WorkDir("."),
-		// auto.SecretsProvider("awskms://alias/pulumi-secret-encryption"),
+		auto.SecretsProvider("passphrase"),
+		auto.EnvVars(map[string]string{
+			"PULUMI_CONFIG_PASSPHRASE": passphrase,
+		}),
 	}
 }
 
 func postStack(ctx context.Context, target providerAPI.Stack, stack *auto.Stack) (err error) {
 	w := stack.Workspace()
 	// for inline source programs, we must manage plugins ourselves
-	if err = w.InstallPlugin(ctx, target.Plugin.Name, target.Plugin.Version); err != nil {
-		return
+	// Only install plugin if one is specified (UPI provider doesn't need plugins)
+	if target.Plugin.Name != "" && target.Plugin.Version != "" {
+		if err = w.InstallPlugin(ctx, target.Plugin.Name, target.Plugin.Version); err != nil {
+			return
+		}
 	}
 	_, err = stack.Refresh(ctx)
 	return

@@ -56,7 +56,7 @@ func SwapKeys(ctx *pulumi.Context, publicIP *pulumi.StringOutput,
 	if err != nil {
 		return nil, err
 	}
-	overrideKeyCommand := "cat /home/core/id_rsa.pub >> /home/core/.ssh/authorized_keys"
+	overrideKeyCommand := "cat /var/home/core/id_rsa.pub >> /var/home/core/.ssh/authorized_keys"
 	overrideKeyResource, err :=
 		remote.NewCommand(ctx, "addPublicKeyAsAuthorized",
 			&remote.CommandArgs{
