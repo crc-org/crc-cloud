@@ -49,9 +49,31 @@ As so any `openstack` authentication mechanism is supported by `crc-cloud`:
   - https://docs.openstack.org/os-client-config/1.24.0/
 - `OS_CLOUD` as environment variable to select the cloud from the cloud yaml file
 
+For `upi` (User Provided Infrastructure) provider:
+
+- No cloud provider authentication is required
+- Only SSH access to your existing VM is needed via the provided private key
+
+### Security Configuration
+
+**Pulumi State Encryption Passphrase**
+
+crc-cloud uses Pulumi for infrastructure management, which encrypts sensitive values in the state using a passphrase. By default, a hardcoded passphrase is used for convenience, but **this is insecure for production use** as anyone with access to the state can decrypt secrets.
+
+For production or shared environments, set a custom passphrase via the `PULUMI_CONFIG_PASSPHRASE` environment variable:
+
+```bash
+export PULUMI_CONFIG_PASSPHRASE="your-secure-passphrase-here"
+```
+
+**Important**: 
+- Keep this passphrase secure and backed up - losing it means you cannot decrypt your Pulumi state
+- Use a different passphrase for each project/environment
+- Never commit the passphrase to version control
+
 ### Restrictions
 
-**Note**: `import` operation is not supported on `gcp` and `openstack` provider. 
+**Note**: `import` operation is not supported on `gcp`, `openstack`, and `upi` providers. 
 
 As of now please use following manual steps to import the image on `gcp`:
 ```bash
@@ -214,6 +236,28 @@ Global Flags:
       --tags stringToString          tags to add on each resource (--tags name1=value1,name2=value2) (default [])
 
 ```
+
+Usage: In case of `upi` (User Provided Infrastructure) provider
+```bash
+create crc cloud instance on User Provided Infrastructure
+
+Usage:
+  crc-cloud create upi [flags]
+
+Flags:
+  -h, --help                  help for upi
+      --host-ip string        IP address of the existing VM running CRC
+      --ssh-key-path string   Path to the SSH private key file to access the existing VM
+
+Global Flags:
+      --backed-url string            backed for stack state. Can be a local path with format file:///path/subpath or s3 s3://existing-bucket
+      --key-filepath string          path to init key obtained when importing the image
+      --output string                path to export assets
+      --project-name string          project name to identify the instance of the stack
+      --pullsecret-filepath string   path for pullsecret file
+      --tags stringToString          tags to add on each resource (--tags name1=value1,name2=value2) (default [])
+
+```
 Outputs:
 
 - `kubeconfig` file with the kube config to connect withint the cluster  
@@ -282,6 +326,24 @@ podman run --rm \
     --flavor ocp-master
 ```
 
+Sample for `upi` (User Provided Infrastructure) provider:
+
+```bash
+# UPI provider is for scenarios where you manage the VM yourself
+# and provide the IP and SSH key to crc-cloud for cluster setup
+./crc-cloud create upi \
+    --host-ip 192.168.1.100 \
+    --ssh-key-path /path/to/ssh_private_key \
+    --project-name crc-upi-cluster \
+    --pullsecret-filepath /path/to/pullsecret.json \
+    --backed-url file:///tmp/state \
+    --output /tmp/output
+```
+
+**Note**: The UPI provider does not create any infrastructure. It expects you to provide an existing VM with:
+- SSH access configured with the provided private key for the `core` user
+- Network connectivity to download container images (or appropriate proxy configuration)
+
 #### Destroy
 
 `destroy` operation will remove any resource created at the cloud provider, it uses the files holding the state of the infrastructure which has been store at location defined by parameter `backed-url` on `create` operation.  
@@ -341,4 +403,15 @@ podman run --rm \
     --provider openstack \
     --backed-url file:///workspace \
     --project-name crc-ocp414
+```
+
+Sample for `upi` provider:
+
+```bash
+# UPI provider destroy only cleans up the state
+# The VM itself is not destroyed as it's user-managed
+./crc-cloud destroy \
+    --provider upi \
+    --backed-url file:///tmp/state \
+    --project-name crc-upi-cluster
 ```

@@ -11,6 +11,14 @@ const (
 	stackImportImage string = "crcCloud-ImageImport"
 )
 
+// pluginInfoOf extracts plugin information from a provider in a nil-safe way
+func pluginInfoOf(p providerAPI.Provider) providerAPI.PluginInfo {
+	if plugin := p.GetPlugin(); plugin != nil {
+		return *plugin
+	}
+	return providerAPI.PluginInfo{}
+}
+
 func CreateParams(provider Provider) map[string]string {
 	p, _ := getProvider(provider)
 	return p.CreateParams()
@@ -37,7 +45,7 @@ func Import(projectName, backerURL, outputFoler string,
 		StackName:   stackImportImage,
 		BackedURL:   backerURL,
 		DeployFunc:  importRunFunc,
-		Plugin:      *p.GetPlugin()}
+		Plugin:      pluginInfoOf(p)}
 	stackResult, err := upStack(stack)
 	if err != nil {
 		return err
@@ -95,7 +103,7 @@ func Create(projectName, backerURL, outputFoler string,
 		StackName:   stackCreate,
 		BackedURL:   backerURL,
 		DeployFunc:  createFunc,
-		Plugin:      *p.GetPlugin()}
+		Plugin:      pluginInfoOf(p)}
 	stackResult, err := upStack(createStack)
 	if err != nil {
 		return err
@@ -113,7 +121,7 @@ func Destroy(projectName, backedURL string, provider Provider) error {
 		ProjectName: projectName,
 		StackName:   stackCreate,
 		BackedURL:   backedURL,
-		Plugin:      *p.GetPlugin()}
+		Plugin:      pluginInfoOf(p)}
 	return destroyStack(stack)
 }
 

@@ -7,6 +7,7 @@ import (
 	"github.com/crc/crc-cloud/pkg/provider/aws"
 	"github.com/crc/crc-cloud/pkg/provider/gcp"
 	"github.com/crc/crc-cloud/pkg/provider/openstack"
+	"github.com/crc/crc-cloud/pkg/provider/upi"
 )
 
 type Provider string
@@ -16,6 +17,7 @@ const (
 	GCP Provider = "gcp"
 	OSP Provider = "openstack"
 	AZ  Provider = "azure"
+	UPI Provider = "upi"
 )
 
 func getProvider(provider Provider) (providerAPI.Provider, error) {
@@ -26,6 +28,8 @@ func getProvider(provider Provider) (providerAPI.Provider, error) {
 		return gcp.GetProvider(), nil
 	case OSP:
 		return openstack.GetProvider(), nil
+	case UPI:
+		return upi.GetProvider(), nil
 	}
 	return nil, fmt.Errorf("%s: provider not supported", provider)
 }
