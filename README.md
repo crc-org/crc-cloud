@@ -1,3 +1,6 @@
+## Note: This repo is not maintained, please check https://github.com/redhat-developer/mapt 
+ - https://github.com/redhat-developer/mapt/blob/main/docs/aws/openshift-snc.md
+
 # CRC Cloud - Runs Containers in the Cloud
 
 ## Disposable OpenShift instances on cloud in minutes
