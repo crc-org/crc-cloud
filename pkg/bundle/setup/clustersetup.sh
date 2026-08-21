@@ -228,11 +228,11 @@ patch_default_route() {
 
 set_credentials() {
     pr_info  "setting cluster credentials"
-    podman run --rm -ti ghcr.io/crc-org/crc-cloud/httpd-tools:latest developer $PASS_DEVELOPER > htpasswd.developer
+    podman run --rm --network=none registry.access.redhat.com/ubi10/httpd-24 htpasswd -Bbn developer "${PASS_DEVELOPER}" > htpasswd.developer
     stop_if_failed $? "failed to set developer password"
-    podman run --rm -ti ghcr.io/crc-org/crc-cloud/httpd-tools:latest kubeadmin $PASS_KUBEADMIN > htpasswd.kubeadmin
+    podman run --rm --network=none registry.access.redhat.com/ubi10/httpd-24 htpasswd -Bbn kubeadmin "${PASS_KUBEADMIN}" > htpasswd.kubeadmin
     stop_if_failed $? "failed to set kubeadmin password"
-    podman run --rm -ti ghcr.io/crc-org/crc-cloud/httpd-tools:latest redhat $PASS_REDHAT > htpasswd.redhat
+    podman run --rm --network=none registry.access.redhat.com/ubi10/httpd-24 htpasswd -Bbn redhat "${PASS_REDHAT}" > htpasswd.redhat
     stop_if_failed $? "failed to set redhat password"
 
     cat htpasswd.developer > htpasswd.txt
