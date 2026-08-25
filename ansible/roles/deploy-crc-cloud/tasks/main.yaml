@@ -43,7 +43,7 @@
   ansible.builtin.include_tasks: wait_cluster_become_healthy.yaml
 
 - name: Create certificate and patch secret
-  when: alternative_domain
+  when: alternative_domain | length > 0
   ansible.builtin.include_tasks: create_certificate_and_patch_secret.yaml
 
 - name: Wait for cluster become healthy after adding domain
@@ -52,15 +52,15 @@
   ansible.builtin.include_tasks: wait_cluster_become_healthy.yaml
 
 - name: Patch ingress config
-  when: alternative_domain
+  when: alternative_domain | length > 0
   ansible.builtin.include_tasks: patch_ingress_config.yaml
 
 - name: Patch api server
-  when: alternative_domain
+  when: alternative_domain | length > 0
   ansible.builtin.include_tasks: patch_api_server.yaml
 
 - name: Patch default route
-  when: alternative_domain
+  when: alternative_domain | length > 0
   ansible.builtin.include_tasks: patch_default_route.yaml
 
 - name: Wait for cluster become healthy after changing ingress api server and default route
@@ -69,5 +69,5 @@
   ansible.builtin.include_tasks: wait_cluster_become_healthy.yaml
 
 - name: Get console route
-  when: alternative_domain
+  when: alternative_domain | length > 0
   ansible.builtin.include_tasks: console_route.yaml
